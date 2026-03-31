@@ -1,0 +1,245 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { SecondaryButton } from "@/components/buttons";
+import { getStoredWorkspaceSessionToken, setStoredWorkspaceSessionToken } from "@/lib/workspace-session-client";
+import type { Mode } from "@/server/types";
+import { FileClock, Inbox, RefreshCw, Sparkles } from "lucide-react";
+
+const GENERATION_HISTORY_KEY = "templify-generation-history";
+
+type SessionJobStatus = "all" | "queued" | "active" | "waiting" | "delayed" | "completed" | "failed" | "not_found";
+
+interface SessionJob {
+  id: string;
+  createdAt?: string;
+  status: string;
+  result?: {
+    outputs?: Array<{ format: string; downloadUrl: string }>;
+  };
+  error?: string;
+}
+
+interface GenerationHistoryItem {
+  id: string;
+  label: string;
+  mode: Mode;
+  createdAt: string;
+  outputs: Record<string, string>;
+}
+
+interface Props {
+  initialSessionToken?: string;
+}
+
+function formatTimestamp(value?: string) {
+  if (!value) return "Time unavailable";
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
+
+export function WorkspaceActivity({ initialSessionToken }: Props) {
+  const [sessionToken, setSessionToken] = useState<string>(() => initialSessionToken || getStoredWorkspaceSessionToken());
+  const [loading, setLoading] = useState<boolean>(false);
+  const [jobs, setJobs] = useState<SessionJob[]>([]);
+  const [history, setHistory] = useState<GenerationHistoryItem[]>([]);
+  const [filter, setFilter] = useState<SessionJobStatus>("all");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const filteredJobs = useMemo(() => {
+    if (filter === "all") return jobs;
+    return jobs.filter((job) => job.status === filter);
+  }, [jobs, filter]);
+
+  useEffect(() => {
+    try {
+      const storedHistory = window.localStorage.getItem(GENERATION_HISTORY_KEY);
+      if (storedHistory) {
+        setHistory(JSON.parse(storedHistory));
+      }
+    } catch {
+      setHistory([]);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get("s") || "";
+    if (tokenFromUrl && !initialSessionToken) {
+      setSessionToken(tokenFromUrl);
+      return;
+    }
+
+    if (!tokenFromUrl && !initialSessionToken) {
+      setSessionToken(getStoredWorkspaceSessionToken());
+    }
+  }, [initialSessionToken]);
+
+  useEffect(() => {
+    if (!sessionToken) {
+      return;
+    }
+
+    setStoredWorkspaceSessionToken(sessionToken);
+  }, [sessionToken]);
+
+  async function loadJobs(token: string) {
+    if (!token.trim()) {
+      setJobs([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/v1/sessions/${encodeURIComponent(token)}/jobs?limit=50`);
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error?.message || "Unable to load session jobs");
+      }
+
+      setJobs(payload.jobs || []);
+      setErrorMessage("");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to load session jobs");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!sessionToken) {
+      return;
+    }
+    void loadJobs(sessionToken);
+  }, [sessionToken]);
+
+  return (
+    <section className="page-shell py-10">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Activity</div>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-ink-900">Recent documents and exports</h2>
+          <div className="mt-1 text-sm text-ink-600">Track recent runs, reopen finished files, and check progress when a document is still processing.</div>
+        </div>
+        <a href={`/workspace${sessionToken ? `?s=${encodeURIComponent(sessionToken)}` : ""}`}>
+          <SecondaryButton className="px-4 py-2 text-xs">Back to create</SecondaryButton>
+        </a>
+      </div>
+
+      <div className="mb-5 glass-panel p-4">
+        <label className="mb-2 block text-sm font-medium text-ink-700">Shared workspace link</label>
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            value={sessionToken}
+            onChange={(event) => setSessionToken(event.target.value)}
+            className="min-w-[280px] flex-1 rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+            placeholder="Paste a shared workspace code if you want to view another workspace"
+          />
+          <SecondaryButton className="px-4 py-3 text-xs" onClick={() => loadJobs(sessionToken)}>
+            <RefreshCw size={14} className="mr-2" />
+            Refresh jobs
+          </SecondaryButton>
+        </div>
+        <div className="mt-2 text-xs text-ink-500">For most users this is managed automatically. Only paste a code when someone has shared a workspace with you.</div>
+        {errorMessage && <div className="mt-3 text-sm text-[#92443c]">{errorMessage}</div>}
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="glass-panel p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+              <FileClock size={16} /> Session jobs
+            </div>
+            <div className="inline-flex rounded-full border border-[#eadfce] bg-[#f9f4ed] p-1">
+              {(["all", "queued", "active", "completed", "failed", "not_found"] as const).map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setFilter(item)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    filter === item ? "bg-white text-ink-900 shadow" : "text-ink-600"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 space-y-3">
+            {loading ? (
+              <div className="rounded-[22px] border border-dashed border-[#eadfce] px-4 py-6 text-sm text-ink-500">
+                Loading shared jobs...
+              </div>
+            ) : filteredJobs.length ? (
+              filteredJobs.map((job) => (
+                <div key={job.id} className="rounded-[22px] border border-[#eadfce] bg-[#fcf8f2] px-4 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-ink-900">Job {job.id}</div>
+                      <div className="mt-1 text-xs text-ink-500">{formatTimestamp(job.createdAt)}</div>
+                      <div className="mt-1 text-xs uppercase tracking-[0.14em] text-[#8f6a44]">{job.status}</div>
+                      {job.error && <div className="mt-1 text-xs text-[#92443c]">{job.error}</div>}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(job.result?.outputs || []).map((item) => (
+                        <a key={`${job.id}-${item.format}`} href={item.downloadUrl} target="_blank" rel="noreferrer">
+                          <SecondaryButton className="px-3 py-2 text-xs">{item.format.toUpperCase()}</SecondaryButton>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[22px] border border-dashed border-[#eadfce] bg-[#fffdf8] px-4 py-8 text-center text-sm text-ink-500">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8efe1] text-[#8f6a44]">
+                  <Inbox size={20} />
+                </div>
+                <div className="mt-3 text-sm font-medium text-ink-800">No matching jobs yet</div>
+                <div className="mt-1 text-xs text-ink-500">
+                  Run a generation from the template or custom editor, then refresh this page.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="glass-panel p-5">
+          <div className="text-sm font-semibold text-ink-900">Recent generations</div>
+          <div className="mt-1 text-xs text-ink-500">Stored locally in your browser so you can quickly reopen valid links.</div>
+          <div className="mt-4 space-y-3">
+            {history.length ? (
+              history.map((item) => (
+                <div key={item.id} className="rounded-[22px] border border-[#eadfce] bg-[#fcf8f2] px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-ink-900">{item.label}</div>
+                      <div className="mt-1 text-xs text-ink-500">{formatTimestamp(item.createdAt)}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(item.outputs).map(([format, url]) => (
+                        <a key={format} href={url} target="_blank" rel="noreferrer">
+                          <SecondaryButton className="px-3 py-2 text-xs">{format.toUpperCase()}</SecondaryButton>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[22px] border border-dashed border-[#eadfce] bg-[#fffdf8] px-4 py-8 text-center text-sm text-ink-500">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8efe1] text-[#8f6a44]">
+                  <Sparkles size={20} />
+                </div>
+                <div className="mt-3 text-sm font-medium text-ink-800">No recent generations</div>
+                <div className="mt-1 text-xs text-ink-500">
+                  Generate a document from Workspace or Custom and links will appear here.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

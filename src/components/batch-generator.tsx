@@ -1,0 +1,838 @@
+"use client";
+
+import { useEffect, useMemo, useState, type ChangeEvent, type DragEvent } from "react";
+import { useRouter } from "next/navigation";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  ChevronDown,
+  FileJson,
+  FileSpreadsheet,
+  FileText,
+  Info,
+  UploadCloud
+} from "lucide-react";
+import { MetallicButton, SecondaryButton } from "@/components/buttons";
+import {
+  analyzeBatchRows,
+  applyBatchFieldSuggestion,
+  createBatchExampleInput,
+  type BatchInputFormat,
+  type BatchValidationIssue
+} from "@/lib/batch-input";
+import { ensureWorkspaceSession, getStoredWorkspaceSessionToken, setStoredWorkspaceSessionToken } from "@/lib/workspace-session-client";
+import type { BuiltinTemplate, BuiltinTemplatePreview } from "@/server/templates";
+
+interface Props {
+  templates: BuiltinTemplate[];
+  templatePreviews: BuiltinTemplatePreview[];
+  initialSessionToken?: string;
+}
+
+type WizardStep = 0 | 1 | 2 | 3;
+
+const STEPS: Array<{ id: WizardStep; title: string; summary: string }> = [
+  { id: 0, title: "Template", summary: "Choose a template and review its fields" },
+  { id: 1, title: "Format", summary: "Pick the input file format and structure" },
+  { id: 2, title: "Upload", summary: "Upload one file and validate it" },
+  { id: 3, title: "Review", summary: "Preview rows, set output, and queue" }
+];
+
+function uniqueIssues(issues: BatchValidationIssue[]) {
+  const seen = new Set<string>();
+  return issues.filter((issue) => {
+    const key = `${issue.code}:${issue.row || 0}:${issue.field || ""}:${issue.message}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+function formatBadge(format: BatchInputFormat) {
+  return format.toUpperCase();
+}
+
+export function BatchGenerator({ templates, templatePreviews, initialSessionToken }: Props) {
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState<WizardStep>(0);
+  const [templateId, setTemplateId] = useState<string>(templates[0]?.id || "");
+  const [inputFormat, setInputFormat] = useState<BatchInputFormat>("csv");
+  const [fileContent, setFileContent] = useState<string>("");
+  const [uploadedFileName, setUploadedFileName] = useState<string>("");
+  const [outputFormat, setOutputFormat] = useState<"html" | "pdf">("pdf");
+  const [pdfFormat, setPdfFormat] = useState<"A4" | "Letter">("A4");
+  const [pdfMargin, setPdfMargin] = useState<"normal" | "narrow">("normal");
+  const [sessionToken, setSessionToken] = useState<string>(() => initialSessionToken || getStoredWorkspaceSessionToken());
+  const [queuedJobIds, setQueuedJobIds] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [uploadMessage, setUploadMessage] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+
+  const selectedTemplate = useMemo(
+    () => templates.find((item) => item.id === templateId) || templates[0],
+    [templateId, templates]
+  );
+  const previewMap = useMemo(() => new Map(templatePreviews.map((preview) => [preview.id, preview.html])), [templatePreviews]);
+
+  const requiredFields = useMemo(
+    () => (selectedTemplate?.fields || []).filter((field) => field.required !== false),
+    [selectedTemplate]
+  );
+  const optionalFields = useMemo(
+    () => (selectedTemplate?.fields || []).filter((field) => field.required === false),
+    [selectedTemplate]
+  );
+
+  const exampleInput = useMemo(() => {
+    return createBatchExampleInput(inputFormat, selectedTemplate?.fields || []);
+  }, [inputFormat, selectedTemplate]);
+
+  const analysis = useMemo(() => {
+    const nextAnalysis = analyzeBatchRows(fileContent, inputFormat, selectedTemplate?.fields || []);
+    const blockingIssues = uniqueIssues(nextAnalysis.issues.filter((issue) => issue.code !== "unknown_field"));
+    const warningIssues = uniqueIssues(nextAnalysis.issues.filter((issue) => issue.code === "unknown_field"));
+    const previewRows = nextAnalysis.rows.slice(0, 5).map((row, index) => {
+      const rowIssues = nextAnalysis.issues.filter((issue) => issue.row === index + 1);
+      return { row, rowIssues, rowNumber: index + 1 };
+    });
+
+    return {
+      ...nextAnalysis,
+      blockingIssues,
+      warningIssues,
+      previewRows,
+      hiddenRowCount: Math.max(nextAnalysis.rows.length - previewRows.length, 0),
+      canQueue: Boolean(fileContent.trim()) && blockingIssues.length === 0 && nextAnalysis.rows.length > 0
+    };
+  }, [fileContent, inputFormat, selectedTemplate]);
+
+  const acceptValue = inputFormat === "csv" ? ".csv,text/csv" : inputFormat === "txt" ? ".txt,text/plain" : ".json,application/json";
+
+  const formatGuide = useMemo(() => {
+    if (inputFormat === "csv") {
+      return {
+        title: "CSV format",
+        summary: "Use the first row as headers. Every following row becomes one document.",
+        rules: [
+          "Header names should match the field keys listed for the selected template.",
+          "One data row equals one generated document.",
+          "Quoted values are supported for commas and line breaks inside a cell."
+        ],
+        icon: FileSpreadsheet,
+        example: exampleInput
+      };
+    }
+
+    if (inputFormat === "txt") {
+      return {
+        title: "TXT format",
+        summary: "Use key: value pairs, with one record per blank-line-separated block.",
+        rules: [
+          "Each block becomes one generated document.",
+          "Keys should match the field keys listed for the selected template.",
+          "Multi-line values are allowed by continuing on the next line after a key."
+        ],
+        icon: FileText,
+        example: exampleInput
+      };
+    }
+
+    return {
+      title: "JSON format",
+      summary: "Upload a JSON array of objects, where each object is one document row.",
+      rules: [
+        "Top-level value must be an array, not a single object.",
+        "Each object key should match the field keys listed for the selected template.",
+        "Every object becomes one generated document."
+      ],
+      icon: FileJson,
+      example: exampleInput
+    };
+  }, [exampleInput, inputFormat]);
+
+  useEffect(() => {
+    setSessionToken(initialSessionToken || getStoredWorkspaceSessionToken());
+  }, [initialSessionToken]);
+
+  useEffect(() => {
+    if (!sessionToken) {
+      return;
+    }
+
+    setStoredWorkspaceSessionToken(sessionToken);
+  }, [sessionToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function ensureSession() {
+      try {
+        const resolved = await ensureWorkspaceSession({ token: sessionToken });
+        if (cancelled) {
+          return;
+        }
+
+        setSessionToken(resolved.token);
+        setErrorMessage("");
+        router.replace(`/workspace/batch?s=${encodeURIComponent(resolved.token)}`);
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(error instanceof Error ? error.message : "Unable to create workspace session");
+        }
+      }
+    }
+
+    void ensureSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, sessionToken]);
+
+  function resetMessages() {
+    setErrorMessage("");
+    setUploadMessage("");
+  }
+
+  async function processUploadedFile(file: File) {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    if (ext !== inputFormat) {
+      setErrorMessage(`Selected format is ${formatBadge(inputFormat)}, but the uploaded file is .${ext || "unknown"}. Switch the format first or upload a .${inputFormat} file.`);
+      setUploadMessage("");
+      return;
+    }
+
+    try {
+      const raw = (await file.text()).replace(/\r\n/g, "\n").trim();
+      if (!raw) {
+        throw new Error("The uploaded file looks empty.");
+      }
+
+      setFileContent(raw);
+      setUploadedFileName(file.name);
+      setQueuedJobIds([]);
+      setErrorMessage("");
+      setUploadMessage(`Loaded ${file.name}. Continue to review the parsed rows and validation results.`);
+      setCurrentStep(3);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Could not read this file.");
+      setUploadMessage("");
+    }
+  }
+
+  async function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    await processUploadedFile(file);
+    event.target.value = "";
+  }
+
+  async function handleFileDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setIsDraggingFile(false);
+    const file = event.dataTransfer.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    await processUploadedFile(file);
+  }
+
+  function clearUploadedFile() {
+    setFileContent("");
+    setUploadedFileName("");
+    setQueuedJobIds([]);
+    resetMessages();
+    setCurrentStep(2);
+  }
+
+  function handleDownloadSample() {
+    const content = createBatchExampleInput(inputFormat, selectedTemplate?.fields || []);
+    const blob = new Blob([content], {
+      type: inputFormat === "csv" ? "text/csv;charset=utf-8" : inputFormat === "json" ? "application/json;charset=utf-8" : "text/plain;charset=utf-8"
+    });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = `${selectedTemplate?.id || "template"}-sample.${inputFormat}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+  }
+
+  function handleApplySuggestion(issue: BatchValidationIssue) {
+    if (!issue.field || !issue.suggestion || !fileContent.trim()) {
+      return;
+    }
+
+    try {
+      const nextContent = applyBatchFieldSuggestion(fileContent, inputFormat, issue.field, issue.suggestion);
+      if (nextContent === fileContent) {
+        setErrorMessage(`No matching field named "${issue.field}" was found in the uploaded ${formatBadge(inputFormat)} file.`);
+        return;
+      }
+
+      setFileContent(nextContent);
+      setErrorMessage("");
+      setUploadMessage(`Renamed "${issue.field}" to "${issue.suggestion}" in the uploaded ${formatBadge(inputFormat)} file.`);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Could not apply the suggested field fix.");
+    }
+  }
+
+  function handleNextStep() {
+    if (currentStep === 2 && !uploadedFileName) {
+      setErrorMessage("Upload a file before moving to review.");
+      return;
+    }
+
+    resetMessages();
+    setCurrentStep((step) => Math.min(step + 1, 3) as WizardStep);
+  }
+
+  function handlePreviousStep() {
+    resetMessages();
+    setCurrentStep((step) => Math.max(step - 1, 0) as WizardStep);
+  }
+
+  async function handleQueueBatch() {
+    setErrorMessage("");
+    setQueuedJobIds([]);
+
+    if (!analysis.canQueue) {
+      setErrorMessage(analysis.blockingIssues[0]?.message || "Upload a valid batch file before queueing.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        sessionToken: sessionToken.trim() || undefined,
+        requests: analysis.rows.map((data) => ({
+          mode: "template_fill",
+          templateSource: {
+            type: "builtin",
+            templateId
+          },
+          data,
+          outputs: Array.from(new Set(["html", outputFormat])),
+          options: {
+            pdf: {
+              format: pdfFormat,
+              margin: pdfMargin
+            }
+          }
+        }))
+      };
+
+      const response = await fetch("/api/v1/generations/batch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body.error?.message || "Unable to queue batch");
+      }
+
+      setQueuedJobIds(body.jobIds || []);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to queue batch");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const canAdvance = currentStep === 0 || currentStep === 1 || (currentStep === 2 ? Boolean(uploadedFileName) : false);
+  const nextLabel = currentStep === 2 ? "Review file" : "Next";
+  const GuideIcon = formatGuide.icon;
+  const totalIssues = analysis.blockingIssues.length + analysis.warningIssues.length;
+  const reviewStatusLabel = analysis.canQueue ? "Ready to queue" : totalIssues ? `${totalIssues} item${totalIssues === 1 ? "" : "s"} to review` : "Needs review";
+
+  return (
+    <section className="page-shell py-10">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="max-w-4xl">
+          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Batch Generator</div>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-ink-900">Queue many documents without building the file structure by guesswork</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-600">This flow keeps the user on one route but moves one decision at a time: choose a template, pick a format, upload the file, review the mapping, then queue the batch.</p>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+          <aside className="glass-panel p-5">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Wizard progress</div>
+            <div className="mt-4 space-y-3">
+              {STEPS.map((step, index) => {
+                const isActive = step.id === currentStep;
+                const isCompleted = step.id < currentStep;
+                return (
+                  <button
+                    key={step.id}
+                    onClick={() => setCurrentStep(step.id)}
+                    className={`flex w-full items-start gap-3 rounded-[22px] border px-4 py-4 text-left transition ${
+                      isActive
+                        ? "border-[#c9ab86] bg-[linear-gradient(180deg,#fff8ee_0%,#f4eadb_100%)] shadow-soft"
+                        : isCompleted
+                          ? "border-[#d8ead9] bg-[#f5fff6]"
+                          : "border-[#eadfce] bg-white/80"
+                    }`}
+                  >
+                    <span className={`mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${isCompleted ? "bg-emerald-600 text-white" : isActive ? "bg-[#8d6334] text-white" : "bg-[#f3eadf] text-[#8f6a44]"}`}>
+                      {isCompleted ? "✓" : index + 1}
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-ink-900">{step.title}</span>
+                      <span className="mt-1 block text-xs leading-5 text-ink-600">{step.summary}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+
+          <div className="glass-panel p-6">
+            {currentStep === 0 ? (
+              <div className="space-y-6">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Step 1</div>
+                  <h3 className="mt-2 text-2xl font-semibold text-ink-900">Choose the template first</h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-600">The uploaded file structure depends entirely on this selection, so users should lock the template before preparing or uploading anything.</p>
+                </div>
+
+                <div>
+                  <div className="mb-2 block text-sm font-medium text-ink-700">Template</div>
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {templates.map((template) => {
+                      const isSelected = template.id === templateId;
+
+                      return (
+                        <button
+                          key={template.id}
+                          onClick={() => {
+                            setTemplateId(template.id);
+                            setQueuedJobIds([]);
+                            resetMessages();
+                          }}
+                          className={`overflow-hidden rounded-[24px] border text-left transition ${
+                            isSelected
+                              ? "border-[#c9ab86] bg-[linear-gradient(180deg,#fff8ee_0%,#f4eadb_100%)] shadow-soft"
+                              : "border-[#eadfce] bg-white/80 hover:bg-white"
+                          }`}
+                        >
+                          <div className="border-b border-[#eadfce] bg-[#f7f0e7] p-2">
+                            <iframe
+                              title={`${template.name} preview`}
+                              srcDoc={previewMap.get(template.id) || ""}
+                              className="h-[210px] w-full rounded-[16px] border-0 bg-white"
+                              sandbox=""
+                            />
+                          </div>
+                          <div className="p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="text-xs font-medium uppercase tracking-[0.16em] text-[#9b7750]">{template.category}</div>
+                              <div className="text-[11px] text-ink-500">{template.supportedOutputs.join(" • ").toUpperCase()}</div>
+                            </div>
+                            <div className="mt-2 text-base font-semibold text-ink-900">{template.name}</div>
+                            <div className="mt-2 text-sm leading-6 text-ink-600">{template.description}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rounded-[24px] border border-[#eadfce] bg-white/75 p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="text-lg font-semibold text-ink-900">{selectedTemplate?.name}</div>
+                      <div className="mt-1 max-w-2xl text-sm leading-6 text-ink-600">{selectedTemplate?.description}</div>
+                    </div>
+                    <div className="rounded-full border border-[#eadfce] bg-[#fbf8f3] px-3 py-1 text-xs font-medium text-ink-700">
+                      {requiredFields.length} required{optionalFields.length ? ` • ${optionalFields.length} optional` : ""}
+                    </div>
+                  </div>
+
+                  <div className="mt-5">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-ink-900"><CheckCircle2 size={16} className="text-emerald-600" /> Fields to include in the file</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {requiredFields.map((field) => (
+                        <div key={field.key} className="rounded-full border border-[#d9eadc] bg-[#f5fff6] px-3 py-2 text-xs font-medium text-ink-800">
+                          {field.label}
+                          <span className="ml-2 text-ink-500">{field.key}</span>
+                        </div>
+                      ))}
+                      {optionalFields.map((field) => (
+                        <div key={field.key} className="rounded-full border border-[#eadfce] bg-[#fbf8f3] px-3 py-2 text-xs font-medium text-ink-700">
+                          {field.label}
+                          <span className="ml-2 text-ink-500">optional</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {currentStep === 1 ? (
+              <div className="space-y-6">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Step 2</div>
+                  <h3 className="mt-2 text-2xl font-semibold text-ink-900">Choose the file format</h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-600">Users should see one format at a time with the exact structure expected for the selected template.</p>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  {(["csv", "txt", "json"] as const).map((format) => {
+                    const Icon = format === "csv" ? FileSpreadsheet : format === "txt" ? FileText : FileJson;
+                    return (
+                      <button
+                        key={format}
+                        onClick={() => {
+                          setInputFormat(format);
+                          setUploadedFileName("");
+                          setFileContent("");
+                          setQueuedJobIds([]);
+                          resetMessages();
+                        }}
+                        className={`min-w-[170px] rounded-[24px] border px-4 py-4 text-left transition ${
+                          inputFormat === format
+                            ? "border-[#c9ab86] bg-[linear-gradient(180deg,#fff8ee_0%,#f4eadb_100%)] shadow-soft"
+                            : "border-[#eadfce] bg-white/75 hover:bg-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+                          <Icon size={16} />
+                          {formatBadge(format)}
+                        </div>
+                        <div className="mt-2 text-xs leading-5 text-ink-600">
+                          {format === "csv" ? "Spreadsheet rows with headers" : format === "txt" ? "Plain text blocks with key/value pairs" : "Structured array of objects"}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="grid gap-5 lg:grid-cols-[0.88fr_1.12fr]">
+                  <div className="rounded-[24px] border border-[#eadfce] bg-white/75 p-5">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-ink-900"><GuideIcon size={16} /> {formatGuide.title}</div>
+                    <div className="mt-2 text-sm leading-6 text-ink-600">{formatGuide.summary}</div>
+                    <div className="mt-4 rounded-[18px] border border-[#efe5d7] bg-[#fbf8f3] px-4 py-3 text-sm leading-6 text-ink-700">
+                      {formatGuide.rules[0]}
+                      {formatGuide.rules[1] ? <div className="mt-1 text-xs text-ink-500">{formatGuide.rules[1]}</div> : null}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[24px] border border-[#eadfce] bg-[#fffdfa] p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-ink-900">Expected structure</div>
+                        <div className="mt-2 text-xs text-ink-500">Use these exact field keys from the selected template.</div>
+                      </div>
+                      <SecondaryButton className="px-4 py-2 text-xs" onClick={handleDownloadSample}>Download sample</SecondaryButton>
+                    </div>
+                    <pre className="mt-4 overflow-x-auto whitespace-pre-wrap break-words rounded-[20px] border border-[#efe5d7] bg-[#f8f3ec] p-4 text-xs leading-6 text-ink-700">{formatGuide.example}</pre>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {currentStep === 2 ? (
+              <div className="space-y-6">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Step 3</div>
+                  <h3 className="mt-2 text-2xl font-semibold text-ink-900">Upload the batch file</h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-600">The upload area accepts only the currently selected format. Users get a clear error if the file type and selected format do not match.</p>
+                </div>
+
+                <div
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    setIsDraggingFile(true);
+                  }}
+                  onDragLeave={(event) => {
+                    event.preventDefault();
+                    setIsDraggingFile(false);
+                  }}
+                  onDrop={handleFileDrop}
+                  className={`rounded-[28px] border-2 border-dashed p-8 text-center transition ${isDraggingFile ? "border-[#8d6334] bg-[#fff8ee]" : "border-[#d9cdbb] bg-[linear-gradient(180deg,rgba(255,252,247,0.92)_0%,rgba(248,241,232,0.92)_100%)]"}`}
+                >
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f5eadb] text-[#8d6334]">
+                    <UploadCloud size={24} />
+                  </div>
+                  <div className="mt-4 text-lg font-semibold text-ink-900">Drop your .{inputFormat} file here</div>
+                  <div className="mt-2 text-sm text-ink-600">or choose it manually below. The uploaded file will be validated against {selectedTemplate?.name}.</div>
+                  <div className="mt-4">
+                    <input
+                      type="file"
+                      accept={acceptValue}
+                      onChange={handleFileUpload}
+                      className="w-full rounded-[22px] border border-[#eadfce] bg-white/90 px-4 py-3 text-sm outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[#fff3e1] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#8d6334]"
+                    />
+                  </div>
+                </div>
+
+                {uploadMessage ? <div className="rounded-[18px] border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#2b5d34]">{uploadMessage}</div> : null}
+                {errorMessage ? <div className="rounded-[18px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">{errorMessage}</div> : null}
+
+                <div className="rounded-[24px] border border-[#eadfce] bg-white/75 p-5">
+                  <div className="text-sm font-semibold text-ink-900">Uploaded file</div>
+                  <div className="mt-2 text-sm text-ink-700">{uploadedFileName || "No file uploaded yet"}</div>
+                  <div className="mt-1 text-xs text-ink-500">{uploadedFileName ? `${analysis.rows.length} parsed row${analysis.rows.length === 1 ? "" : "s"} found so far.` : `Expected file type: .${inputFormat}`}</div>
+                  {uploadedFileName ? (
+                    <div className="mt-4">
+                      <SecondaryButton className="px-4 py-2 text-sm" onClick={clearUploadedFile}>Clear file</SecondaryButton>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            {currentStep === 3 ? (
+              <div className="space-y-6">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Step 4</div>
+                  <h3 className="mt-2 text-2xl font-semibold text-ink-900">Review the parsed rows and queue</h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-600">This step brings together validation, row-level highlights, output settings, and the queue action so users do not need to scroll between concerns.</p>
+                </div>
+
+                <div className="space-y-5">
+                  <div className="rounded-[24px] border border-[#eadfce] bg-white/75 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-ink-900">Parsed preview</div>
+                        <div className="mt-1 text-xs text-ink-500">Check the first few rows before queueing.</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <div className="rounded-full border border-[#eadfce] bg-[#fbf8f3] px-3 py-1 text-xs font-medium text-ink-600">
+                          {analysis.rows.length} row{analysis.rows.length === 1 ? "" : "s"}
+                        </div>
+                        <div className={`rounded-full px-3 py-1 text-xs font-medium ${analysis.canQueue ? "border border-[#d6ead8] bg-[#f4fff5] text-[#2b5d34]" : "border border-[#f2dfbf] bg-[#fff8eb] text-[#8d6334]"}`}>
+                          {reviewStatusLabel}
+                        </div>
+                      </div>
+                    </div>
+
+                    {analysis.previewRows.length ? (
+                      <div className="mt-4 space-y-4">
+                        {analysis.previewRows.map(({ row, rowIssues, rowNumber }) => {
+                          const missingFields = new Set(rowIssues.filter((issue) => issue.code === "missing_required_field").map((issue) => issue.field));
+                          const unknownFields = new Set(rowIssues.filter((issue) => issue.code === "unknown_field").map((issue) => issue.field));
+                          const templateFields = selectedTemplate?.fields || [];
+                          const extraKeys = Object.keys(row).filter((key) => !templateFields.some((field) => field.key === key));
+                          return (
+                            <div key={`row-${rowNumber}`} className="rounded-[20px] border border-[#eadfce] bg-white/90 p-4 md:p-5">
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8f6a44]">Row {rowNumber}</div>
+                                <div className="text-xs text-ink-500">{rowIssues.length ? `${rowIssues.length} issue${rowIssues.length === 1 ? "" : "s"}` : "No row-specific issues"}</div>
+                              </div>
+
+                              <div className="mt-3 grid gap-3 lg:grid-cols-3 xl:grid-cols-4">
+                                {templateFields.map((field) => {
+                                  const value = row[field.key];
+                                  const isMissing = missingFields.has(field.key);
+                                  return (
+                                    <div key={field.key} className={`min-w-0 rounded-[14px] border px-3 py-3 ${isMissing ? "border-[#efcdc9] bg-[#fff4f2]" : "border-[#f0e6d9] bg-[#fbf8f3]"}`}>
+                                      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8f6a44]">{field.key}</div>
+                                      <div className={`mt-1 break-words text-sm leading-6 ${isMissing ? "text-[#92443c]" : "text-ink-800"}`}>
+                                        {value ? String(value) : field.required === false ? "Optional and empty" : "Missing required field"}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+
+                                {extraKeys.map((key) => (
+                                  <div key={key} className={`min-w-0 rounded-[14px] border px-3 py-3 ${unknownFields.has(key) ? "border-[#f2dfbf] bg-[#fff8eb]" : "border-[#f0e6d9] bg-[#fbf8f3]"}`}>
+                                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8f6a44]">{key}</div>
+                                    <div className="mt-1 break-words text-sm leading-6 text-[#8d6334]">{String(row[key] || "")}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {analysis.hiddenRowCount > 0 ? <div className="text-xs text-ink-500">{analysis.hiddenRowCount} more {analysis.hiddenRowCount === 1 ? "row" : "rows"} not shown.</div> : null}
+                      </div>
+                    ) : (
+                      <div className="mt-4 rounded-[18px] border border-dashed border-[#eadfce] bg-white/70 px-4 py-4 text-sm text-ink-500">Upload a valid file to preview how the rows map to this template.</div>
+                    )}
+                  </div>
+
+                  <div className="grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(280px,0.92fr)]">
+                    <div className="space-y-5">
+                      <div className="rounded-[24px] border border-[#eadfce] bg-white/75 p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold text-ink-900">What needs attention</div>
+                            <div className="mt-1 text-xs text-ink-500">Only the items below matter before queueing.</div>
+                          </div>
+                          {analysis.canQueue ? <div className="rounded-full border border-[#d6ead8] bg-[#f4fff5] px-3 py-1 text-xs font-medium text-[#2b5d34]">No blocking issues</div> : null}
+                        </div>
+
+                        <div className="mt-4 space-y-3">
+                          {analysis.blockingIssues.map((issue, index) => (
+                            <div key={`${issue.code}-${issue.row || 0}-${issue.field || ""}-${index}`} className="rounded-[18px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">
+                              <div className="flex items-start gap-2"><AlertCircle size={16} className="mt-0.5 shrink-0" /> <span>{issue.message}</span></div>
+                            </div>
+                          ))}
+                          {analysis.warningIssues.map((issue, index) => (
+                            <div key={`${issue.code}-${issue.row || 0}-${issue.field || ""}-${index}`} className="rounded-[18px] border border-[#f2dfbf] bg-[#fff8eb] px-4 py-3 text-sm text-[#8d6334]">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div className="flex min-w-0 items-start gap-2"><Info size={16} className="mt-0.5 shrink-0" /> <span>{issue.message}</span></div>
+                                {issue.suggestion && issue.field ? (
+                                  <SecondaryButton className="shrink-0 px-3 py-2 text-xs" onClick={() => handleApplySuggestion(issue)}>
+                                    Apply suggestion
+                                  </SecondaryButton>
+                                ) : null}
+                              </div>
+                            </div>
+                          ))}
+                          {!analysis.blockingIssues.length && !analysis.warningIssues.length ? (
+                            <div className="rounded-[18px] border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#2b5d34]">Everything looks good. You can queue this batch now.</div>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[24px] border border-[#eadfce] bg-white/75 p-5">
+                      <div className="text-sm font-semibold text-ink-900">Output and queue</div>
+                      <div className="mt-4">
+                        <div className="mb-2 text-sm font-medium text-ink-700">Output format</div>
+                        <div className="inline-flex rounded-full border border-[#eadfce] bg-[#f9f4ed] p-1">
+                          {(["html", "pdf"] as const).map((format) => (
+                            <button
+                              key={format}
+                              onClick={() => setOutputFormat(format)}
+                              className={`rounded-full px-4 py-2 text-sm font-medium transition ${outputFormat === format ? "bg-white text-ink-900 shadow" : "text-ink-600"}`}
+                            >
+                              {format.toUpperCase()}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {outputFormat === "pdf" ? (
+                        <div className="mt-4 grid gap-3 md:grid-cols-2">
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-ink-700">PDF size</label>
+                            <select
+                              value={pdfFormat}
+                              onChange={(event) => setPdfFormat(event.target.value as "A4" | "Letter")}
+                              className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                            >
+                              <option value="A4">A4</option>
+                              <option value="Letter">Letter</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-ink-700">PDF margin</label>
+                            <select
+                              value={pdfMargin}
+                              onChange={(event) => setPdfMargin(event.target.value as "normal" | "narrow")}
+                              className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                            >
+                              <option value="normal">Normal</option>
+                              <option value="narrow">Narrow</option>
+                            </select>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <div className="mt-4 space-y-2 text-sm text-ink-700">
+                        <div className="flex items-center justify-between gap-3 rounded-[16px] border border-[#efe5d7] bg-[#fbf8f3] px-4 py-3">
+                          <span>Template</span>
+                          <span className="font-medium text-ink-900">{selectedTemplate?.name}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 rounded-[16px] border border-[#efe5d7] bg-[#fbf8f3] px-4 py-3">
+                          <span>File</span>
+                          <span className="max-w-[180px] truncate font-medium text-ink-900">{uploadedFileName || "None"}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 rounded-[16px] border border-[#efe5d7] bg-[#fbf8f3] px-4 py-3">
+                          <span>Rows ready</span>
+                          <span className="font-medium text-ink-900">{analysis.rows.length}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 flex gap-3">
+                        <MetallicButton onClick={handleQueueBatch} disabled={isSubmitting || !analysis.canQueue} className="flex-1">
+                          {isSubmitting ? "Queueing..." : "Queue batch"}
+                        </MetallicButton>
+                        <SecondaryButton className="px-4" onClick={clearUploadedFile}>Clear file</SecondaryButton>
+                      </div>
+
+                      {!analysis.canQueue ? (
+                        <div className="mt-4 rounded-[18px] border border-[#f2dfbf] bg-[#fff8eb] px-4 py-3 text-sm text-[#8d6334]">Resolve the issues above before queueing.</div>
+                      ) : null}
+                      </div>
+
+                      <details className="rounded-[22px] border border-[#eadfce] bg-white/75 p-4">
+                        <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-ink-900">
+                          Advanced session settings
+                          <ChevronDown size={16} className="text-ink-500" />
+                        </summary>
+                        <div className="mt-4">
+                          <label className="mb-2 block text-sm font-medium text-ink-700">Session token</label>
+                          <input
+                            value={sessionToken}
+                            onChange={(event) => setSessionToken(event.target.value)}
+                            className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                            placeholder="Attach queued jobs to a specific workspace session"
+                          />
+                          <div className="mt-2 text-xs text-ink-500">This is auto-managed for normal users. Only change it if you intentionally want a different workspace activity stream.</div>
+                        </div>
+                      </details>
+                    </div>
+
+                    <div className="space-y-5">
+                    <div className="rounded-[24px] border border-[#eadfce] bg-white/75 p-5">
+                      <div className="text-sm font-semibold text-ink-900">Queued jobs</div>
+                      <div className="mt-1 text-xs text-ink-500">These IDs are attached to your workspace Activity stream.</div>
+                      <div className="mt-3 space-y-2">
+                        {queuedJobIds.length ? (
+                          queuedJobIds.map((id) => (
+                            <div key={id} className="rounded-[16px] border border-[#eadfce] bg-white/90 px-3 py-2 text-xs text-ink-700">{id}</div>
+                          ))
+                        ) : (
+                          <div className="rounded-[16px] border border-dashed border-[#eadfce] bg-white/85 px-3 py-4 text-xs text-ink-500">No batch queued yet.</div>
+                        )}
+                      </div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+
+                {uploadMessage ? <div className="rounded-[18px] border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#2b5d34]">{uploadMessage}</div> : null}
+                {errorMessage ? <div className="rounded-[18px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">{errorMessage}</div> : null}
+              </div>
+            ) : null}
+
+            <div className="mt-8 flex items-center justify-between gap-3 border-t border-[#eadfce] pt-5">
+              <SecondaryButton onClick={handlePreviousStep} disabled={currentStep === 0} className="px-4 py-2">
+                <ArrowLeft size={16} className="mr-2" /> Back
+              </SecondaryButton>
+
+              {currentStep < 3 ? (
+                <MetallicButton onClick={handleNextStep} disabled={!canAdvance} className="px-5 py-2.5">
+                  {nextLabel}
+                  <ArrowRight size={16} className="ml-2" />
+                </MetallicButton>
+              ) : (
+                <div className="text-xs text-ink-500">Final step: review validation and queue the batch.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

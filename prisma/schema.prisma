@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model UserProfile {
+  ownerKey     String    @id @map("owner_session_id")
+  companyName  String?   @map("company_name")
+  logoUrl      String?   @map("logo_url")
+  primaryColor String?   @map("primary_color")
+  accentColor  String?   @map("accent_color")
+  footerText   String?   @map("footer_text")
+  signerName   String?   @map("signer_name")
+  signerTitle  String?   @map("signer_title")
+  contactEmail String?   @map("contact_email")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("user_profiles")
+}
+
+model UserTemplate {
+  id               String   @id
+  ownerKey         String   @map("owner_session_id")
+  name             String
+  description      String?
+  category         String?
+  supportedOutputs String[] @default(["html", "pdf"]) @map("supported_outputs")
+  fields           Json     @default(dbgenerated("'[]'::jsonb"))
+  content          String
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([ownerKey], map: "idx_user_templates_owner_session_id")
+  @@map("user_templates")
+}
+
+model UserApiKey {
+  ownerKey         String   @map("owner_session_id")
+  provider         String
+  label            String?
+  createdBy        String?  @map("created_by")
+  scopes           String[] @default([])
+  encryptedValue   String   @map("encrypted_value")
+  ownershipHistory Json     @default(dbgenerated("'[]'::jsonb")) @map("ownership_history")
+  lastUsedAt       DateTime? @map("last_used_at") @db.Timestamptz(6)
+  lastUsedIp       String?  @map("last_used_ip")
+  lastUsedUserAgent String? @map("last_used_user_agent")
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([ownerKey, provider])
+  @@map("user_api_keys")
+}
+
+model UserSmtpSettings {
+  ownerKey          String   @id @map("owner_session_id")
+  host              String
+  port              String
+  secure            Boolean  @default(false)
+  username          String
+  passwordEncrypted String   @map("password_encrypted")
+  fromName          String?  @map("from_name")
+  fromEmail         String?  @map("from_email")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("user_smtp_settings")
+}
+
+model UserGeneratedFile {
+  id               String   @id
+  ownerKey         String   @map("owner_session_id")
+  jobId            String   @unique @map("job_id")
+  label            String
+  templateId       String?  @map("template_id")
+  templateName     String?  @map("template_name")
+  availableFormats String[] @default([]) @map("available_formats")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt        DateTime @map("expires_at") @db.Timestamptz(6)
+
+  @@index([ownerKey, createdAt], map: "idx_user_generated_files_owner_created_at")
+  @@index([ownerKey, expiresAt], map: "idx_user_generated_files_owner_expires_at")
+  @@map("user_generated_files")
+}
+
+model UserBillingAccount {
+  ownerKey            String    @id @map("owner_session_id")
+  stripeCustomerId    String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?  @unique @map("stripe_subscription_id")
+  stripePriceId       String?   @map("stripe_price_id")
+  stripeProductId     String?   @map("stripe_product_id")
+  subscriptionStatus  String?   @map("subscription_status")
+  planInterval        String?   @map("plan_interval")
+  currentPeriodEnd    DateTime? @map("current_period_end") @db.Timestamptz(6)
+  cancelAtPeriodEnd   Boolean   @default(false) @map("cancel_at_period_end")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("user_billing_accounts")
+}

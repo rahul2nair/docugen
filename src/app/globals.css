@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-hero text-ink-900 antialiased;
+}
+
+a {
+  @apply transition-colors;
+}
+
+.page-shell {
+  @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.glass-panel {
+  @apply rounded-[26px] border border-[rgba(122,91,56,0.14)] bg-[rgba(255,252,247,0.88)] shadow-soft;
+}
+
+.paper-preview {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(252,248,242,1) 100%);
+  box-shadow:
+    0 20px 54px rgba(43, 31, 18, 0.11),
+    inset 0 1px 0 rgba(255,255,255,0.92);
+}
+
+.metal-button {
+  background:
+    linear-gradient(180deg, rgba(182,132,78,1) 0%, rgba(153,108,61,1) 100%);
+  box-shadow:
+    0 14px 30px rgba(137, 97, 53, 0.20),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    inset 0 -1px 0 rgba(73, 47, 22, 0.28);
+}
+
+.soft-metal-card {
+  background:
+    linear-gradient(180deg, rgba(255,253,249,0.98) 0%, rgba(246,238,228,0.96) 100%);
+  box-shadow:
+    0 22px 56px rgba(77, 53, 28, 0.09),
+    inset 0 1px 0 rgba(255,255,255,0.88);
+}
+
+.ink-panel {
+  background:
+    radial-gradient(circle at top left, rgba(204, 154, 96, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(35, 29, 23, 0.97) 0%, rgba(22, 18, 15, 0.99) 100%);
+  box-shadow:
+    0 28px 84px rgba(25, 18, 11, 0.24),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.tiptap-editor .tiptap {
+  min-height: 380px;
+  padding: 1rem;
+  outline: none;
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: rgb(35, 29, 23);
+}
+
+.tiptap-editor .tiptap p.is-editor-empty:first-child::before {
+  color: rgba(99, 81, 61, 0.62);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap-editor .tiptap h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.tiptap-editor .tiptap p,
+.tiptap-editor .tiptap ul,
+.tiptap-editor .tiptap ol,
+.tiptap-editor .tiptap blockquote {
+  margin: 0 0 1rem;
+}
+
+.tiptap-editor .tiptap ul,
+.tiptap-editor .tiptap ol {
+  padding-left: 1.35rem;
+}
+
+.tiptap-editor .tiptap blockquote {
+  border-left: 3px solid rgba(143, 106, 68, 0.22);
+  color: rgba(79, 61, 43, 0.9);
+  padding-left: 0.85rem;
+}

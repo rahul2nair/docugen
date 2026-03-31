@@ -1,0 +1,53 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { FolderOpen, Sparkles } from "lucide-react";
+import { Header } from "@/components/header";
+import { MyFilesLibrary } from "@/components/my-files-library";
+import { createClient } from "@/lib/supabase/server";
+import { config } from "@/server/config";
+import { listGeneratedFilesByOwnerKey, userOwnerKey } from "@/server/user-data-store";
+
+export default async function MyFilesPage() {
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth?next=%2Fmy-files");
+  }
+
+  const ownerKey = userOwnerKey(user.id);
+  const files = await listGeneratedFilesByOwnerKey(ownerKey, { limit: 100 });
+
+  return (
+    <main className="pb-16">
+      <Suspense fallback={null}>
+        <Header />
+      </Suspense>
+
+      <section className="page-shell pt-8">
+        <div className="glass-panel relative overflow-hidden p-8 lg:p-10">
+          <div className="absolute inset-x-8 top-0 h-36 rounded-b-[100px] bg-[radial-gradient(circle_at_top,rgba(233,216,194,0.52),transparent_72%)]" />
+          <div className="relative flex flex-wrap items-start justify-between gap-5">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(130,97,62,0.12)] bg-white/84 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">
+                <FolderOpen size={14} /> My Files
+              </div>
+              <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Your saved generated documents.</h1>
+              <p className="mt-4 text-base leading-7 text-ink-700">
+                Files created while signed in are stored for {config.myFilesRetentionDays} days so you can reopen and download them again without re-running the workflow.
+              </p>
+            </div>
+            <Link href="/workspace" className="inline-flex items-center rounded-full border border-[rgba(120,90,58,0.18)] bg-white/88 px-4 py-2 text-sm font-semibold text-ink-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] transition hover:bg-white">
+              <Sparkles size={16} className="mr-2" /> Create another document
+            </Link>
+          </div>
+        </div>
+
+        <MyFilesLibrary initialFiles={files} />
+      </section>
+    </main>
+  );
+}
