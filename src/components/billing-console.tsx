@@ -25,13 +25,16 @@ interface Props {
   isConfigured: boolean;
   plans: PlanOption[];
   billing: BillingSummary | null;
+  trialDays: number;
+  trialEligible: boolean;
 }
 
-export function BillingConsole({ email, isConfigured, plans, billing }: Props) {
+export function BillingConsole({ email, isConfigured, plans, billing, trialDays, trialEligible }: Props) {
   const searchParams = useSearchParams();
   const [selectedPriceId, setSelectedPriceId] = useState<string>(plans[0]?.priceId || "");
   const [activeAction, setActiveAction] = useState<"checkout" | "portal" | "">("");
   const [errorMessage, setErrorMessage] = useState("");
+  const isTrialActive = billing?.subscriptionStatus === "trialing";
 
   const notice = useMemo(() => {
     const checkout = searchParams.get("checkout");
@@ -46,7 +49,7 @@ export function BillingConsole({ email, isConfigured, plans, billing }: Props) {
     return "";
   }, [searchParams]);
 
-  async function startCheckout() {
+  async function startCheckout(withTrial: boolean) {
     if (!selectedPriceId) {
       setErrorMessage("Choose a plan before continuing to checkout.");
       return;
@@ -59,7 +62,7 @@ export function BillingConsole({ email, isConfigured, plans, billing }: Props) {
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: selectedPriceId })
+        body: JSON.stringify({ priceId: selectedPriceId, withTrial })
       });
       const payload = await response.json();
 
@@ -104,8 +107,14 @@ export function BillingConsole({ email, isConfigured, plans, billing }: Props) {
           </div>
           <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Manage your plan without leaving the app.</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-ink-700">
-            Billing belongs in the signed-in account area, not in the document flow. Use this page to start a subscription, review status, or open the Stripe customer portal.
+            Billing belongs in the signed-in account area, not in the document flow. Use this page to start a Pro trial, subscribe directly without a trial, review status, or open the Stripe customer portal.
           </p>
+
+          {trialDays > 0 ? (
+            <div className="mt-5 rounded-[20px] border border-[#eadcc8] bg-white/82 px-4 py-4 text-sm leading-6 text-ink-700">
+              New accounts can start with a {trialDays}-day Pro trial. Stripe still collects a payment method, then the subscription converts automatically unless canceled before the trial ends.
+            </div>
+          ) : null}
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <div className="rounded-[24px] border border-[#eadcc8] bg-white/82 p-5">
@@ -121,6 +130,11 @@ export function BillingConsole({ email, isConfigured, plans, billing }: Props) {
                   ? `Current period ends ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`
                   : "Checkout is available as soon as Stripe keys and price IDs are configured."}
               </div>
+              {isTrialActive ? (
+                <div className="mt-2 text-sm text-[#8f6238]">
+                  Trial access is currently active for this account.
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -145,9 +159,17 @@ export function BillingConsole({ email, isConfigured, plans, billing }: Props) {
               </div>
               <div>
                 <div className="text-lg font-semibold text-ink-900">Plan and portal</div>
-                <div className="mt-1 text-sm text-ink-600">Choose a plan here. Once subscribed, use the Stripe portal for card updates, invoices, and cancellations.</div>
+                <div className="mt-1 text-sm text-ink-600">
+                  Choose a plan here. If you are eligible, you can start with a short Pro trial or skip it and subscribe immediately.
+                </div>
               </div>
             </div>
+
+            {trialEligible ? (
+              <div className="mt-5 rounded-[20px] border border-[#eadcc8] bg-white/75 px-4 py-4 text-sm text-ink-700">
+                You can start a {trialDays}-day Pro trial on your first checkout, or skip the trial and go paid now.
+              </div>
+            ) : null}
 
             {!isConfigured ? (
               <div className="mt-5 rounded-[20px] border border-dashed border-[#eadcc8] bg-white/75 px-4 py-4 text-sm text-ink-600">
@@ -177,9 +199,18 @@ export function BillingConsole({ email, isConfigured, plans, billing }: Props) {
             ) : null}
 
             <div className="mt-5 flex flex-wrap gap-3">
-              <MetallicButton className="px-5 py-3" disabled={!isConfigured || !plans.length || activeAction === "checkout"} onClick={startCheckout}>
-                {activeAction === "checkout" ? "Redirecting..." : "Open Stripe checkout"}
+              <MetallicButton className="px-5 py-3" disabled={!isConfigured || !plans.length || activeAction === "checkout"} onClick={() => startCheckout(Boolean(trialEligible))}>
+                {activeAction === "checkout"
+                  ? "Redirecting..."
+                  : trialEligible
+                    ? `Start ${trialDays}-day trial`
+                    : "Open Stripe checkout"}
               </MetallicButton>
+              {trialEligible ? (
+                <SecondaryButton className="px-5 py-3" disabled={!isConfigured || !plans.length || activeAction === "checkout"} onClick={() => startCheckout(false)}>
+                  Go paid now
+                </SecondaryButton>
+              ) : null}
               <SecondaryButton className="px-5 py-3" disabled={!billing?.stripeCustomerId || activeAction === "portal"} onClick={openPortal}>
                 <ExternalLink size={15} className="mr-2" />
                 {activeAction === "portal" ? "Opening..." : "Open billing portal"}

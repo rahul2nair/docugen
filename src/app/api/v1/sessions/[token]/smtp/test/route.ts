@@ -4,6 +4,18 @@ import { sendSmtpTestEmail } from "@/server/smtp";
 import { getSmtpSettingsByOwnerKey } from "@/server/user-data-store";
 import { smtpTestSchema } from "@/server/validation";
 
+function paidPersistenceRequiredResponse() {
+  return NextResponse.json(
+    {
+      error: {
+        code: "STORAGE_UNAVAILABLE",
+        message: "SMTP testing is part of Pro or trial because the saved SMTP configuration is account-backed."
+      }
+    },
+    { status: 503 }
+  );
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ token: string }> }
@@ -16,6 +28,10 @@ export async function POST(
       { error: { code: "NOT_FOUND", message: "Session not found or expired" } },
       { status: 404 }
     );
+  }
+
+  if (!found.hasPaidAccess) {
+    return paidPersistenceRequiredResponse();
   }
 
   let body: unknown;

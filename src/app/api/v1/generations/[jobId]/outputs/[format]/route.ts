@@ -3,6 +3,7 @@ import { getGenerationJobOwnerKey } from "@/server/api-job-store";
 import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
 import { config } from "@/server/config";
 import { getAuthenticatedOwnerKey } from "@/server/persistence-context";
+import { generationQueue } from "@/server/queue";
 import { readOutput } from "@/server/output-store";
 import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limit";
 import { readRequestIp } from "@/server/request-context";
@@ -115,6 +116,48 @@ export async function GET(
       { error: { code: "VALIDATION_ERROR", message: "Invalid output format" } },
       { status: 400 }
     );
+  }
+
+  if (!requiredOwnerKey) {
+    const job = await generationQueue.getJob(jobId);
+
+    if (!job) {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "Job not found" } },
+        { status: 404 }
+      );
+    }
+
+    const state = await job.getState();
+
+    if (state !== "completed") {
+      return NextResponse.json(
+        { error: { code: "JOB_NOT_READY", message: "Outputs are not ready yet" } },
+        { status: 409 }
+      );
+    }
+
+    const output = job.returnvalue?.ephemeralOutputs?.[format] as
+      | {
+          bodyBase64: string;
+          contentType: string;
+          contentDisposition: string;
+        }
+      | undefined;
+
+    if (!output?.bodyBase64) {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "Output not found" } },
+        { status: 404 }
+      );
+    }
+
+    return new NextResponse(Buffer.from(output.bodyBase64, "base64"), {
+      headers: {
+        "Content-Type": output.contentType,
+        "Content-Disposition": output.contentDisposition
+      }
+    });
   }
 
   try {

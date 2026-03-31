@@ -23,6 +23,7 @@ const unlockWithAccount = [
 
 export function AccessShowcase() {
   const { user, loading } = useAuthUser();
+  const billingHref = user ? "/billing" : "/auth?next=%2Fbilling";
 
   return (
     <section className="page-shell pt-6">
@@ -35,20 +36,20 @@ export function AccessShowcase() {
           <div className="mt-5 grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-start">
             <div>
               <h2 className="max-w-lg text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
-                The product should make sense in two passes: start now, then grow into the rest.
+                The product should make sense in two passes: try it free, then unlock Pro when persistence matters.
               </h2>
               <p className="mt-5 max-w-xl text-base leading-7 text-ink-700">
-                Anonymous users should feel safe starting with one document. Signed-in users should immediately see why an account is useful: saved files, reusable setups, and faster repeat work.
+                Free users should be able to generate a document immediately. Pro users should clearly get the durable value: saved files, reusable setups, and faster repeat work.
               </p>
               <div className="mt-6 rounded-[24px] border border-[rgba(133,99,64,0.14)] bg-[rgba(255,255,255,0.78)] px-5 py-4 text-sm leading-7 text-ink-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
-                The rule is simple: guests finish one document, account users keep momentum across many documents.
+                The rule is simple: free users finish a document, Pro users keep and reuse their work.
               </div>
             </div>
 
             <div className="grid gap-4 xl:grid-cols-2">
               <div className="soft-metal-card rounded-[28px] border border-[rgba(133,99,64,0.13)] p-6">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(133,99,64,0.12)] bg-white/88 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8f6a44]">
-                  Anonymous user
+                  Free
                 </div>
                 <div className="mt-4 text-2xl font-semibold tracking-tight text-ink-900">Create documents right away</div>
                 <div className="mt-2 text-sm leading-7 text-ink-700">Best for first-time visitors who just need to produce one document quickly and learn by doing.</div>
@@ -66,7 +67,7 @@ export function AccessShowcase() {
 
               <div className="ink-panel rounded-[28px] border border-white/8 p-6 text-[#f4e6d6]">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d7b38c]">
-                  Signed-in or paid user
+                  Pro trial or paid
                 </div>
                 <div className="mt-4 text-2xl font-semibold tracking-tight">Save your setup and go further</div>
                 <div className="mt-2 text-sm leading-7 text-[#e8d8c6]">Best for repeat work where saved files, template libraries, team settings, and automation save real time.</div>
@@ -85,17 +86,11 @@ export function AccessShowcase() {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            {user ? (
-              <Link href="/dashboard">
-                <MetallicButton>Open account home</MetallicButton>
-              </Link>
-            ) : (
-              <Link href="/auth?next=%2Fdashboard">
-                <MetallicButton>Sign in to unlock saved work</MetallicButton>
-              </Link>
-            )}
-            <Link href="/workspace">
-              <SecondaryButton>Start creating now</SecondaryButton>
+            <Link href={billingHref}>
+              <MetallicButton>{user ? "Choose Pro" : "Start 2-day Pro trial"}</MetallicButton>
+            </Link>
+            <Link href={user ? "/billing" : "/auth?next=%2Fbilling"}>
+              <SecondaryButton>See plans and direct paid options</SecondaryButton>
             </Link>
           </div>
         </div>

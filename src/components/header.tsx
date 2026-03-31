@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
-import { FileText, FolderOpen, Home, Sparkles } from "lucide-react";
+import { CreditCard, FileText, Home, Sparkles } from "lucide-react";
 import { AuthControls } from "@/components/auth-controls";
 import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
@@ -25,6 +25,7 @@ export function Header() {
   const searchParams = useSearchParams();
   const { user } = useAuthUser();
   const sessionToken = searchParams.get("s")?.trim();
+  const billingHref = user ? "/billing" : "/auth?next=%2Fbilling";
   const withSession = (path: string) => {
     if (!sessionToken || (!path.startsWith("/workspace") && path !== "/settings")) {
       return path;
@@ -44,18 +45,6 @@ export function Header() {
     },
     { href: withSession("/workspace"), label: "Create" },
     { href: withSession("/workspace/activity"), label: "Recent" },
-    ...(user
-      ? [
-          {
-            href: "/my-files",
-            label: (
-              <span className="inline-flex items-center gap-2">
-                <FolderOpen size={15} /> My Files
-              </span>
-            )
-          }
-        ]
-      : []),
     {
       href: "/templates",
       label: (
@@ -88,6 +77,11 @@ export function Header() {
                 {item.label}
               </NavPill>
             ))}
+            <NavPill href={billingHref} accent>
+              <span className="inline-flex items-center gap-2">
+                <CreditCard size={15} /> {user ? "Upgrade" : "Try Pro"}
+              </span>
+            </NavPill>
           </nav>
           <AuthControls />
         </div>

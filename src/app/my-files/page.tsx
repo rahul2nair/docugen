@@ -1,24 +1,36 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { FolderOpen, Sparkles } from "lucide-react";
 import { Header } from "@/components/header";
 import { MyFilesLibrary } from "@/components/my-files-library";
-import { createClient } from "@/lib/supabase/server";
+import { PaidFeatureNotice } from "@/components/paid-feature-notice";
+import { getAuthenticatedAccountAccess } from "@/server/account-access";
 import { config } from "@/server/config";
-import { listGeneratedFilesByOwnerKey, userOwnerKey } from "@/server/user-data-store";
+import { listGeneratedFilesByOwnerKey } from "@/server/user-data-store";
 
 export default async function MyFilesPage() {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  const { ownerKey, hasPaidAccess } = await getAuthenticatedAccountAccess("/my-files");
 
-  if (!user) {
-    redirect("/auth?next=%2Fmy-files");
+  if (!hasPaidAccess) {
+    return (
+      <main className="pb-16">
+        <Suspense fallback={null}>
+          <Header />
+        </Suspense>
+        <PaidFeatureNotice
+          feature="Saved files and document history"
+          title="Save and reopen generated documents with Pro."
+          description="Free use stays ephemeral. Pro and trial accounts can keep generated files in My Files, reopen them later, and download them again during the retention window."
+          highlights={[
+            `Stored file history for ${config.myFilesRetentionDays} days`,
+            "A dedicated My Files library tied to your account",
+            "The same saved-output access available during trial and paid Pro"
+          ]}
+        />
+      </main>
+    );
   }
 
-  const ownerKey = userOwnerKey(user.id);
   const files = await listGeneratedFilesByOwnerKey(ownerKey, { limit: 100 });
 
   return (
@@ -37,7 +49,7 @@ export default async function MyFilesPage() {
               </div>
               <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Your saved generated documents.</h1>
               <p className="mt-4 text-base leading-7 text-ink-700">
-                Files created while signed in are stored for {config.myFilesRetentionDays} days so you can reopen and download them again without re-running the workflow.
+                Files created while on Pro or trial are stored for {config.myFilesRetentionDays} days so you can reopen and download them again without re-running the workflow.
               </p>
             </div>
             <Link href="/workspace" className="inline-flex items-center rounded-full border border-[rgba(120,90,58,0.18)] bg-white/88 px-4 py-2 text-sm font-semibold text-ink-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] transition hover:bg-white">

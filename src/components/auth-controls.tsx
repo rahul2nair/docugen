@@ -124,7 +124,7 @@ export function AuthControls() {
                   <LayoutDashboard size={16} className="mt-0.5" />
                   <span>
                     <span className="block font-medium text-ink-800">Account home</span>
-                    <span className="mt-0.5 block text-xs text-ink-500">Saved work, billing, and account-only tools in one place</span>
+                    <span className="mt-0.5 block text-xs text-ink-500">Billing first, then saved work and advanced tools once Pro is active</span>
                   </span>
                 </span>
               </Link>
@@ -137,7 +137,7 @@ export function AuthControls() {
                   <FolderOpen size={16} className="mt-0.5" />
                   <span>
                     <span className="block font-medium text-ink-800">My Files</span>
-                    <span className="mt-0.5 block text-xs text-ink-500">Reopen generated documents before they expire</span>
+                    <span className="mt-0.5 block text-xs text-ink-500">Saved generated documents for Pro and trial access</span>
                   </span>
                 </span>
               </Link>
@@ -150,7 +150,7 @@ export function AuthControls() {
                   <CreditCard size={16} className="mt-0.5" />
                   <span>
                     <span className="block font-medium text-ink-800">Billing</span>
-                    <span className="mt-0.5 block text-xs text-ink-500">Manage plan status, checkout, and customer portal access</span>
+                    <span className="mt-0.5 block text-xs text-ink-500">Start the Pro trial, subscribe directly, or open the customer portal</span>
                   </span>
                 </span>
               </Link>

@@ -4,6 +4,7 @@ import { BillingConsole } from "@/components/billing-console";
 import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
 import { getBillingAccountByOwnerKey } from "@/server/billing-store";
+import { config } from "@/server/config";
 import { getStripePlanOptions, isStripeConfigured } from "@/server/stripe";
 import { userOwnerKey } from "@/server/user-data-store";
 
@@ -18,6 +19,7 @@ export default async function BillingPage() {
   }
 
   const billing = await getBillingAccountByOwnerKey(userOwnerKey(user.id));
+  const trialEligible = config.stripe.trialDays > 0 && !billing?.stripeSubscriptionId;
 
   return (
     <main className="pb-12">
@@ -29,6 +31,8 @@ export default async function BillingPage() {
         isConfigured={isStripeConfigured()}
         plans={getStripePlanOptions()}
         billing={billing}
+        trialDays={config.stripe.trialDays}
+        trialEligible={trialEligible}
       />
     </main>
   );

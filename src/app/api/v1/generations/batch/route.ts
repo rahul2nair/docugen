@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { trackGenerationJobForOwnerKey } from "@/server/api-job-store";
 import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
+import { hasActivePaidAccessForOwnerKey } from "@/server/billing-store";
 import { config } from "@/server/config";
 import { generationQueue } from "@/server/queue";
 import { resolvePersistenceContext } from "@/server/persistence-context";
@@ -116,7 +117,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const ownerKeyForJobs = accountApiAuth?.ownerKey || (persistenceContext?.authenticatedUserId ? persistenceContext.ownerKey : null);
+  const sessionOwnerHasPaidAccess = persistenceContext?.authenticatedUserId
+    ? await hasActivePaidAccessForOwnerKey(persistenceContext.ownerKey)
+    : false;
+  const ownerKeyForJobs = accountApiAuth?.ownerKey || (sessionOwnerHasPaidAccess ? persistenceContext?.ownerKey || null : null);
   const jobs = await Promise.all(
     parsed.data.requests.map((payload) => generationQueue.add("generate", ownerKeyForJobs
       ? {

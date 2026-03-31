@@ -7,6 +7,18 @@ import {
 } from "@/server/user-data-store";
 import { templateDeleteSchema, templateUpsertSchema } from "@/server/validation";
 
+function paidPersistenceRequiredResponse() {
+  return NextResponse.json(
+    {
+      error: {
+        code: "STORAGE_UNAVAILABLE",
+        message: "Saved personal templates are part of Pro or trial. Free usage stays local to this browser."
+      }
+    },
+    { status: 503 }
+  );
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ token: string }> }
@@ -19,6 +31,10 @@ export async function GET(
       { error: { code: "NOT_FOUND", message: "Session not found or expired" } },
       { status: 404 }
     );
+  }
+
+  if (!found.hasPaidAccess) {
+    return paidPersistenceRequiredResponse();
   }
 
   try {
@@ -49,6 +65,10 @@ export async function POST(
       { error: { code: "NOT_FOUND", message: "Session not found or expired" } },
       { status: 404 }
     );
+  }
+
+  if (!found.hasPaidAccess) {
+    return paidPersistenceRequiredResponse();
   }
 
   let body: unknown;
@@ -105,6 +125,10 @@ export async function DELETE(
       { error: { code: "NOT_FOUND", message: "Session not found or expired" } },
       { status: 404 }
     );
+  }
+
+  if (!found.hasPaidAccess) {
+    return paidPersistenceRequiredResponse();
   }
 
   const searchParams = new URL(request.url).searchParams;

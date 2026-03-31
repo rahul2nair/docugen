@@ -102,14 +102,14 @@ export function AuthPanel() {
             <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-medium text-ink-700">
               <KeyRound size={14} /> Supabase Auth
             </div>
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Sign in to keep your workspace tied to you.</h1>
+            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Sign in to start Pro or manage billing.</h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-ink-700">
-              Create an account or sign in with email and password. This is the first step toward moving saved SMTP, templates, and profile data from anonymous sessions to logged-in users.
+              Create an account or sign in with email and password. Free document creation stays available in the workspace. Sign-in is used when you want to start a Pro trial, subscribe directly, or manage billing.
             </p>
             <div className="mt-8 space-y-3 text-sm text-ink-700">
               <div className="rounded-3xl border border-white/50 bg-white/65 p-4">Email/password login backed by Supabase cookies.</div>
               <div className="rounded-3xl border border-white/50 bg-white/65 p-4">Confirmation link support via the auth callback route.</div>
-              <div className="rounded-3xl border border-white/50 bg-white/65 p-4">Current app data remains session-scoped until the ownership migration is done.</div>
+              <div className="rounded-3xl border border-white/50 bg-white/65 p-4">Pro trial and paid checkout begin after sign-in so saved files and billing stay tied to one account.</div>
             </div>
           </div>
         </div>

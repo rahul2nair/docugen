@@ -29,6 +29,7 @@ export const config = {
     secretKey: process.env.STRIPE_SECRET_KEY || "",
     publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || "",
+    trialDays: Math.max(0, Math.floor(Number(process.env.STRIPE_TRIAL_DAYS || 0))),
     prices: {
       proMonthly: process.env.STRIPE_PRICE_PRO_MONTHLY || "",
       proYearly: process.env.STRIPE_PRICE_PRO_YEARLY || ""
@@ -96,6 +97,10 @@ if (typeof window === "undefined") {
 
   if (!config.stripe.webhookSecret) {
     console.warn("⚠️  STRIPE_WEBHOOK_SECRET is not set; Stripe subscription sync will be unavailable");
+  }
+
+  if (Number.isNaN(config.stripe.trialDays) || config.stripe.trialDays < 0) {
+    console.warn("⚠️  STRIPE_TRIAL_DAYS is invalid. Falling back to no trial.");
   }
 
   if (

@@ -36,6 +36,19 @@ function computeMyFilesExpiry() {
   return new Date(Date.now() + retentionDays * 24 * 60 * 60 * 1000).toISOString();
 }
 
+function encodeEphemeralOutput(content: Buffer | string, format: "html" | "pdf") {
+  const buffer = typeof content === "string" ? Buffer.from(content, "utf8") : content;
+
+  return {
+    bodyBase64: buffer.toString("base64"),
+    contentType: format === "html" ? "text/html; charset=utf-8" : "application/pdf",
+    contentDisposition:
+      format === "pdf"
+        ? 'attachment; filename="document.pdf"'
+        : 'inline; filename="document.html"'
+  };
+}
+
 const worker = new Worker(
   "document-generation",
   async (job) => {
@@ -55,22 +68,32 @@ const worker = new Worker(
       console.log(`✅ Template rendered successfully`);
 
       const outputs: GenerationResult["outputs"] = [];
+      const shouldPersistOutputs = Boolean(request.persistence?.ownerKey);
+      const ephemeralOutputs: Partial<Record<"html" | "pdf", ReturnType<typeof encodeEphemeralOutput>>> = {};
 
       if (rendered.html && request.outputs.includes("html")) {
-        console.log(`📝 Saving HTML output...`);
-        await saveOutput(job.id!, "html", rendered.html);
+        if (shouldPersistOutputs) {
+          console.log(`📝 Saving HTML output...`);
+          await saveOutput(job.id!, "html", rendered.html);
+        } else {
+          ephemeralOutputs.html = encodeEphemeralOutput(rendered.html, "html");
+        }
         outputs.push(outputUrl(job.id!, "html"));
       }
 
       if (rendered.html && request.outputs.includes("pdf")) {
         console.log(`📄 Converting to PDF...`);
         const pdf = await htmlToPdf(rendered.html, request.options?.pdf);
-        console.log(`💾 Saving PDF output...`);
-        await saveOutput(job.id!, "pdf", pdf);
+        if (shouldPersistOutputs) {
+          console.log(`💾 Saving PDF output...`);
+          await saveOutput(job.id!, "pdf", pdf);
+        } else {
+          ephemeralOutputs.pdf = encodeEphemeralOutput(pdf, "pdf");
+        }
         outputs.push(outputUrl(job.id!, "pdf"));
       }
 
-      if (request.persistence?.ownerKey && job.id && outputs.length) {
+      if (shouldPersistOutputs && request.persistence?.ownerKey && job.id && outputs.length) {
         const builtinTemplateId = request.templateSource?.type === "builtin"
           ? request.templateSource.templateId
           : undefined;
@@ -92,6 +115,7 @@ const worker = new Worker(
       return {
         outputs,
         html: rendered.html,
+        ...(Object.keys(ephemeralOutputs).length ? { ephemeralOutputs } : {}),
         session: request.session
           ? {
               id: request.session.id,

@@ -7,6 +7,7 @@ import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
 export function Hero() {
   const { user } = useAuthUser();
+  const billingHref = user ? "/billing" : "/auth?next=%2Fbilling";
 
   return (
     <section className="page-shell pt-8">
@@ -23,41 +24,35 @@ export function Hero() {
               Draft business documents with a calmer, faster workflow.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-ink-700 sm:text-lg">
-              Start with a ready-made document, fill what matters, keep the preview in view, and export when it looks right.
-              Save the heavier automation steps for later.
+              Use the free workspace to generate and export documents immediately. Move to Pro when you want saved files,
+              reusable templates, imports, API access, and batch workflows.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/workspace">
                 <MetallicButton>
-                  Start creating <ArrowRight className="ml-2" size={16} />
+                  Try it free <ArrowRight className="ml-2" size={16} />
                 </MetallicButton>
+              </Link>
+              <Link href={billingHref}>
+                <SecondaryButton>{user ? "Open Pro options" : "Start 2-day Pro trial"}</SecondaryButton>
               </Link>
               <Link href="/templates">
                 <SecondaryButton>Browse templates</SecondaryButton>
               </Link>
-              {user ? (
-                <Link href="/dashboard">
-                  <SecondaryButton>Open account home</SecondaryButton>
-                </Link>
-              ) : (
-                <Link href="/auth?next=%2Fdashboard">
-                  <SecondaryButton>Sign in to save work</SecondaryButton>
-                </Link>
-              )}
             </div>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[24px] border border-[rgba(128,96,63,0.12)] bg-[rgba(255,255,255,0.74)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8f6a44]">Guest flow</div>
-                <div className="mt-2 text-lg font-semibold text-ink-900">Start immediately</div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8f6a44]">Free</div>
+                <div className="mt-2 text-lg font-semibold text-ink-900">Generate and export right away</div>
                 <div className="mt-2 text-sm leading-6 text-ink-600">
-                  Pick a template, complete the essentials, preview the output, and export without learning the rest of the product first.
+                  Pick a template, complete the essentials, preview the output, and export without creating a saved file library.
                 </div>
               </div>
               <div className="rounded-[24px] border border-[rgba(128,96,63,0.12)] bg-[rgba(248,240,229,0.88)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8f6a44]">Account plan</div>
-                <div className="mt-2 text-lg font-semibold text-ink-900">Keep your work and scale it</div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8f6a44]">Pro and Trial</div>
+                <div className="mt-2 text-lg font-semibold text-ink-900">Save work and scale it</div>
                 <div className="mt-2 text-sm leading-6 text-ink-600">
                   Save generated files, reopen them from My Files, build reusable templates, run batch jobs, and connect the workflow to your systems.
                 </div>

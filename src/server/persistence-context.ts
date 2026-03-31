@@ -1,4 +1,5 @@
 import { createClient as createAuthClient } from "@/lib/supabase/server";
+import { hasActivePaidAccessForOwnerKey } from "@/server/billing-store";
 import { getSessionByToken } from "@/server/session-store";
 import { claimPersistedData, sessionOwnerKey, userOwnerKey } from "@/server/user-data-store";
 
@@ -51,16 +52,24 @@ export async function resolvePersistenceContext(token: string) {
     return {
       ...found,
       ownerKey: normalizedSessionOwnerKey,
-      authenticatedUserId: null
+      authenticatedUserId: null,
+      accountOwnerKey: null,
+      hasPaidAccess: false
     };
   }
 
   const authenticatedOwnerKey = userOwnerKey(authenticatedUserId);
-  await claimPersistedData(authenticatedOwnerKey, [normalizedSessionOwnerKey, found.session.id]);
+  const hasPaidAccess = await hasActivePaidAccessForOwnerKey(authenticatedOwnerKey);
+
+  if (hasPaidAccess) {
+    await claimPersistedData(authenticatedOwnerKey, [normalizedSessionOwnerKey, found.session.id]);
+  }
 
   return {
     ...found,
-    ownerKey: authenticatedOwnerKey,
-    authenticatedUserId
+    ownerKey: hasPaidAccess ? authenticatedOwnerKey : normalizedSessionOwnerKey,
+    authenticatedUserId,
+    accountOwnerKey: authenticatedOwnerKey,
+    hasPaidAccess
   };
 }

@@ -14,7 +14,7 @@ const continueFeatures = [
     title: "My Files",
     copy: "Open the generated documents saved to your account and download them again before they expire.",
     icon: FolderOpen,
-    requiresPaid: false
+    requiresPaid: true
   },
   {
     href: "/workspace/custom",
@@ -26,7 +26,7 @@ const continueFeatures = [
   {
     href: "/billing",
     title: "Billing",
-    copy: "Start or manage the paid plan from a dedicated account area instead of mixing billing into the document workflow.",
+    copy: "Start the Pro trial, subscribe directly, or manage the paid plan from one dedicated account area.",
     icon: CreditCard,
     requiresPaid: false
   },
@@ -108,8 +108,8 @@ export default async function DashboardPage() {
               </div>
               <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Saved work, billing, and account tools.</h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-ink-700">
-                This page should feel like your account home, not a generic dashboard. Use it to reopen saved documents,
-                manage plan status, and jump into the heavier workflows that only matter once you are signed in.
+                This page should feel like your account home, not a generic dashboard. Use it to manage plan status,
+                start the Pro trial or subscription, and jump into the workflows that only matter once persistence is turned on.
               </p>
 
               <div className="mt-8 grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
                       <div className="mt-1 truncate text-lg font-semibold text-ink-900">{user.email || "Account user"}</div>
                     </div>
                   </div>
-                  <div className="mt-4 text-sm leading-6 text-ink-600">Anonymous creation still happens in the main workspace. This account area exists for saved files, saved settings, billing, imports, and automation workflows.</div>
+                  <div className="mt-4 text-sm leading-6 text-ink-600">Anonymous creation still happens in the main workspace. This account area exists for billing and, once Pro is active, saved files, settings, imports, and automation workflows.</div>
                 </div>
 
                 <div className="soft-metal-card rounded-[26px] border border-[#e6d5bf] p-5">
@@ -146,7 +146,7 @@ export default async function DashboardPage() {
           <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
               {[
               { label: "Saved templates", value: templateCount, detail: "Reusable imports and personal templates" },
-              { label: "Active files", value: activeFileCount, detail: "Generated files still available in My Files" },
+              { label: "Active files", value: activeFileCount, detail: "Generated files currently stored for Pro or trial access" },
               { label: "Paid access", value: hasPaidAccess ? "On" : "Off", detail: "Stripe-backed billing state for account-only features" }
             ].map((stat) => (
               <div key={stat.label} className="rounded-[26px] border border-[#eadcc8] bg-white/82 p-5 shadow-soft">

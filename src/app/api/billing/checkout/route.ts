@@ -7,7 +7,8 @@ import { getStripe, isKnownStripePrice, isStripeConfigured } from "@/server/stri
 import { userOwnerKey } from "@/server/user-data-store";
 
 const checkoutSchema = z.object({
-  priceId: z.string().trim().min(1)
+  priceId: z.string().trim().min(1),
+  withTrial: z.boolean().optional()
 });
 
 export async function POST(request: Request) {
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
   const ownerKey = userOwnerKey(user.id);
   const stripe = getStripe();
   const existingBilling = await getBillingAccountByOwnerKey(ownerKey);
+  const wantsTrial = parsed.data.withTrial !== false;
+  const isTrialEligible = config.stripe.trialDays > 0 && !existingBilling?.stripeSubscriptionId;
+  const shouldApplyTrial = wantsTrial && isTrialEligible;
 
   let stripeCustomerId = existingBilling?.stripeCustomerId || null;
 
@@ -64,6 +68,7 @@ export async function POST(request: Request) {
       supabaseUserId: user.id
     },
     subscription_data: {
+      ...(shouldApplyTrial ? { trial_period_days: config.stripe.trialDays } : {}),
       metadata: {
         ownerKey,
         supabaseUserId: user.id

@@ -114,11 +114,17 @@ export async function GET(
     }
 
     const state = await job.getState();
+    const result = state === "completed" && job.returnvalue
+      ? {
+          ...job.returnvalue,
+          ephemeralOutputs: undefined
+        }
+      : undefined;
 
     return NextResponse.json({
       jobId,
       status: state,
-      result: state === "completed" ? job.returnvalue : undefined,
+      result,
       error:
         state === "failed"
           ? {
