@@ -1,3 +1,4 @@
+import { Prisma } from "../generated/prisma/client";
 import { prisma } from "@/server/prisma";
 
 interface BillingAccountRow {
@@ -48,8 +49,8 @@ function mapBillingAccount(record: BillingAccountRow | null): StoredBillingAccou
   };
 }
 
-async function getFirstBillingAccountByClause(sql: TemplateStringsArray, value: string) {
-  const rows = await prisma.$queryRaw<BillingAccountRow[]>(sql, value);
+async function getFirstBillingAccountByClause(sql: Prisma.Sql) {
+  const rows = await prisma.$queryRaw<BillingAccountRow[]>(sql);
   return mapBillingAccount(rows[0] || null);
 }
 
@@ -83,31 +84,34 @@ export async function hasActivePaidAccessForOwnerKey(ownerKey: string) {
 
 export async function getBillingAccountByOwnerKey(ownerKey: string) {
   return getFirstBillingAccountByClause(
-    [
-      "SELECT * FROM user_billing_accounts WHERE owner_session_id = ",
-      " LIMIT 1"
-    ] as unknown as TemplateStringsArray,
-    ownerKey
+    Prisma.sql`
+      SELECT *
+      FROM user_billing_accounts
+      WHERE owner_session_id = ${ownerKey}
+      LIMIT 1
+    `
   );
 }
 
 export async function getBillingAccountByStripeCustomerId(stripeCustomerId: string) {
   return getFirstBillingAccountByClause(
-    [
-      "SELECT * FROM user_billing_accounts WHERE stripe_customer_id = ",
-      " LIMIT 1"
-    ] as unknown as TemplateStringsArray,
-    stripeCustomerId
+    Prisma.sql`
+      SELECT *
+      FROM user_billing_accounts
+      WHERE stripe_customer_id = ${stripeCustomerId}
+      LIMIT 1
+    `
   );
 }
 
 export async function getBillingAccountByStripeSubscriptionId(stripeSubscriptionId: string) {
   return getFirstBillingAccountByClause(
-    [
-      "SELECT * FROM user_billing_accounts WHERE stripe_subscription_id = ",
-      " LIMIT 1"
-    ] as unknown as TemplateStringsArray,
-    stripeSubscriptionId
+    Prisma.sql`
+      SELECT *
+      FROM user_billing_accounts
+      WHERE stripe_subscription_id = ${stripeSubscriptionId}
+      LIMIT 1
+    `
   );
 }
 
