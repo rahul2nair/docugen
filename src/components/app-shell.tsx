@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import {
+  Activity,
   Braces,
   CreditCard,
   FileText,
@@ -20,7 +21,9 @@ import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
 const mainNav = [
   { href: "/", icon: Home, label: "Home", exact: true },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/workspace", icon: WandSparkles, label: "Create" },
+  { href: "/workspace/activity", icon: Activity, label: "Activity" },
   { href: "/templates", icon: LayoutTemplate, label: "Templates" },
   { href: "/my-files", icon: FolderOpen, label: "My Files" },
   { href: "/workspace/batch", icon: TableProperties, label: "Bulk Generate" },
@@ -143,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {avatarLabel}
                 </span>
               )}
-              <Tooltip label="Dashboard" />
+              <Tooltip label="Account" />
             </Link>
           )}
 
