@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { SecondaryButton } from "@/components/buttons";
 import { getStoredWorkspaceSessionToken, setStoredWorkspaceSessionToken } from "@/lib/workspace-session-client";
 import type { Mode } from "@/server/types";
-import { FileClock, Inbox, RefreshCw, Sparkles } from "lucide-react";
+import { CheckCircle2, Clock3, FileClock, Inbox, RefreshCw, Sparkles, XCircle } from "lucide-react";
 
 const GENERATION_HISTORY_KEY = "templify-generation-history";
 
-type SessionJobStatus = "all" | "queued" | "active" | "waiting" | "delayed" | "completed" | "failed" | "not_found";
+type ActivityFilter = "all" | "in_progress" | "success" | "failed";
 
 interface SessionJob {
   id: string;
@@ -45,12 +45,24 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [jobs, setJobs] = useState<SessionJob[]>([]);
   const [history, setHistory] = useState<GenerationHistoryItem[]>([]);
-  const [filter, setFilter] = useState<SessionJobStatus>("all");
+  const [filter, setFilter] = useState<ActivityFilter>("all");
   const [errorMessage, setErrorMessage] = useState<string>("");
+
+  function simplifyStatus(status: string): Exclude<ActivityFilter, "all"> {
+    if (status === "completed") {
+      return "success";
+    }
+
+    if (status === "failed" || status === "not_found") {
+      return "failed";
+    }
+
+    return "in_progress";
+  }
 
   const filteredJobs = useMemo(() => {
     if (filter === "all") return jobs;
-    return jobs.filter((job) => job.status === filter);
+    return jobs.filter((job) => simplifyStatus(job.status) === filter);
   }, [jobs, filter]);
 
   useEffect(() => {
@@ -119,12 +131,16 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Activity</div>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Recent documents and exports</h2>
-          <div className="mt-1 text-sm text-slate-600">Track recent runs, reopen finished files, and check progress when a document is still processing.</div>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Batch status updates</h2>
+          <div className="mt-1 text-sm text-slate-600">Use this page for simple request status. Download completed files from My Files.</div>
         </div>
         <a href={`/workspace${sessionToken ? `?s=${encodeURIComponent(sessionToken)}` : ""}`}>
           <SecondaryButton className="px-4 py-2 text-xs">Back to create</SecondaryButton>
         </a>
+      </div>
+
+      <div className="mb-5 rounded-2xl border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#166534]">
+        Completed items are saved in My Files. This view only shows whether requests are in progress, successful, or failed.
       </div>
 
       <div className="mb-5 glass-panel p-4">
@@ -149,10 +165,10 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
         <div className="glass-panel p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <FileClock size={16} /> Session jobs
+              <FileClock size={16} /> Session requests
             </div>
             <div className="inline-flex rounded-full border border-[#dbe4f0] bg-[#f8fafc] p-1">
-              {(["all", "queued", "active", "completed", "failed", "not_found"] as const).map((item) => (
+              {(["all", "in_progress", "success", "failed"] as const).map((item) => (
                 <button
                   key={item}
                   onClick={() => setFilter(item)}
@@ -171,25 +187,43 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
                 Loading shared jobs...
               </div>
             ) : filteredJobs.length ? (
-              filteredJobs.map((job) => (
-                <div key={job.id} className="rounded-2xl border border-[#dbe4f0] bg-[#f8fafc] px-4 py-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">Job {job.id}</div>
-                      <div className="mt-1 text-xs text-slate-500">{formatTimestamp(job.createdAt)}</div>
-                      <div className="mt-1 text-xs uppercase tracking-[0.14em] text-[#2563eb]">{job.status}</div>
-                      {job.error && <div className="mt-1 text-xs text-[#be123c]">{job.error}</div>}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(job.result?.outputs || []).map((item) => (
-                        <a key={`${job.id}-${item.format}`} href={item.downloadUrl} target="_blank" rel="noreferrer">
-                          <SecondaryButton className="px-3 py-2 text-xs">{item.format.toUpperCase()}</SecondaryButton>
-                        </a>
-                      ))}
+              filteredJobs.map((job) => {
+                const simplifiedStatus = simplifyStatus(job.status);
+                const statusStyles =
+                  simplifiedStatus === "success"
+                    ? {
+                        label: "Success",
+                        classes: "border-[#d6ead8] bg-[#f4fff5] text-[#166534]",
+                        icon: CheckCircle2
+                      }
+                    : simplifiedStatus === "failed"
+                      ? {
+                          label: "Failed",
+                          classes: "border-[#fecdd3] bg-[#fff1f2] text-[#be123c]",
+                          icon: XCircle
+                        }
+                      : {
+                          label: "In progress",
+                          classes: "border-[#dbeafe] bg-[#eff6ff] text-[#2563eb]",
+                          icon: Clock3
+                        };
+                const StatusIcon = statusStyles.icon;
+
+                return (
+                  <div key={job.id} className="rounded-2xl border border-[#dbe4f0] bg-[#f8fafc] px-4 py-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-medium text-slate-900">Job {job.id}</div>
+                        <div className="mt-1 text-xs text-slate-500">{formatTimestamp(job.createdAt)}</div>
+                      </div>
+                      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${statusStyles.classes}`}>
+                        <StatusIcon size={12} />
+                        {statusStyles.label}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="rounded-2xl border border-dashed border-[#dbe4f0] bg-[#f8fafc] px-4 py-8 text-center text-sm text-slate-500">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#dbeafe] text-[#2563eb]">
