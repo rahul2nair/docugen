@@ -1041,7 +1041,7 @@ export const builtinTemplates: BuiltinTemplate[] = [
           </div>
 
           <div style="padding:24px 28px 28px;background:#ffffff;">
-            <div style="display:grid;grid-template-columns:1fr 1fr 220px;gap:18px;align-items:start;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;">
               <div style="padding:20px;border-radius:22px;background:#f8fbff;border:1px solid #dfe8f2;">
                 <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#51708d;margin-bottom:8px;">From</div>
                 <div style="font-size:18px;font-weight:700;color:#16324b;">{{company_name}}</div>
@@ -1057,11 +1057,15 @@ export const builtinTemplates: BuiltinTemplate[] = [
                 {{#if client_vat}}<div style="margin-top:6px;font-size:12px;color:#718395;">VAT / Tax ID: {{client_vat}}</div>{{/if}}
                 {{#if payment_terms}}<div style="margin-top:8px;font-size:12px;color:#617486;"><strong style="color:#16324b;">Terms:</strong> {{payment_terms}}</div>{{/if}}
               </div>
+            </div>
 
-              <div style="padding:20px;border-radius:22px;background:linear-gradient(180deg,#fff3e9 0%,#fffaf5 100%);border:1px solid #f0d7c0;">
-                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a35d1d;">Total Due</div>
-                <div style="margin-top:10px;font-size:32px;font-weight:800;line-height:1.08;letter-spacing:-0.05em;color:#7d3d11;">{{money (mul subtotal (add 1 (div tax_rate 100))) currency}}</div>
-                <div style="margin-top:10px;font-size:13px;line-height:1.8;color:#8a5a38;">Please reference <strong style="color:#7d3d11;">{{invoice_number}}</strong> with payment.</div>
+            <div style="margin-top:18px;padding:20px 22px;border-radius:22px;background:linear-gradient(180deg,#fff3e9 0%,#fffaf5 100%);border:1px solid #f0d7c0;">
+              <div style="display:flex;justify-content:space-between;gap:18px;align-items:flex-start;">
+                <div>
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a35d1d;">Total Due</div>
+                  <div style="margin-top:10px;font-size:32px;font-weight:800;line-height:1.08;letter-spacing:-0.05em;color:#7d3d11;overflow-wrap:anywhere;">{{money (mul subtotal (add 1 (div tax_rate 100))) currency}}</div>
+                </div>
+                <div style="max-width:260px;font-size:13px;line-height:1.8;color:#8a5a38;text-align:right;">Please reference <strong style="color:#7d3d11;">{{invoice_number}}</strong> with payment.</div>
               </div>
             </div>
 
@@ -1142,7 +1146,7 @@ export const builtinTemplates: BuiltinTemplate[] = [
           </div>
 
           <div style="padding:26px 30px 30px;">
-            <div style="display:grid;grid-template-columns:1fr 1fr 220px;gap:18px;align-items:start;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;">
               <div style="padding:20px;border-radius:22px;background:#fff;border:1px solid #eadfce;">
                 <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#9a6a3a;margin-bottom:8px;">From</div>
                 <div style="font-size:18px;font-weight:700;color:#342419;">{{provider_name}}</div>
@@ -1153,10 +1157,15 @@ export const builtinTemplates: BuiltinTemplate[] = [
                 <div style="font-size:18px;font-weight:700;color:#342419;">{{client_name}}</div>
                 <div style="margin-top:8px;font-size:13px;line-height:1.8;color:#6f5b49;">Service period: {{service_period}}</div>
               </div>
-              <div style="padding:20px;border-radius:22px;background:linear-gradient(180deg,#342419 0%,#4c3526 100%);color:#fff5ec;">
-                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#e5c8a8;">Balance Due</div>
-                <div style="margin-top:10px;font-size:31px;font-weight:800;line-height:1.08;letter-spacing:-0.05em;">{{money (sub project_total amount_paid) currency}}</div>
-                <div style="margin-top:10px;font-size:13px;line-height:1.8;color:#e8d6c6;">Based on {{money project_total currency}} total with {{money amount_paid currency}} already received.</div>
+            </div>
+
+            <div style="margin-top:18px;padding:20px;border-radius:22px;background:linear-gradient(180deg,#342419 0%,#4c3526 100%);color:#fff5ec;">
+              <div style="display:flex;justify-content:space-between;gap:18px;align-items:flex-start;">
+                <div>
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#e5c8a8;">Balance Due</div>
+                  <div style="margin-top:10px;font-size:31px;font-weight:800;line-height:1.08;letter-spacing:-0.05em;overflow-wrap:anywhere;">{{money (sub project_total amount_paid) currency}}</div>
+                </div>
+                <div style="max-width:260px;font-size:13px;line-height:1.8;color:#e8d6c6;text-align:right;">Based on {{money project_total currency}} total with {{money amount_paid currency}} already received.</div>
               </div>
             </div>
 

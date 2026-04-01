@@ -20,6 +20,7 @@ export default async function BillingPage() {
 
   const billing = await getBillingAccountByOwnerKey(userOwnerKey(user.id));
   const trialEligible = config.stripe.trialDays > 0 && !billing?.stripeSubscriptionId;
+  const plans = await getStripePlanOptions();
 
   return (
     <main className="pb-12">
@@ -29,7 +30,7 @@ export default async function BillingPage() {
       <BillingConsole
         email={user.email || "Account user"}
         isConfigured={isStripeConfigured()}
-        plans={getStripePlanOptions()}
+        plans={plans}
         billing={billing}
         trialDays={config.stripe.trialDays}
         trialEligible={trialEligible}

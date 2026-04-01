@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { MetallicButton, SecondaryButton } from "@/components/buttons";
 import { ArrowRight, FileCheck2, Layers3, Wand2 } from "lucide-react";
-import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
 export function Hero() {
-  const { user } = useAuthUser();
-  const billingHref = user ? "/billing" : "/auth?next=%2Fbilling";
+  const pricingHref = "/#pricing";
 
   return (
     <section className="page-shell pt-8">
@@ -34,29 +32,9 @@ export function Hero() {
                   Try it free <ArrowRight className="ml-2" size={16} />
                 </MetallicButton>
               </Link>
-              <Link href={billingHref}>
-                <SecondaryButton>{user ? "Open Pro options" : "Start 2-day Pro trial"}</SecondaryButton>
+              <Link href={pricingHref}>
+                <SecondaryButton>See plans</SecondaryButton>
               </Link>
-              <Link href="/templates">
-                <SecondaryButton>Browse templates</SecondaryButton>
-              </Link>
-            </div>
-
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[24px] border border-[rgba(128,96,63,0.12)] bg-[rgba(255,255,255,0.74)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8f6a44]">Free</div>
-                <div className="mt-2 text-lg font-semibold text-ink-900">Generate and export right away</div>
-                <div className="mt-2 text-sm leading-6 text-ink-600">
-                  Pick a template, complete the essentials, preview the output, and export without creating a saved file library.
-                </div>
-              </div>
-              <div className="rounded-[24px] border border-[rgba(128,96,63,0.12)] bg-[rgba(248,240,229,0.88)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8f6a44]">Pro and Trial</div>
-                <div className="mt-2 text-lg font-semibold text-ink-900">Save work and scale it</div>
-                <div className="mt-2 text-sm leading-6 text-ink-600">
-                  Save generated files, reopen them from My Files, build reusable templates, run batch jobs, and connect the workflow to your systems.
-                </div>
-              </div>
             </div>
           </div>
 

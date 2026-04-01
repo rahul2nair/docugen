@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { CreditCard, FileText, Home, Sparkles } from "lucide-react";
 import { AuthControls } from "@/components/auth-controls";
-import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
 function NavPill({ href, children, accent = false }: { href: string; children: ReactNode; accent?: boolean }) {
   return (
@@ -23,9 +22,8 @@ function NavPill({ href, children, accent = false }: { href: string; children: R
 
 export function Header() {
   const searchParams = useSearchParams();
-  const { user } = useAuthUser();
   const sessionToken = searchParams.get("s")?.trim();
-  const billingHref = user ? "/billing" : "/auth?next=%2Fbilling";
+  const pricingHref = "/#pricing";
   const withSession = (path: string) => {
     if (!sessionToken || (!path.startsWith("/workspace") && path !== "/settings")) {
       return path;
@@ -77,9 +75,9 @@ export function Header() {
                 {item.label}
               </NavPill>
             ))}
-            <NavPill href={billingHref} accent>
+            <NavPill href={pricingHref} accent>
               <span className="inline-flex items-center gap-2">
-                <CreditCard size={15} /> {user ? "Upgrade" : "Try Pro"}
+                <CreditCard size={15} /> Pricing
               </span>
             </NavPill>
           </nav>

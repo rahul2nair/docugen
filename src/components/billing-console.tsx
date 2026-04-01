@@ -10,6 +10,8 @@ interface PlanOption {
   priceId: string;
   title: string;
   cadenceLabel: string;
+  amountLabel: string;
+  helperLabel: string;
 }
 
 interface BillingSummary {
@@ -116,6 +118,10 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
             </div>
           ) : null}
 
+          <div className="mt-5 rounded-[20px] border border-[#eadcc8] bg-[#fcf7ef] px-4 py-4 text-sm leading-6 text-ink-700">
+            The trial uses the same monthly or yearly Stripe subscription price. Stripe simply starts the subscription in a trial period first; it does not require a separate trial product.
+          </div>
+
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <div className="rounded-[24px] border border-[#eadcc8] bg-white/82 p-5">
               <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Account</div>
@@ -189,7 +195,8 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="text-sm font-semibold text-ink-900">{plan.title}</div>
-                        <div className="mt-1 text-xs text-ink-500">{plan.cadenceLabel} billing through Stripe Checkout</div>
+                        <div className="mt-1 text-lg font-semibold text-[#8f6238]">{plan.amountLabel}</div>
+                        <div className="mt-1 text-xs text-ink-500">{plan.helperLabel}</div>
                       </div>
                       {selectedPriceId === plan.priceId ? <CheckCircle2 size={18} className="text-[#8f6a44]" /> : null}
                     </div>
@@ -204,11 +211,11 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
                   ? "Redirecting..."
                   : trialEligible
                     ? `Start ${trialDays}-day trial`
-                    : "Open Stripe checkout"}
+                    : "Subscribe now"}
               </MetallicButton>
               {trialEligible ? (
                 <SecondaryButton className="px-5 py-3" disabled={!isConfigured || !plans.length || activeAction === "checkout"} onClick={() => startCheckout(false)}>
-                  Go paid now
+                  Subscribe now
                 </SecondaryButton>
               ) : null}
               <SecondaryButton className="px-5 py-3" disabled={!billing?.stripeCustomerId || activeAction === "portal"} onClick={openPortal}>
