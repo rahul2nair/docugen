@@ -14,7 +14,7 @@
     "dev": "next dev",
     "dev:worker": "tsx watch src/server/worker.ts",
     "build": "next build",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && playwright install chromium",
     "start": "next start",
     "test": "node -r dotenv/config --import tsx --test tests/**/*.test.ts",
     "worker": "NODE_ENV=production tsx src/server/worker.ts",
