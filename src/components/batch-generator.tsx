@@ -31,6 +31,12 @@ interface Props {
   initialSessionToken?: string;
 }
 
+interface QueuedJobSnapshot {
+  status: string;
+  outputs: Array<{ format: string; downloadUrl: string }>;
+  error?: string;
+}
+
 type WizardStep = 0 | 1 | 2 | 3;
 
 const STEPS: Array<{ id: WizardStep; title: string; summary: string }> = [
@@ -68,10 +74,13 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
   const [pdfMargin, setPdfMargin] = useState<"normal" | "narrow">("normal");
   const [sessionToken, setSessionToken] = useState<string>(() => initialSessionToken || getStoredWorkspaceSessionToken());
   const [queuedJobIds, setQueuedJobIds] = useState<string[]>([]);
+  const [queuedJobSnapshots, setQueuedJobSnapshots] = useState<Record<string, QueuedJobSnapshot>>({});
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [uploadMessage, setUploadMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [showCompletionToast, setShowCompletionToast] = useState(false);
+  const [autoRedirectEnabled, setAutoRedirectEnabled] = useState(false);
 
   const selectedTemplate = useMemo(
     () => templates.find((item) => item.id === templateId) || templates[0],
@@ -168,6 +177,99 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
   }, [sessionToken]);
 
   useEffect(() => {
+    if (!sessionToken || queuedJobIds.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const pollQueuedJobs = async () => {
+      try {
+        const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/jobs?limit=100`);
+        const payload = await response.json();
+
+        if (!response.ok || cancelled) {
+          return;
+        }
+
+        const nextSnapshots: Record<string, QueuedJobSnapshot> = {};
+        for (const id of queuedJobIds) {
+          const match = (payload.jobs || []).find((job: any) => job.id === id);
+          if (!match) {
+            nextSnapshots[id] = {
+              status: "queued",
+              outputs: []
+            };
+            continue;
+          }
+
+          nextSnapshots[id] = {
+            status: match.status || "queued",
+            outputs: match.result?.outputs || [],
+            error: match.error
+          };
+        }
+
+        setQueuedJobSnapshots(nextSnapshots);
+
+        const allTerminal = queuedJobIds.every((id) => {
+          const state = nextSnapshots[id]?.status;
+          return state === "completed" || state === "failed" || state === "not_found";
+        });
+
+        if (allTerminal && intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+
+          const completed = queuedJobIds.filter((id) => nextSnapshots[id]?.status === "completed").length;
+          const failed = queuedJobIds.filter((id) => nextSnapshots[id]?.status === "failed").length;
+          if (completed > 0 && failed === 0) {
+            setUploadMessage(`Batch completed. ${completed} document${completed === 1 ? "" : "s"} are ready in Activity and My Files.`);
+            setShowCompletionToast(true);
+            setAutoRedirectEnabled(true);
+          } else if (completed > 0 && failed > 0) {
+            setUploadMessage(`Batch finished with mixed results: ${completed} completed, ${failed} failed. Check Activity for details.`);
+            setShowCompletionToast(true);
+            setAutoRedirectEnabled(false);
+          } else {
+            setUploadMessage("Batch finished, but no jobs completed successfully. Check Activity for error details.");
+            setShowCompletionToast(true);
+            setAutoRedirectEnabled(false);
+          }
+        }
+      } catch {
+        // Avoid noisy errors while polling background status.
+      }
+    };
+
+    void pollQueuedJobs();
+    intervalId = setInterval(() => {
+      void pollQueuedJobs();
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [queuedJobIds, sessionToken]);
+
+  useEffect(() => {
+    if (!showCompletionToast || !autoRedirectEnabled) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const destination = `/workspace/activity${sessionToken ? `?s=${encodeURIComponent(sessionToken)}` : ""}`;
+      router.push(destination);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [autoRedirectEnabled, router, sessionToken, showCompletionToast]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function ensureSession() {
@@ -250,6 +352,9 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
     setFileContent("");
     setUploadedFileName("");
     setQueuedJobIds([]);
+    setQueuedJobSnapshots({});
+    setShowCompletionToast(false);
+    setAutoRedirectEnabled(false);
     resetMessages();
     setCurrentStep(2);
   }
@@ -307,6 +412,9 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
   async function handleQueueBatch() {
     setErrorMessage("");
     setQueuedJobIds([]);
+    setQueuedJobSnapshots({});
+    setShowCompletionToast(false);
+    setAutoRedirectEnabled(false);
 
     if (!analysis.canQueue) {
       setErrorMessage(analysis.blockingIssues[0]?.message || "Upload a valid batch file before queueing.");
@@ -348,6 +456,9 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
       }
 
       setQueuedJobIds(body.jobIds || []);
+      if ((body.jobIds || []).length > 0) {
+        setUploadMessage(`Queued ${(body.jobIds || []).length} document job${(body.jobIds || []).length === 1 ? "" : "s"}. We will update progress automatically.`);
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unable to queue batch");
     } finally {
@@ -360,6 +471,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
   const GuideIcon = formatGuide.icon;
   const totalIssues = analysis.blockingIssues.length + analysis.warningIssues.length;
   const reviewStatusLabel = analysis.canQueue ? "Ready to queue" : totalIssues ? `${totalIssues} item${totalIssues === 1 ? "" : "s"} to review` : "Needs review";
+  const activityHref = `/workspace/activity${sessionToken ? `?s=${encodeURIComponent(sessionToken)}` : ""}`;
 
   return (
     <section className="page-shell py-10">
@@ -795,13 +907,58 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
 
                     <div className="space-y-5">
                     <div className="rounded-2xl border border-[#dbe4f0] bg-white/75 p-5">
+                      {queuedJobIds.length ? (
+                        <div className="mb-4 rounded-xl border border-[#d6ead8] bg-[#f4fff5] px-4 py-3">
+                          <div className="text-sm font-semibold text-[#166534]">Your batch is processing in the background</div>
+                          <div className="mt-1 text-xs text-[#166534]">Use Activity for live status and My Files for saved outputs.</div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <a href={activityHref}>
+                              <SecondaryButton className="px-3 py-2 text-xs">Open Activity</SecondaryButton>
+                            </a>
+                            <a href="/my-files">
+                              <SecondaryButton className="px-3 py-2 text-xs">Open My Files</SecondaryButton>
+                            </a>
+                          </div>
+                        </div>
+                      ) : null}
+
                       <div className="text-sm font-semibold text-slate-900">Queued jobs</div>
                       <div className="mt-1 text-xs text-slate-500">These IDs are attached to your workspace Activity stream.</div>
                       <div className="mt-3 space-y-2">
                         {queuedJobIds.length ? (
-                          queuedJobIds.map((id) => (
-                            <div key={id} className="rounded-lg border border-[#dbe4f0] bg-white/90 px-3 py-2 text-xs text-slate-700">{id}</div>
-                          ))
+                          queuedJobIds.map((id) => {
+                            const snapshot = queuedJobSnapshots[id];
+                            const status = snapshot?.status || "queued";
+                            const badgeClass =
+                              status === "completed"
+                                ? "border-[#d6ead8] bg-[#f4fff5] text-[#166534]"
+                                : status === "failed"
+                                  ? "border-[#fecdd3] bg-[#fff1f2] text-[#be123c]"
+                                  : "border-[#dbeafe] bg-[#eff6ff] text-[#2563eb]";
+
+                            return (
+                              <div key={id} className="rounded-lg border border-[#dbe4f0] bg-white/90 px-3 py-3 text-xs text-slate-700">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="font-medium">{id}</div>
+                                  <div className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${badgeClass}`}>
+                                    {status}
+                                  </div>
+                                </div>
+                                {snapshot?.error ? (
+                                  <div className="mt-2 text-xs text-[#be123c]">{snapshot.error}</div>
+                                ) : null}
+                                {snapshot?.outputs?.length ? (
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    {snapshot.outputs.map((item) => (
+                                      <a key={`${id}-${item.format}`} href={item.downloadUrl} target="_blank" rel="noreferrer">
+                                        <SecondaryButton className="px-2.5 py-1.5 text-[11px]">Download {item.format.toUpperCase()}</SecondaryButton>
+                                      </a>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </div>
+                            );
+                          })
                         ) : (
                           <div className="rounded-lg border border-dashed border-[#dbe4f0] bg-white/85 px-3 py-4 text-xs text-slate-500">No batch queued yet.</div>
                         )}
@@ -833,6 +990,39 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
           </div>
         </div>
       </div>
+
+      {showCompletionToast ? (
+        <div className="fixed bottom-5 right-5 z-50 max-w-sm rounded-2xl border border-[#d6ead8] bg-white p-4 shadow-[0_20px_55px_rgba(15,23,42,0.18)]">
+          <div className="text-sm font-semibold text-slate-900">Batch update</div>
+          <div className="mt-1 text-sm text-slate-600">{uploadMessage || "Batch jobs finished processing."}</div>
+          {autoRedirectEnabled ? (
+            <div className="mt-1 text-xs text-[#166534]">Redirecting to Activity in a few seconds...</div>
+          ) : null}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href={activityHref}>
+              <SecondaryButton className="px-3 py-2 text-xs">Open Activity now</SecondaryButton>
+            </a>
+            {autoRedirectEnabled ? (
+              <SecondaryButton
+                className="px-3 py-2 text-xs"
+                onClick={() => {
+                  setAutoRedirectEnabled(false);
+                }}
+              >
+                Stay here
+              </SecondaryButton>
+            ) : null}
+            <SecondaryButton
+              className="px-3 py-2 text-xs"
+              onClick={() => {
+                setShowCompletionToast(false);
+              }}
+            >
+              Dismiss
+            </SecondaryButton>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
