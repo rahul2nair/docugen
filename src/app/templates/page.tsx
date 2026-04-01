@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import { TemplateShowcase } from "@/components/template-showcase";
 import { builtinTemplates } from "@/server/templates";
 import { renderBuiltinTemplatePreview } from "@/server/template-preview";
@@ -12,9 +11,6 @@ export default function TemplatesPage() {
 
   return (
     <main className="pb-12">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       <TemplateShowcase templates={builtinTemplates} previews={previews} />
     </main>
   );

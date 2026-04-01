@@ -21,8 +21,8 @@ const defaultProfile: CompanyProfile = {
   contactEmail: "ops@acmelabs.example",
   signerName: "Asha Menon",
   signerTitle: "Hiring Manager",
-  primaryColor: "#8d6334",
-  accentColor: "#efe3d3",
+  primaryColor: "#2563eb",
+  accentColor: "#dbeafe",
   footerText: "Generated with Templify. Verify commercial and legal details before issuing.",
   logoUrl: ""
 };
@@ -246,22 +246,22 @@ export function CustomWorkspace({ initialSessionToken }: Props) {
   return (
     <section id="custom-workspace" className="page-shell py-10">
       <div className="mb-6">
-        <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Draft From Notes</div>
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-ink-900">
+        <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Draft From Notes</div>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
           Turn rough notes into a polished document.
         </h2>
-        <p className="mt-2 text-sm text-ink-600">
+        <p className="mt-2 text-sm text-slate-600">
           Paste a draft, policy outline, or freeform content. Templify applies structure and branding so you can turn notes into something ready to send.
         </p>
         {sessionToken && (
-          <p className="mt-2 text-xs text-ink-500">
+          <p className="mt-2 text-xs text-slate-500">
             This page is linked to your current workspace session so generated jobs appear in Activity.
           </p>
         )}
       </div>
 
       {errorMessage && (
-        <div className="mb-5 rounded-[20px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">
+        <div className="mb-5 rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-3 text-sm text-[#be123c]">
           {errorMessage}
         </div>
       )}
@@ -271,104 +271,104 @@ export function CustomWorkspace({ initialSessionToken }: Props) {
         <div className="flex flex-col gap-5">
           {/* Editor */}
           <div className="glass-panel p-5">
-            <div className="text-sm font-semibold text-ink-900">Document content</div>
-            <div className="mt-1 text-xs text-ink-500">Write with basic formatting, then generate a polished document from the draft.</div>
+            <div className="text-sm font-semibold text-slate-900">Document content</div>
+            <div className="mt-1 text-xs text-slate-500">Write with basic formatting, then generate a polished document from the draft.</div>
 
             <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-ink-700">Document title</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Document title</label>
               <input
                 value={documentTitle}
                 onChange={(event) => setDocumentTitle(event.target.value)}
-                className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                 placeholder="e.g. Hiring policy draft, service summary, internal memo"
               />
             </div>
 
             <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-ink-700">Content</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Content</label>
               <RichTextEditor
                 value={contentHtml}
                 onChange={setContentHtml}
                 placeholder="Paste your notes or first draft here. Use headings, bullets, and emphasis if the source already has structure."
               />
-              <div className="mt-2 text-xs text-ink-500">This editor supports headings, bold, italic, quotes, and lists. Generated documents preserve that structure.</div>
+              <div className="mt-2 text-xs text-slate-500">This editor supports headings, bold, italic, quotes, and lists. Generated documents preserve that structure.</div>
             </div>
           </div>
 
           {/* Branding */}
           <div className="glass-panel p-5">
-            <div className="text-sm font-semibold text-ink-900">Company profile</div>
-            <div className="mt-1 text-xs text-ink-500">Applied to headers, footers, and document styling.</div>
+            <div className="text-sm font-semibold text-slate-900">Company profile</div>
+            <div className="mt-1 text-xs text-slate-500">Applied to headers, footers, and document styling.</div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Company name</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Company name</label>
                 <input
                   value={profile.companyName}
                   onChange={(event) => setProfile((current) => ({ ...current, companyName: event.target.value }))}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Contact email</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Contact email</label>
                 <input
                   value={profile.contactEmail}
                   onChange={(event) => setProfile((current) => ({ ...current, contactEmail: event.target.value }))}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Signer name</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Signer name</label>
                 <input
                   value={profile.signerName}
                   onChange={(event) => setProfile((current) => ({ ...current, signerName: event.target.value }))}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Signer title</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Signer title</label>
                 <input
                   value={profile.signerTitle}
                   onChange={(event) => setProfile((current) => ({ ...current, signerTitle: event.target.value }))}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Primary color</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Primary color</label>
                 <input
                   value={profile.primaryColor}
                   onChange={(event) => setProfile((current) => ({ ...current, primaryColor: event.target.value }))}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
-                  placeholder="#8d6334"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
+                  placeholder="#2563eb"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Accent color</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Accent color</label>
                 <input
                   value={profile.accentColor}
                   onChange={(event) => setProfile((current) => ({ ...current, accentColor: event.target.value }))}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
-                  placeholder="#efe3d3"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
+                  placeholder="#dbeafe"
                 />
               </div>
             </div>
 
             <div className="mt-3 grid gap-3">
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Logo URL</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Logo URL</label>
                 <input
                   value={profile.logoUrl}
                   onChange={(event) => setProfile((current) => ({ ...current, logoUrl: event.target.value }))}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                   placeholder="https://example.com/logo.png"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-ink-700">Footer note</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Footer note</label>
                 <textarea
                   value={profile.footerText}
                   onChange={(event) => setProfile((current) => ({ ...current, footerText: event.target.value }))}
-                  className="min-h-[80px] w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                  className="min-h-[80px] w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                 />
               </div>
             </div>
@@ -376,7 +376,7 @@ export function CustomWorkspace({ initialSessionToken }: Props) {
 
           {/* Generate */}
           <div className="glass-panel p-5">
-            <div className="text-sm font-semibold text-ink-900">Export</div>
+            <div className="text-sm font-semibold text-slate-900">Export</div>
 
             <div className="mt-4 flex gap-2">
               {(["pdf", "html"] as const).map((fmt) => (
@@ -385,8 +385,8 @@ export function CustomWorkspace({ initialSessionToken }: Props) {
                   onClick={() => setOutputFormat(fmt)}
                   className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
                     outputFormat === fmt
-                      ? "border-[#cfaf8d] bg-[#fff6eb] text-[#8d6334]"
-                      : "border-[#eadfce] bg-white/80 text-ink-700 hover:bg-white"
+                      ? "border-[#93c5fd] bg-[#fff6eb] text-[#2563eb]"
+                      : "border-[#dbe4f0] bg-white/80 text-slate-700 hover:bg-white"
                   }`}
                 >
                   {fmt.toUpperCase()}
@@ -397,22 +397,22 @@ export function CustomWorkspace({ initialSessionToken }: Props) {
             {outputFormat === "pdf" && (
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-ink-700">PDF size</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">PDF size</label>
                   <select
                     value={pdfFormat}
                     onChange={(event) => setPdfFormat(event.target.value as "A4" | "Letter")}
-                    className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                    className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                   >
                     <option value="A4">A4</option>
                     <option value="Letter">Letter</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-ink-700">PDF margin</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">PDF margin</label>
                   <select
                     value={pdfMargin}
                     onChange={(event) => setPdfMargin(event.target.value as "normal" | "narrow")}
-                    className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                    className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                   >
                     <option value="normal">Normal</option>
                     <option value="narrow">Narrow</option>
@@ -444,7 +444,7 @@ export function CustomWorkspace({ initialSessionToken }: Props) {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-2xl border border-[#d9cabb] bg-white/80 px-4 py-2 text-xs font-semibold text-ink-900 transition hover:bg-white"
+                    className="inline-flex items-center justify-center rounded-2xl border border-[#cbd5e1] bg-white/80 px-4 py-2 text-xs font-semibold text-slate-900 transition hover:bg-white"
                   >
                     <Download size={14} className="mr-2" />
                     Download {fmt.toUpperCase()}

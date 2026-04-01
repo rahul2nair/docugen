@@ -73,9 +73,9 @@ export function SettingsConsole() {
     <>
       <section className="page-shell pt-8">
         <div className="glass-panel p-8">
-          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Settings</div>
-          <h1 className="mt-2 text-3xl font-semibold text-ink-900">Delivery and integrations</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-600">
+          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Settings</div>
+          <h1 className="mt-2 text-3xl font-semibold text-slate-900">Delivery and integrations</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
             Most users can ignore this area until they want to send documents directly from Templify
             or connect the product to another system. These settings are optional and do not affect
             normal document creation.

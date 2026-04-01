@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import { PaidFeatureNotice } from "@/components/paid-feature-notice";
 import { getAuthenticatedAccountAccess } from "@/server/account-access";
 import { endpoints, apiExamples, EndpointDoc } from "@/server/openapi";
@@ -78,9 +77,6 @@ export default async function ApiDocsPage() {
 
   return (
     <main className="pb-16">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       {!hasPaidAccess ? (
         <PaidFeatureNotice
           feature="API and integrations"

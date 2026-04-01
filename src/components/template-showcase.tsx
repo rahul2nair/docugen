@@ -32,11 +32,11 @@ export function TemplateShowcase({
     <section id="templates" className="page-shell pt-10 pb-14">
       <div className="glass-panel p-6">
         <div className="mb-5">
-          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Document library</div>
-          <div className="mt-2 text-2xl font-semibold text-ink-900">
+          <div className="text-sm font-medium uppercase tracking-[0.18em] text-blue-700">Document library</div>
+          <div className="mt-2 text-2xl font-semibold text-slate-900">
             Pick a document type and start with a polished structure.
           </div>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-600">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
             The library is grouped by use case so repeated document families like invoices can have multiple meaningful variants without turning the catalog into a wall of near-duplicates.
           </p>
         </div>
@@ -46,8 +46,8 @@ export function TemplateShowcase({
             <section key={category} className="grid gap-4">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">{category}</div>
-                  <div className="mt-1 text-lg font-semibold text-ink-900">{categoryTemplates.length} templates</div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">{category}</div>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">{categoryTemplates.length} templates</div>
                 </div>
               </div>
 
@@ -56,8 +56,8 @@ export function TemplateShowcase({
                   const familyCount = template.family ? familyCounts.get(template.family) || 0 : 0;
 
                   return (
-                    <div key={template.id} className="rounded-[28px] border border-[#eadfce] bg-white/80 p-5">
-                      <div className="overflow-hidden rounded-[20px] border border-[#eadfce] bg-[#f7f0e7]">
+                    <div key={template.id} className="rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-sm">
+                      <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-slate-50">
                         <iframe
                           title={`${template.name} preview`}
                           srcDoc={previewMap.get(template.id) || ""}
@@ -65,21 +65,21 @@ export function TemplateShowcase({
                           sandbox=""
                         />
                       </div>
-                      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-[#9b7750]">
+                      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-blue-700">
                         <span>{template.category}</span>
                         {template.family && familyCount > 1 ? (
-                          <span className="rounded-full border border-[#eadfce] bg-[#fbf7f0] px-2.5 py-1 text-[11px] font-semibold text-[#8f6a44]">
+                          <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
                             {toTitleCase(template.family)} variant
                           </span>
                         ) : null}
                       </div>
-                      <div className="mt-3 text-lg font-semibold text-ink-900">{template.name}</div>
-                      <div className="mt-2 text-sm leading-6 text-ink-600">{template.description}</div>
+                      <div className="mt-3 text-lg font-semibold text-slate-900">{template.name}</div>
+                      <div className="mt-2 text-sm leading-6 text-slate-600">{template.description}</div>
                       <div className="mt-4 flex flex-wrap gap-2">
                         {template.fields.slice(0, 4).map((field) => (
                           <span
                             key={field.key}
-                            className="rounded-full border border-[#eadfce] bg-[#fbf7f0] px-3 py-1 text-xs text-ink-600"
+                            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600"
                           >
                             {field.label}
                           </span>

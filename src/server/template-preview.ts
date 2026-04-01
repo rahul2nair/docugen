@@ -3,6 +3,7 @@ import sanitizeHtml, { type IOptions } from "sanitize-html";
 import { buildTemplatePreviewData, type BuiltinTemplate } from "@/server/templates";
 
 let helpersRegistered = false;
+const previewHtmlCache = new Map<string, string>();
 
 function registerPreviewHelpers() {
   if (helpersRegistered) {
@@ -292,6 +293,12 @@ function buildPreviewSignerPanel(data: Record<string, unknown>) {
 }
 
 export function renderBuiltinTemplatePreview(template: BuiltinTemplate) {
+  const cacheKey = `${template.id}:${template.content.length}`;
+  const cached = previewHtmlCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   registerPreviewHelpers();
 
   const previewData = buildTemplatePreviewData(template);
@@ -299,7 +306,7 @@ export function renderBuiltinTemplatePreview(template: BuiltinTemplate) {
   const rendered = sanitizeRenderedHtml(compiled(previewData));
   const signerPanel = buildPreviewSignerPanel(previewData);
 
-  return `
+  const html = `
     <!doctype html>
     <html>
       <head>
@@ -392,4 +399,7 @@ export function renderBuiltinTemplatePreview(template: BuiltinTemplate) {
       </body>
     </html>
   `;
+
+  previewHtmlCache.set(cacheKey, html);
+  return html;
 }

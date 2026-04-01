@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, CreditCard, ExternalLink, ShieldCheck } from "lucide-react";
-import { MetallicButton, SecondaryButton } from "@/components/buttons";
+import { Check, CheckCircle2, ExternalLink } from "lucide-react";
 
 interface PlanOption {
   id: string;
@@ -31,17 +30,36 @@ interface Props {
   trialEligible: boolean;
 }
 
+const freeFeatures = [
+  "Document generation",
+  "Built-in templates",
+  "Instant HTML/PDF output"
+];
+
+const proFeatures = [
+  "Unlimited saves",
+  "Bulk generation from CSV/JSON",
+  "Template import and custom templates",
+  "SMTP/email delivery",
+  "API key access"
+];
+
 export function BillingConsole({ email, isConfigured, plans, billing, trialDays, trialEligible }: Props) {
   const searchParams = useSearchParams();
   const [selectedPriceId, setSelectedPriceId] = useState<string>(plans[0]?.priceId || "");
   const [activeAction, setActiveAction] = useState<"checkout" | "portal" | "">("");
   const [errorMessage, setErrorMessage] = useState("");
   const isTrialActive = billing?.subscriptionStatus === "trialing";
+  const hasActiveSubscription = ["active", "trialing", "past_due"].includes(billing?.subscriptionStatus || "");
+
+  const selectedPlan = plans.find((plan) => plan.priceId === selectedPriceId) || plans[0] || null;
 
   const notice = useMemo(() => {
     const checkout = searchParams.get("checkout");
     if (checkout === "success") {
-      return "Checkout completed. Billing status updates as soon as Stripe confirms the subscription.";
+      return hasActiveSubscription
+        ? "Checkout completed. Your Pro access is active."
+        : "Checkout completed. Billing status is being reconciled with Stripe.";
     }
 
     if (checkout === "cancel") {
@@ -101,130 +119,157 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
   }
 
   return (
-    <section className="page-shell pt-8">
-      <div className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-        <div className="glass-panel p-8 lg:p-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">
-            <CreditCard size={14} /> Billing
+    <section className="page-shell py-8">
+      <div className="glass-panel relative overflow-hidden p-6 lg:p-8">
+        <div className="pointer-events-none absolute inset-x-10 top-0 h-36 rounded-b-[96px] bg-[radial-gradient(circle_at_top,rgba(191,219,254,0.6),transparent_72%)]" />
+        <div className="relative mb-6 max-w-3xl">
+          <div className="inline-flex items-center rounded-full border border-blue-100 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700">
+            Billing
           </div>
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Manage your plan without leaving the app.</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-ink-700">
-            Billing belongs in the signed-in account area, not in the document flow. Use this page to start a Pro trial, subscribe directly without a trial, review status, or open the Stripe customer portal.
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">{hasActiveSubscription ? "Manage your plan" : "Choose your plan"}</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {hasActiveSubscription
+              ? "Your account already has paid access. Use the billing portal to manage renewal, payment method, or plan changes."
+              : "Keep the free workflow for quick generation, or upgrade to Pro when you need reusable templates, API access, and delivery workflows."}
           </p>
-
-          {trialDays > 0 ? (
-            <div className="mt-5 rounded-[20px] border border-[#eadcc8] bg-white/82 px-4 py-4 text-sm leading-6 text-ink-700">
-              New accounts can start with a {trialDays}-day Pro trial. Stripe still collects a payment method, then the subscription converts automatically unless canceled before the trial ends.
-            </div>
-          ) : null}
-
-          <div className="mt-5 rounded-[20px] border border-[#eadcc8] bg-[#fcf7ef] px-4 py-4 text-sm leading-6 text-ink-700">
-            The trial uses the same monthly or yearly Stripe subscription price. Stripe simply starts the subscription in a trial period first; it does not require a separate trial product.
-          </div>
-
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[24px] border border-[#eadcc8] bg-white/82 p-5">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Account</div>
-              <div className="mt-2 text-lg font-semibold text-ink-900">{email}</div>
-              <div className="mt-2 text-sm text-ink-600">Stripe customers are linked to your signed-in account and stay separate from anonymous workspace sessions.</div>
-            </div>
-            <div className="rounded-[24px] border border-[#eadcc8] bg-white/82 p-5">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Current status</div>
-              <div className="mt-2 text-lg font-semibold text-ink-900">{billing?.subscriptionStatus ? billing.subscriptionStatus.replace(/_/g, " ") : "No active subscription"}</div>
-              <div className="mt-2 text-sm text-ink-600">
-                {billing?.currentPeriodEnd
-                  ? `Current period ends ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`
-                  : "Checkout is available as soon as Stripe keys and price IDs are configured."}
-              </div>
-              {isTrialActive ? (
-                <div className="mt-2 text-sm text-[#8f6238]">
-                  Trial access is currently active for this account.
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          {notice ? (
-            <div className="mt-5 rounded-[20px] border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#2b5d34]">
-              {notice}
-            </div>
-          ) : null}
-
-          {errorMessage ? (
-            <div className="mt-5 rounded-[20px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">
-              {errorMessage}
-            </div>
-          ) : null}
         </div>
 
-        <div className="space-y-5">
-          <div className="soft-metal-card rounded-[28px] border border-[#e6d5bf] p-6">
-            <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#f3e4d0_0%,#d1aa7f_55%,#9d7247_100%)] text-white shadow-metallic">
-                <ShieldCheck size={18} />
-              </div>
-              <div>
-                <div className="text-lg font-semibold text-ink-900">Plan and portal</div>
-                <div className="mt-1 text-sm text-ink-600">
-                  Choose a plan here. If you are eligible, you can start with a short Pro trial or skip it and subscribe immediately.
-                </div>
-              </div>
+      {notice ? (
+        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {notice}
+        </div>
+      ) : null}
+
+      {errorMessage ? (
+        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {errorMessage}
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-bold text-slate-900">Free</h2>
+          <p className="mt-1 text-sm text-slate-500">$0 / forever</p>
+          <ul className="mt-6 space-y-3 text-sm text-slate-700">
+            {freeFeatures.map((feature) => (
+              <li key={feature} className="flex items-start gap-2">
+                <CheckCircle2 size={16} className="mt-0.5 text-emerald-500" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm lg:col-span-2">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Pro</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {selectedPlan ? `${selectedPlan.amountLabel} · ${selectedPlan.cadenceLabel}` : "Flexible billing"}
+              </p>
             </div>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white ${hasActiveSubscription ? "bg-emerald-600" : "bg-blue-600"}`}>
+              {hasActiveSubscription ? "Current plan" : "Most Popular"}
+            </span>
+          </div>
 
-            {trialEligible ? (
-              <div className="mt-5 rounded-[20px] border border-[#eadcc8] bg-white/75 px-4 py-4 text-sm text-ink-700">
-                You can start a {trialDays}-day Pro trial on your first checkout, or skip the trial and go paid now.
-              </div>
-            ) : null}
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 text-sm text-slate-700">
+            {proFeatures.map((feature) => (
+              <li key={feature} className="flex items-start gap-2">
+                <Check size={16} className="mt-0.5 text-blue-600" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
 
-            {!isConfigured ? (
-              <div className="mt-5 rounded-[20px] border border-dashed border-[#eadcc8] bg-white/75 px-4 py-4 text-sm text-ink-600">
-                Stripe keys or price IDs are not configured yet. Add the Stripe environment variables before using checkout.
-              </div>
-            ) : null}
-
-            {plans.length ? (
-              <div className="mt-5 space-y-3">
-                {plans.map((plan) => (
+          {plans.length ? (
+            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+              {plans.map((plan) => {
+                const selected = selectedPriceId === plan.priceId;
+                return (
                   <button
                     key={plan.priceId}
                     type="button"
                     onClick={() => setSelectedPriceId(plan.priceId)}
-                    className={`w-full rounded-[22px] border px-4 py-4 text-left transition ${selectedPriceId === plan.priceId ? "border-[#c89d70] bg-[#fff8ef]" : "border-[#eadcc8] bg-white/80 hover:bg-white"}`}
+                    className={`rounded-xl border px-4 py-3 text-left transition ${
+                      selected
+                        ? "border-blue-300 bg-blue-50"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold text-ink-900">{plan.title}</div>
-                        <div className="mt-1 text-lg font-semibold text-[#8f6238]">{plan.amountLabel}</div>
-                        <div className="mt-1 text-xs text-ink-500">{plan.helperLabel}</div>
-                      </div>
-                      {selectedPriceId === plan.priceId ? <CheckCircle2 size={18} className="text-[#8f6a44]" /> : null}
-                    </div>
+                    <div className="text-sm font-semibold text-slate-900">{plan.title}</div>
+                    <div className="mt-1 text-lg font-bold text-blue-700">{plan.amountLabel}</div>
+                    <div className="mt-1 text-xs text-slate-500">{plan.helperLabel}</div>
                   </button>
-                ))}
-              </div>
-            ) : null}
+                );
+              })}
+            </div>
+          ) : null}
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <MetallicButton className="px-5 py-3" disabled={!isConfigured || !plans.length || activeAction === "checkout"} onClick={() => startCheckout(Boolean(trialEligible))}>
+          {!isConfigured ? (
+            <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+              Stripe keys or price IDs are not configured yet. Add billing environment variables before checkout.
+            </div>
+          ) : null}
+
+          {trialDays > 0 ? (
+            <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+              {trialEligible
+                ? `Start with a ${trialDays}-day Pro trial, then continue on your selected plan.`
+                : "Trial has already been used for this account."}
+            </div>
+          ) : null}
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            {!hasActiveSubscription ? (
+              <button
+                className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!isConfigured || !plans.length || activeAction === "checkout"}
+                onClick={() => startCheckout(Boolean(trialEligible))}
+              >
                 {activeAction === "checkout"
                   ? "Redirecting..."
                   : trialEligible
                     ? `Start ${trialDays}-day trial`
-                    : "Subscribe now"}
-              </MetallicButton>
-              {trialEligible ? (
-                <SecondaryButton className="px-5 py-3" disabled={!isConfigured || !plans.length || activeAction === "checkout"} onClick={() => startCheckout(false)}>
-                  Subscribe now
-                </SecondaryButton>
-              ) : null}
-              <SecondaryButton className="px-5 py-3" disabled={!billing?.stripeCustomerId || activeAction === "portal"} onClick={openPortal}>
-                <ExternalLink size={15} className="mr-2" />
-                {activeAction === "portal" ? "Opening..." : "Open billing portal"}
-              </SecondaryButton>
-            </div>
+                    : "Upgrade to Pro"}
+              </button>
+            ) : null}
+
+            {!hasActiveSubscription && trialEligible ? (
+              <button
+                className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!isConfigured || !plans.length || activeAction === "checkout"}
+                onClick={() => startCheckout(false)}
+              >
+                Subscribe now
+              </button>
+            ) : null}
+
+            <button
+              className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={!billing?.stripeCustomerId || activeAction === "portal"}
+              onClick={openPortal}
+            >
+              <ExternalLink size={14} className="mr-2" />
+              {activeAction === "portal" ? "Opening..." : hasActiveSubscription ? "Manage billing" : "Billing portal"}
+            </button>
           </div>
-        </div>
+        </article>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
+        <div className="font-semibold text-slate-800">Account summary</div>
+        <div className="mt-2">Signed in as: <span className="font-medium text-slate-900">{email}</span></div>
+        <div className="mt-1">Subscription status: <span className="font-medium text-slate-900">{billing?.subscriptionStatus ? billing.subscriptionStatus.replace(/_/g, " ") : "No active subscription"}</span></div>
+        {billing?.currentPeriodEnd ? (
+          <div className="mt-1">Current period ends: <span className="font-medium text-slate-900">{new Date(billing.currentPeriodEnd).toLocaleDateString()}</span></div>
+        ) : null}
+        {isTrialActive ? (
+          <div className="mt-2 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+            Trial active
+          </div>
+        ) : null}
+      </div>
       </div>
     </section>
   );

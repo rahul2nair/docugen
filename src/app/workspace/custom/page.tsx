@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import { PaidFeatureNotice } from "@/components/paid-feature-notice";
 import { CustomWorkspace } from "@/components/custom-workspace";
 import { getAuthenticatedAccountAccess } from "@/server/account-access";
@@ -14,9 +13,6 @@ export default async function CustomWorkspacePage({
 
   return (
     <main className="pb-12">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       {hasPaidAccess ? (
         <CustomWorkspace initialSessionToken={s} />
       ) : (

@@ -436,48 +436,48 @@ export function TemplateImporter({ initialSessionToken }: Props) {
   return (
     <section className="page-shell py-10">
       <div className="mb-6">
-        <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Template Import</div>
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-ink-900">Upload an existing document and turn it into a reusable template</h2>
-        <p className="mt-1 text-sm text-ink-600">Upload the document, review the detected fields, and save the template. Everything else stays out of the way.</p>
+        <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Template Import</div>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Upload an existing document and turn it into a reusable template</h2>
+        <p className="mt-1 text-sm text-slate-600">Upload the document, review the detected fields, and save the template. Everything else stays out of the way.</p>
       </div>
 
       {sessionError ? (
-        <div className="mb-5 rounded-[20px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">
+        <div className="mb-5 rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-3 text-sm text-[#be123c]">
           {sessionError}
         </div>
       ) : null}
 
       {copyError ? (
-        <div className="mb-5 rounded-[20px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">
+        <div className="mb-5 rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-3 text-sm text-[#be123c]">
           {copyError}
         </div>
       ) : null}
 
       {saveMessage ? (
-        <div className="mb-5 rounded-[20px] border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#2b5d34]">
+        <div className="mb-5 rounded-xl border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#166534]">
           {saveMessage}
         </div>
       ) : null}
 
       {uploadMessage ? (
-        <div className="mb-5 rounded-[20px] border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#2b5d34]">
+        <div className="mb-5 rounded-xl border border-[#d6ead8] bg-[#f4fff5] px-4 py-3 text-sm text-[#166534]">
           {uploadMessage}
         </div>
       ) : null}
 
       {uploadError ? (
-        <div className="mb-5 rounded-[20px] border border-[#efcdc9] bg-[#fff4f2] px-4 py-3 text-sm text-[#92443c]">
+        <div className="mb-5 rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-3 text-sm text-[#be123c]">
           {uploadError}
         </div>
       ) : null}
 
       {detectionMessage ? (
-        <div className="mb-5 rounded-[20px] border border-[#e5dac8] bg-[#fffaf3] px-4 py-3 text-sm text-ink-700">
+        <div className="mb-5 rounded-xl border border-[#e5dac8] bg-[#f8fafc] px-4 py-3 text-sm text-slate-700">
           {detectionMessage}
         </div>
       ) : null}
 
-      <div className="mb-5 glass-panel border-[rgba(126,94,60,0.12)] p-4">
+      <div className="mb-5 glass-panel border-slate-200 p-4">
         <div className="flex flex-wrap items-center gap-3">
           {([
             { id: 1, label: "Upload" },
@@ -493,14 +493,14 @@ export function TemplateImporter({ initialSessionToken }: Props) {
                 onClick={() => handleStepChange(step.id)}
                 className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm transition ${
                   isActive
-                    ? "border-[#c89d70] bg-[#fff8ef] font-semibold text-ink-900"
+                    ? "border-[#c89d70] bg-[#eff6ff] font-semibold text-slate-900"
                     : isComplete
-                      ? "border-[rgba(126,94,60,0.14)] bg-white/90 text-ink-800"
-                      : "border-[rgba(126,94,60,0.12)] bg-[rgba(255,255,255,0.7)] text-ink-600"
+                      ? "border-slate-300 bg-white/90 text-slate-800"
+                      : "border-slate-200 bg-white text-slate-600"
                 }`}
               >
                 <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
-                  isActive ? "bg-[#8f6a44] text-white" : isComplete ? "bg-[#efe3d3] text-[#8f6a44]" : "bg-[rgba(126,94,60,0.1)] text-ink-600"
+                  isActive ? "bg-[#2563eb] text-white" : isComplete ? "bg-[#dbeafe] text-[#2563eb]" : "bg-[rgba(126,94,60,0.1)] text-slate-600"
                 }`}>
                   {step.id}
                 </span>
@@ -509,7 +509,7 @@ export function TemplateImporter({ initialSessionToken }: Props) {
             );
           })}
         </div>
-        <div className="mt-3 text-sm text-ink-600">
+        <div className="mt-3 text-sm text-slate-600">
           {activeStep === 1
             ? "Start by uploading the source document or pasting its text."
             : activeStep === 2
@@ -522,28 +522,28 @@ export function TemplateImporter({ initialSessionToken }: Props) {
         <div className="space-y-5">
           {activeStep === 1 ? (
             <div className="glass-panel p-5">
-              <div className="text-sm font-semibold text-ink-900">1. Upload the source document</div>
-              <div className="mt-1 text-xs text-ink-500">Upload a plain-text version of the document. If you prefer, you can also paste the source manually.</div>
+              <div className="text-sm font-semibold text-slate-900">1. Upload the source document</div>
+              <div className="mt-1 text-xs text-slate-500">Upload a plain-text version of the document. If you prefer, you can also paste the source manually.</div>
 
               <div className="mt-4">
-                <label className="mb-2 block text-sm font-medium text-ink-700">Upload file</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Upload file</label>
                 <input
                   type="file"
                   accept=".txt,.md,.markdown,.html,.htm,.rtf,.csv,.json"
                   onChange={handleFileUpload}
-                  className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[#fff3e1] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#8d6334]"
+                  className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[#fff3e1] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#2563eb]"
                 />
-                <div className="mt-2 text-xs text-ink-500">Accepted types: .txt, .md, .html, .rtf, .csv, .json. For Word or PDF, export to plain text first.</div>
+                <div className="mt-2 text-xs text-slate-500">Accepted types: .txt, .md, .html, .rtf, .csv, .json. For Word or PDF, export to plain text first.</div>
               </div>
 
-              <details className="mt-5 rounded-[24px] border border-[rgba(126,94,60,0.12)] bg-[rgba(255,255,255,0.8)] p-4">
+              <details className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
                 <summary className="cursor-pointer list-none">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-sm font-semibold text-ink-900">Paste or edit source manually</div>
-                      <div className="mt-1 text-xs text-ink-500">Use this only if the uploaded text needs cleanup or you want to paste the document yourself.</div>
+                      <div className="text-sm font-semibold text-slate-900">Paste or edit source manually</div>
+                      <div className="mt-1 text-xs text-slate-500">Use this only if the uploaded text needs cleanup or you want to paste the document yourself.</div>
                     </div>
-                    <div className="rounded-full border border-[#eadfce] bg-[#f9f4ed] px-3 py-1 text-[11px] font-medium text-ink-600">Optional</div>
+                    <div className="rounded-full border border-[#dbe4f0] bg-[#f8fafc] px-3 py-1 text-[11px] font-medium text-slate-600">Optional</div>
                   </div>
                 </summary>
                 <div className="mt-4">
@@ -551,7 +551,7 @@ export function TemplateImporter({ initialSessionToken }: Props) {
                     value={sourceText}
                     onChange={(event) => setSourceText(event.target.value)}
                     rows={16}
-                    className="h-[40vh] min-h-[280px] max-h-[640px] w-full resize-y rounded-[24px] border border-[#eadfce] bg-white/85 px-4 py-4 text-sm leading-6 outline-none"
+                    className="h-[40vh] min-h-[280px] max-h-[640px] w-full resize-y rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-4 text-sm leading-6 outline-none"
                     placeholder={SOURCE_TEXT_PLACEHOLDER}
                   />
                 </div>
@@ -570,21 +570,21 @@ export function TemplateImporter({ initialSessionToken }: Props) {
 
           {activeStep === 2 ? (
             <div className="glass-panel p-5">
-              <div className="text-sm font-semibold text-ink-900">2. Review detected fields</div>
-              <div className="mt-1 text-xs text-ink-500">Keep the fields that should stay editable. Remove anything that should remain fixed text.</div>
+              <div className="text-sm font-semibold text-slate-900">2. Review detected fields</div>
+              <div className="mt-1 text-xs text-slate-500">Keep the fields that should stay editable. Remove anything that should remain fixed text.</div>
 
-              <div className="mt-4 rounded-[20px] border border-[rgba(126,94,60,0.12)] bg-white/82 px-4 py-3">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8f6a44]">Detected</div>
-                <div className="mt-1 text-sm font-semibold text-ink-900">{conversion.activeFields.length} active field{conversion.activeFields.length === 1 ? "" : "s"}</div>
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white/82 px-4 py-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2563eb]">Detected</div>
+                <div className="mt-1 text-sm font-semibold text-slate-900">{conversion.activeFields.length} active field{conversion.activeFields.length === 1 ? "" : "s"}</div>
               </div>
 
               <div className="mt-4 space-y-2">
                 {conversion.activeFields.length ? (
                   conversion.activeFields.map((field) => (
-                    <div key={field.key} className="flex items-center justify-between gap-3 rounded-[16px] border border-[#eadfce] bg-white/90 px-3 py-3">
+                    <div key={field.key} className="flex items-center justify-between gap-3 rounded-lg border border-[#dbe4f0] bg-white/90 px-3 py-3">
                       <div>
-                        <div className="text-sm font-medium text-ink-900">{field.label}</div>
-                        <div className="text-xs text-ink-500">{field.key} · {field.type}</div>
+                        <div className="text-sm font-medium text-slate-900">{field.label}</div>
+                        <div className="text-xs text-slate-500">{field.key} · {field.type}</div>
                       </div>
                       <SecondaryButton className="px-3 py-2 text-xs" onClick={() => removeDetectedField(field.key)}>
                         Remove
@@ -592,15 +592,15 @@ export function TemplateImporter({ initialSessionToken }: Props) {
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-[16px] border border-dashed border-[#eadfce] bg-white/70 px-3 py-4 text-sm text-ink-600">
+                  <div className="rounded-lg border border-dashed border-[#dbe4f0] bg-white/70 px-3 py-4 text-sm text-slate-600">
                     No fields are active yet. Add placeholders in the source text or rerun smart detection.
                   </div>
                 )}
               </div>
 
               {excludedFieldKeys.length ? (
-                <div className="mt-4 rounded-[16px] border border-dashed border-[#eadfce] bg-white/70 p-3">
-                  <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8f6a44]">Removed fields</div>
+                <div className="mt-4 rounded-lg border border-dashed border-[#dbe4f0] bg-white/70 p-3">
+                  <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#2563eb]">Removed fields</div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {excludedFieldKeys.map((key) => {
                       const field = conversion.fields.find((item) => item.key === key);
@@ -608,7 +608,7 @@ export function TemplateImporter({ initialSessionToken }: Props) {
                         <button
                           key={key}
                           onClick={() => restoreDetectedField(key)}
-                          className="rounded-full border border-[#eadfce] bg-white px-3 py-1 text-xs text-ink-700 transition hover:bg-[#fff8ee]"
+                          className="rounded-full border border-[#dbe4f0] bg-white px-3 py-1 text-xs text-slate-700 transition hover:bg-[#fff8ee]"
                         >
                           Restore {field?.label || key}
                         </button>
@@ -631,24 +631,24 @@ export function TemplateImporter({ initialSessionToken }: Props) {
 
           {activeStep === 3 ? (
             <div className="glass-panel p-5">
-              <div className="text-sm font-semibold text-ink-900">3. Save the template</div>
-              <div className="mt-1 text-xs text-ink-500">Name the template, choose a category, and save it to My Templates.</div>
+              <div className="text-sm font-semibold text-slate-900">3. Save the template</div>
+              <div className="mt-1 text-xs text-slate-500">Name the template, choose a category, and save it to My Templates.</div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-ink-700">Template name</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">Template name</label>
                   <input
                     value={templateName}
                     onChange={(event) => setTemplateName(event.target.value)}
-                    className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                    className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-ink-700">Category</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">Category</label>
                   <input
                     value={templateCategory}
                     onChange={(event) => setTemplateCategory(event.target.value)}
-                    className="w-full rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+                    className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
                   />
                 </div>
               </div>
@@ -662,26 +662,26 @@ export function TemplateImporter({ initialSessionToken }: Props) {
                 </MetallicButton>
               </div>
 
-              <div className="mt-5 text-xs text-ink-500">
+              <div className="mt-5 text-xs text-slate-500">
                 Saved templates appear in Workspace under My Templates.
-                <a className="ml-1 font-semibold text-[#8d6334] hover:text-[#6f4f2c]" href={sessionToken ? `/workspace?s=${encodeURIComponent(sessionToken)}` : "/workspace"}>Open Workspace</a>
+                <a className="ml-1 font-semibold text-[#2563eb] hover:text-[#6f4f2c]" href={sessionToken ? `/workspace?s=${encodeURIComponent(sessionToken)}` : "/workspace"}>Open Workspace</a>
               </div>
 
-              <details className="mt-5 rounded-[24px] border border-[rgba(126,94,60,0.12)] bg-[rgba(255,255,255,0.8)] p-4">
+              <details className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
                 <summary className="cursor-pointer list-none">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-sm font-semibold text-ink-900">Advanced review</div>
-                      <div className="mt-1 text-xs text-ink-500">Open this only if you want to inspect the raw source, converted template content, or JSON export.</div>
+                      <div className="text-sm font-semibold text-slate-900">Advanced review</div>
+                      <div className="mt-1 text-xs text-slate-500">Open this only if you want to inspect the raw source, converted template content, or JSON export.</div>
                     </div>
-                    <div className="rounded-full border border-[#eadfce] bg-[#f9f4ed] px-3 py-1 text-[11px] font-medium text-ink-600">Optional</div>
+                    <div className="rounded-full border border-[#dbe4f0] bg-[#f8fafc] px-3 py-1 text-[11px] font-medium text-slate-600">Optional</div>
                   </div>
                 </summary>
 
                 <div className="mt-4 space-y-5">
                   <div>
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <div className="text-sm font-semibold text-ink-900">Source text</div>
+                      <div className="text-sm font-semibold text-slate-900">Source text</div>
                       <SecondaryButton className="px-3 py-2 text-xs" onClick={applySmartDetection}>
                         Rerun detection
                       </SecondaryButton>
@@ -690,24 +690,24 @@ export function TemplateImporter({ initialSessionToken }: Props) {
                       value={sourceText}
                       onChange={(event) => setSourceText(event.target.value)}
                       rows={12}
-                      className="w-full rounded-[24px] border border-[#eadfce] bg-white/85 px-4 py-4 text-sm leading-6 outline-none"
+                      className="w-full rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-4 text-sm leading-6 outline-none"
                       placeholder={SOURCE_TEXT_PLACEHOLDER}
                     />
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-semibold text-ink-900">Converted template content</div>
+                      <div className="text-sm font-semibold text-slate-900">Converted template content</div>
                       <SecondaryButton className="px-3 py-2 text-xs" onClick={() => copy("content", conversion.content)}>
                         {copied === "content" ? "Copied" : "Copy content"}
                       </SecondaryButton>
                     </div>
-                    <pre className="mt-3 max-h-[240px] overflow-auto whitespace-pre-wrap break-words rounded-[18px] border border-[#eadfce] bg-white/90 p-3 text-xs leading-6 text-ink-700">{conversion.content}</pre>
+                    <pre className="mt-3 max-h-[240px] overflow-auto whitespace-pre-wrap break-words rounded-xl border border-[#dbe4f0] bg-white/90 p-3 text-xs leading-6 text-slate-700">{conversion.content}</pre>
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-semibold text-ink-900">Full template JSON</div>
+                      <div className="text-sm font-semibold text-slate-900">Full template JSON</div>
                       <div className="flex gap-2">
                         <SecondaryButton className="px-3 py-2 text-xs" onClick={() => copy("json", conversion.templateJson)}>
                           {copied === "json" ? "Copied" : "Copy JSON"}
@@ -717,7 +717,7 @@ export function TemplateImporter({ initialSessionToken }: Props) {
                         </SecondaryButton>
                       </div>
                     </div>
-                    <pre className="mt-3 max-h-[260px] overflow-auto whitespace-pre-wrap break-words rounded-[18px] border border-[#eadfce] bg-white/90 p-3 text-xs leading-6 text-ink-700">{conversion.templateJson}</pre>
+                    <pre className="mt-3 max-h-[260px] overflow-auto whitespace-pre-wrap break-words rounded-xl border border-[#dbe4f0] bg-white/90 p-3 text-xs leading-6 text-slate-700">{conversion.templateJson}</pre>
                   </div>
                 </div>
               </details>
@@ -727,26 +727,26 @@ export function TemplateImporter({ initialSessionToken }: Props) {
 
         <div className="space-y-5">
           <div className="glass-panel p-5">
-            <div className="text-sm font-semibold text-ink-900">Detected fields</div>
-            <div className="mt-1 text-xs text-ink-500">These are the editable parts the importer found in the document.</div>
-            <div className="mt-3 rounded-[18px] border border-[rgba(126,94,60,0.12)] bg-white/85 px-4 py-3 text-sm font-semibold text-ink-900">
+            <div className="text-sm font-semibold text-slate-900">Detected fields</div>
+            <div className="mt-1 text-xs text-slate-500">These are the editable parts the importer found in the document.</div>
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white/85 px-4 py-3 text-sm font-semibold text-slate-900">
               {conversion.activeFields.length} field{conversion.activeFields.length === 1 ? "" : "s"} ready
             </div>
             <div className="mt-3 space-y-2">
               {conversion.activeFields.length ? (
                 conversion.activeFields.slice(0, 6).map((field) => (
-                  <div key={field.key} className="rounded-[16px] border border-[#eadfce] bg-white/90 px-3 py-2">
-                    <div className="text-sm font-medium text-ink-900">{field.label}</div>
-                    <div className="text-xs text-ink-500">{field.key}</div>
+                  <div key={field.key} className="rounded-lg border border-[#dbe4f0] bg-white/90 px-3 py-2">
+                    <div className="text-sm font-medium text-slate-900">{field.label}</div>
+                    <div className="text-xs text-slate-500">{field.key}</div>
                   </div>
                 ))
               ) : (
-                <div className="rounded-[16px] border border-dashed border-[#eadfce] bg-white/70 px-3 py-4 text-sm text-ink-600">
+                <div className="rounded-lg border border-dashed border-[#dbe4f0] bg-white/70 px-3 py-4 text-sm text-slate-600">
                   Upload a document or paste the source text to start detection.
                 </div>
               )}
               {conversion.activeFields.length > 6 ? (
-                <div className="text-xs text-ink-500">+ {conversion.activeFields.length - 6} more fields in the review step</div>
+                <div className="text-xs text-slate-500">+ {conversion.activeFields.length - 6} more fields in the review step</div>
               ) : null}
             </div>
           </div>

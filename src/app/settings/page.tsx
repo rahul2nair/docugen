@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import { PaidFeatureNotice } from "@/components/paid-feature-notice";
 import { SettingsConsole } from "@/components/settings-console";
 import { getAuthenticatedAccountAccess } from "@/server/account-access";
@@ -9,9 +8,6 @@ export default async function SettingsPage() {
 
   return (
     <main className="pb-16">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       {hasPaidAccess ? (
         <Suspense fallback={null}>
           <SettingsConsole />

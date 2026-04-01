@@ -43,7 +43,7 @@ function InputField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium text-ink-800">{label}</label>
+      <label htmlFor={id} className="mb-1 block text-sm font-medium text-slate-800">{label}</label>
       <div className="relative">
         <input
           id={id}
@@ -52,20 +52,20 @@ function InputField({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           autoComplete={isPassword ? "new-password" : "off"}
-          className="w-full rounded-2xl border border-[#e4d9ca] bg-white px-4 py-2.5 pr-10 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-[#b8926a]/40"
+          className="w-full rounded-2xl border border-[#e4d9ca] bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#b8926a]/40"
         />
         {isPassword ? (
           <button
             type="button"
             onClick={() => setShow((current) => !current)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
             aria-label={show ? "Hide password" : "Show password"}
           >
             {show ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         ) : null}
       </div>
-      {hint ? <p className="mt-1 text-xs text-ink-500">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
     </div>
   );
 }
@@ -158,9 +158,9 @@ export function SmtpSettings({
   return (
     <section className="page-shell pt-8">
       <div className="glass-panel mb-6 p-8">
-        <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Email delivery</div>
-        <h1 className="mt-2 text-3xl font-semibold text-ink-900">Send documents from your own email</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-600">
+        <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Email delivery</div>
+        <h1 className="mt-2 text-3xl font-semibold text-slate-900">Send documents from your own email</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
           Only set this up if you want Templify to send finished documents on your behalf.
           If you only download documents manually, you can skip this section.
         </p>
@@ -169,8 +169,8 @@ export function SmtpSettings({
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="glass-panel space-y-6 p-8">
           <div>
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <Server size={15} className="text-[#8f6a44]" /> Provider
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Server size={15} className="text-[#2563eb]" /> Provider
             </div>
             <div className="flex flex-wrap gap-2">
               {Object.keys(PRESETS).map((item) => (
@@ -179,8 +179,8 @@ export function SmtpSettings({
                   onClick={() => applyPreset(item)}
                   className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                     preset === item
-                      ? "border-[#8f6a44] bg-[#8f6a44] text-white"
-                      : "border-[#e4d9ca] bg-white text-ink-700 hover:border-[#8f6a44]"
+                      ? "border-[#2563eb] bg-[#2563eb] text-white"
+                      : "border-[#e4d9ca] bg-white text-slate-700 hover:border-[#2563eb]"
                   }`}
                 >
                   {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -190,8 +190,8 @@ export function SmtpSettings({
           </div>
 
           <div>
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <Server size={15} className="text-[#8f6a44]" /> Server
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Server size={15} className="text-[#2563eb]" /> Server
             </div>
             <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
               <InputField
@@ -202,13 +202,13 @@ export function SmtpSettings({
                 placeholder="smtp.example.com"
               />
               <div>
-                <label htmlFor="smtp-port" className="mb-1 block text-sm font-medium text-ink-800">Port</label>
+                <label htmlFor="smtp-port" className="mb-1 block text-sm font-medium text-slate-800">Port</label>
                 <input
                   id="smtp-port"
                   type="number"
                   value={config.port}
                   onChange={(e) => set("port", e.target.value)}
-                  className="w-24 rounded-2xl border border-[#e4d9ca] bg-white px-4 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-[#b8926a]/40"
+                  className="w-24 rounded-2xl border border-[#e4d9ca] bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#b8926a]/40"
                 />
               </div>
             </div>
@@ -218,17 +218,17 @@ export function SmtpSettings({
                 type="checkbox"
                 checked={config.secure}
                 onChange={(e) => set("secure", e.target.checked)}
-                className="h-4 w-4 rounded border-[#e4d9ca] accent-[#8f6a44]"
+                className="h-4 w-4 rounded border-[#e4d9ca] accent-[#2563eb]"
               />
-              <label htmlFor="smtp-secure" className="text-sm text-ink-700">
+              <label htmlFor="smtp-secure" className="text-sm text-slate-700">
                 Use SSL/TLS (port 465)
               </label>
             </div>
           </div>
 
           <div>
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <Lock size={15} className="text-[#8f6a44]" /> Authentication
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Lock size={15} className="text-[#2563eb]" /> Authentication
             </div>
             <div className="grid gap-4">
               <InputField
@@ -250,8 +250,8 @@ export function SmtpSettings({
           </div>
 
           <div>
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <Mail size={15} className="text-[#8f6a44]" /> Sender Identity
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Mail size={15} className="text-[#2563eb]" /> Sender Identity
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <InputField
@@ -290,16 +290,16 @@ export function SmtpSettings({
                 <CheckCircle size={14} /> {saveMessage || "Saved"}
               </span>
             ) : null}
-            {!saved && saveMessage ? <span className="text-sm text-ink-600">{saveMessage}</span> : null}
+            {!saved && saveMessage ? <span className="text-sm text-slate-600">{saveMessage}</span> : null}
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="glass-panel p-6">
-            <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <Send size={14} className="text-[#8f6a44]" /> Send a test email
+            <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Send size={14} className="text-[#2563eb]" /> Send a test email
             </div>
-            <p className="mb-4 text-xs text-ink-600">
+            <p className="mb-4 text-xs text-slate-600">
               Verify the saved SMTP settings by sending a test message. Save your settings first.
             </p>
             <InputField
@@ -313,7 +313,7 @@ export function SmtpSettings({
             <button
               onClick={handleTestSend}
               disabled={!sessionReady || !isConfigured || testStatus === "sending" || !testRecipient.trim()}
-              className="mt-3 w-full rounded-2xl border border-[#e4d9ca] bg-[#fcf8f2] px-4 py-2.5 text-sm font-medium text-ink-800 transition-colors hover:bg-[#f5ece0] disabled:cursor-not-allowed disabled:opacity-40"
+              className="mt-3 w-full rounded-2xl border border-[#e4d9ca] bg-[#f8fafc] px-4 py-2.5 text-sm font-medium text-slate-800 transition-colors hover:bg-[#f5ece0] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {testStatus === "sending" ? "Sending…" : "Send Test Email"}
             </button>
@@ -331,8 +331,8 @@ export function SmtpSettings({
           </div>
 
           <div className="glass-panel p-6">
-            <div className="mb-3 text-sm font-semibold text-ink-900">What email delivery enables</div>
-            <ul className="space-y-2 text-sm text-ink-700">
+            <div className="mb-3 text-sm font-semibold text-slate-900">What email delivery enables</div>
+            <ul className="space-y-2 text-sm text-slate-700">
               {[
                 "Send generated invoices directly to clients",
                 "Dispatch welcome emails on new sign-ups",
@@ -341,15 +341,15 @@ export function SmtpSettings({
                 "Batch-generate and email multiple recipients"
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2">
-                  <CheckCircle size={13} className="mt-0.5 shrink-0 text-[#8f6a44]" />
+                  <CheckCircle size={13} className="mt-0.5 shrink-0 text-[#2563eb]" />
                   {item}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-[20px] border border-[#eadfce] bg-[#fcf8f2] p-4 text-xs leading-6 text-ink-600">
-            <strong className="text-ink-800">Privacy:</strong> SMTP credentials are stored per workspace session and the password is encrypted on the server before it is written to Supabase. This is user-configured mail transport for sending generated documents from the app on the user&apos;s behalf.
+          <div className="rounded-xl border border-[#dbe4f0] bg-[#f8fafc] p-4 text-xs leading-6 text-slate-600">
+            <strong className="text-slate-800">Privacy:</strong> SMTP credentials are stored per workspace session and the password is encrypted on the server before it is written to Supabase. This is user-configured mail transport for sending generated documents from the app on the user&apos;s behalf.
           </div>
         </div>
       </div>

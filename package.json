@@ -6,6 +6,11 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "preinstall": "node scripts/enforce-node.mjs",
+    "predev": "node scripts/enforce-node.mjs",
+    "prebuild": "node scripts/enforce-node.mjs",
+    "prestart": "node scripts/enforce-node.mjs",
+    "pretest": "node scripts/enforce-node.mjs",
     "dev": "next dev",
     "dev:worker": "tsx watch src/server/worker.ts",
     "build": "next build",

@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import { PaidFeatureNotice } from "@/components/paid-feature-notice";
 import { TemplateImporter } from "@/components/template-importer";
 import { getAuthenticatedAccountAccess } from "@/server/account-access";
@@ -14,9 +13,6 @@ export default async function ImportTemplatePage({
 
   return (
     <main className="pb-12">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       {hasPaidAccess ? (
         <TemplateImporter initialSessionToken={s} />
       ) : (

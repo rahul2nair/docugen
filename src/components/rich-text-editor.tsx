@@ -27,7 +27,7 @@ function ToolButton({
   return (
     <SecondaryButton
       type="button"
-      className={`px-3 py-2 text-xs ${active ? "border-[rgba(143,106,68,0.24)] bg-[#fff5e8] text-[#8f6a44]" : ""}`}
+      className={`px-3 py-2 text-xs ${active ? "border-blue-300 bg-blue-50 text-blue-700" : ""}`}
       disabled={disabled}
       onClick={onClick}
     >
@@ -75,15 +75,15 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing" 
 
   if (!editor) {
     return (
-      <div className="rounded-[24px] border border-[#eadfce] bg-white/90 px-4 py-4 text-sm text-ink-500">
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-500">
         Loading editor...
       </div>
     );
   }
 
   return (
-    <div className="rounded-[24px] border border-[#eadfce] bg-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-      <div className="flex flex-wrap gap-2 border-b border-[#eadfce] px-3 py-3">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 px-3 py-3 bg-slate-50 rounded-t-2xl">
         <ToolButton active={editor.isActive("paragraph")} onClick={() => editor.chain().focus().setParagraph().run()}>
           <Pilcrow size={14} className="mr-1.5" /> Paragraph
         </ToolButton>

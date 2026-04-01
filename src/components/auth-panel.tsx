@@ -97,34 +97,34 @@ export function AuthPanel() {
     <section className="page-shell pt-8">
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="glass-panel relative overflow-hidden p-8 lg:p-10">
-          <div className="absolute inset-x-8 top-0 h-36 rounded-b-[100px] bg-[radial-gradient(circle_at_top,rgba(233,216,194,0.65),transparent_72%)]" />
+          <div className="absolute inset-x-8 top-0 h-36 rounded-b-[100px] bg-[radial-gradient(circle_at_top,rgba(191,219,254,0.65),transparent_72%)]" />
           <div className="relative">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-medium text-ink-700">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-medium text-slate-700">
               <KeyRound size={14} /> Supabase Auth
             </div>
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-ink-900">Sign in to start Pro or manage billing.</h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-ink-700">
+            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900">Sign in to start Pro or manage billing.</h1>
+            <p className="mt-5 max-w-xl text-base leading-7 text-slate-600">
               Create an account or sign in with email and password. Free document creation stays available in the workspace. Sign-in is used when you want to start a Pro trial, subscribe directly, or manage billing.
             </p>
-            <div className="mt-8 space-y-3 text-sm text-ink-700">
-              <div className="rounded-3xl border border-white/50 bg-white/65 p-4">Email/password login backed by Supabase cookies.</div>
-              <div className="rounded-3xl border border-white/50 bg-white/65 p-4">Confirmation link support via the auth callback route.</div>
-              <div className="rounded-3xl border border-white/50 bg-white/65 p-4">Pro trial and paid checkout begin after sign-in so saved files and billing stay tied to one account.</div>
+            <div className="mt-8 space-y-3 text-sm text-slate-700">
+              <div className="rounded-3xl border border-slate-200 bg-white p-4">Email/password login backed by Supabase cookies.</div>
+              <div className="rounded-3xl border border-slate-200 bg-white p-4">Confirmation link support via the auth callback route.</div>
+              <div className="rounded-3xl border border-slate-200 bg-white p-4">Pro trial and paid checkout begin after sign-in so saved files and billing stay tied to one account.</div>
             </div>
           </div>
         </div>
 
         <div className="glass-panel p-8 lg:p-10">
-          <div className="flex gap-2 rounded-full border border-[#eadcc8] bg-[#faf5ee] p-1">
+          <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-100 p-1">
             <button
               onClick={() => setMode("sign-in")}
-              className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === "sign-in" ? "bg-white text-ink-900 shadow-soft" : "text-ink-600"}`}
+              className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === "sign-in" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"}`}
             >
               Sign in
             </button>
             <button
               onClick={() => setMode("sign-up")}
-              className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === "sign-up" ? "bg-white text-ink-900 shadow-soft" : "text-ink-600"}`}
+              className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === "sign-up" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"}`}
             >
               Create account
             </button>
@@ -132,7 +132,7 @@ export function AuthPanel() {
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="auth-email" className="mb-1 block text-sm font-medium text-ink-800">Email</label>
+              <label htmlFor="auth-email" className="mb-1 block text-sm font-medium text-slate-800">Email</label>
               <div className="relative">
                 <input
                   id="auth-email"
@@ -142,14 +142,14 @@ export function AuthPanel() {
                   required
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className="w-full rounded-2xl border border-[#e4d9ca] bg-white px-4 py-2.5 pr-10 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-[#b8926a]/40"
+                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
-                <Mail size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                <Mail size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
               </div>
             </div>
 
             <div>
-              <label htmlFor="auth-password" className="mb-1 block text-sm font-medium text-ink-800">Password</label>
+              <label htmlFor="auth-password" className="mb-1 block text-sm font-medium text-slate-800">Password</label>
               <input
                 id="auth-password"
                 type="password"
@@ -158,7 +158,7 @@ export function AuthPanel() {
                 required
                 autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
                 placeholder="At least 6 characters"
-                className="w-full rounded-2xl border border-[#e4d9ca] bg-white px-4 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-[#b8926a]/40"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </div>
 

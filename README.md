@@ -13,6 +13,13 @@ Queue-based document generation app with:
 
 ## Quick start
 
+0. Use Node.js 20+
+
+```bash
+nvm use
+node -v
+```
+
 1. Copy `.env.example` to `.env.local`
 2. Start Redis
 

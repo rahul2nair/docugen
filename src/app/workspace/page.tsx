@@ -1,8 +1,14 @@
-import { Suspense } from "react";
-import { Header } from "@/components/header";
+import { cache } from "react";
 import { Workspace } from "@/components/workspace";
 import { builtinTemplates } from "@/server/templates";
 import { renderBuiltinTemplatePreview } from "@/server/template-preview";
+
+const getTemplatePreviews = cache(() =>
+  builtinTemplates.map((template) => ({
+    id: template.id,
+    html: renderBuiltinTemplatePreview(template)
+  }))
+);
 
 export default async function WorkspacePage({
   searchParams
@@ -10,16 +16,10 @@ export default async function WorkspacePage({
   searchParams: Promise<{ s?: string }>;
 }) {
   const { s } = await searchParams;
-  const templatePreviews = builtinTemplates.map((template) => ({
-    id: template.id,
-    html: renderBuiltinTemplatePreview(template)
-  }));
+  const templatePreviews = getTemplatePreviews();
 
   return (
     <main className="pb-12">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       <Workspace templates={builtinTemplates} templatePreviews={templatePreviews} initialSessionToken={s} />
     </main>
   );

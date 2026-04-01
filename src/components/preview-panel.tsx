@@ -11,7 +11,7 @@ function buildScaledPreviewHtml(html: string) {
         margin: 0 !important;
         padding: 0 !important;
         min-width: 0 !important;
-        background: linear-gradient(180deg, #f7f3ee 0%, #fbfaf8 100%) !important;
+        background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%) !important;
         overflow: auto !important;
       }
 
@@ -93,26 +93,26 @@ function buildScaledPreviewHtml(html: string) {
 
 export function PreviewPanel({ html, status, description }: Props) {
   return (
-    <div className="glass-panel flex h-full min-h-[640px] flex-col border-[rgba(126,94,60,0.12)] bg-[rgba(255,253,249,0.9)] p-4">
-      <div className="mb-3 flex items-center justify-between border-b border-[rgba(126,94,60,0.1)] pb-3">
+    <div className="glass-panel flex flex-col border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-3">
         <div>
-          <div className="text-sm font-semibold text-ink-900">Preview</div>
-          <div className="text-xs text-ink-500">{description || "Live result after generation"}</div>
+          <div className="text-sm font-semibold text-slate-900">Preview</div>
+          <div className="text-xs text-slate-500">{description || "Live result after generation"}</div>
         </div>
-        <div className="rounded-full border border-[rgba(126,94,60,0.12)] bg-white px-3 py-1 text-xs font-medium text-ink-700">
+        <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
           {status}
         </div>
       </div>
 
-      <div className="paper-preview flex-1 overflow-auto rounded-[24px] border border-[rgba(126,94,60,0.12)] p-0">
+      <div className="paper-preview overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-0">
         {html ? (
           <iframe
             title="Preview"
             srcDoc={buildScaledPreviewHtml(html)}
-            className="h-[580px] w-full rounded-[24px] bg-white"
+            className="h-[420px] w-full rounded-2xl bg-white xl:h-[460px]"
           />
         ) : (
-          <div className="flex h-full min-h-[580px] items-center justify-center p-8 text-center text-sm text-ink-500">
+          <div className="flex min-h-[420px] items-center justify-center p-8 text-center text-sm text-slate-500 xl:min-h-[460px]">
             Your generated document will appear here. Choose a mode, enter content, and click Generate.
           </div>
         )}

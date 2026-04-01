@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import { BatchGenerator } from "@/components/batch-generator";
 import { PaidFeatureNotice } from "@/components/paid-feature-notice";
 import { getAuthenticatedAccountAccess } from "@/server/account-access";
@@ -20,9 +19,6 @@ export default async function BatchPage({
 
   return (
     <main className="pb-12">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       {hasPaidAccess ? (
         <BatchGenerator templates={builtinTemplates} templatePreviews={templatePreviews} initialSessionToken={s} />
       ) : (

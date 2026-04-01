@@ -11,6 +11,24 @@ const checkoutSchema = z.object({
   withTrial: z.boolean().optional()
 });
 
+function resolveAppOrigin(request: Request) {
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("host")?.split(",")[0]?.trim();
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+
+  if (host) {
+    const protocol = forwardedProto || (host.includes("localhost") ? "http" : "https");
+    return `${protocol}://${host}`;
+  }
+
+  try {
+    const url = new URL(request.url);
+    return url.origin;
+  } catch {
+    return config.appUrl;
+  }
+}
+
 export async function POST(request: Request) {
   if (!isStripeConfigured()) {
     return NextResponse.json({ error: { message: "Stripe checkout is not configured" } }, { status: 503 });
@@ -37,6 +55,7 @@ export async function POST(request: Request) {
   const wantsTrial = parsed.data.withTrial !== false;
   const isTrialEligible = config.stripe.trialDays > 0 && !existingBilling?.stripeSubscriptionId;
   const shouldApplyTrial = wantsTrial && isTrialEligible;
+  const appOrigin = resolveAppOrigin(request);
 
   let stripeCustomerId = existingBilling?.stripeCustomerId || null;
 
@@ -61,8 +80,8 @@ export async function POST(request: Request) {
     line_items: [{ price: parsed.data.priceId, quantity: 1 }],
     allow_promotion_codes: true,
     billing_address_collection: "auto",
-    success_url: `${config.appUrl}/billing?checkout=success`,
-    cancel_url: `${config.appUrl}/billing?checkout=cancel`,
+    success_url: `${appOrigin}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appOrigin}/billing?checkout=cancel`,
     metadata: {
       ownerKey,
       supabaseUserId: user.id

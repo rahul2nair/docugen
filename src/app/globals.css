@@ -11,7 +11,7 @@ html, body {
 }
 
 body {
-  @apply bg-hero text-ink-900 antialiased;
+  @apply bg-[#f4f7fc] text-[#0f172a] antialiased;
 }
 
 a {
@@ -19,44 +19,44 @@ a {
 }
 
 .page-shell {
-  @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  @apply mx-auto max-w-7xl px-5 sm:px-8 lg:px-10;
 }
 
 .glass-panel {
-  @apply rounded-[26px] border border-[rgba(122,91,56,0.14)] bg-[rgba(255,252,247,0.88)] shadow-soft;
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
 }
 
 .paper-preview {
   background:
-    linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(252,248,242,1) 100%);
+    linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,251,255,1) 100%);
   box-shadow:
-    0 20px 54px rgba(43, 31, 18, 0.11),
+    0 20px 54px rgba(15, 23, 42, 0.1),
     inset 0 1px 0 rgba(255,255,255,0.92);
 }
 
 .metal-button {
   background:
-    linear-gradient(180deg, rgba(182,132,78,1) 0%, rgba(153,108,61,1) 100%);
+    linear-gradient(180deg, rgba(37,99,235,1) 0%, rgba(30,64,175,1) 100%);
   box-shadow:
-    0 14px 30px rgba(137, 97, 53, 0.20),
+    0 14px 30px rgba(37, 99, 235, 0.28),
     inset 0 1px 0 rgba(255,255,255,0.22),
-    inset 0 -1px 0 rgba(73, 47, 22, 0.28);
+    inset 0 -1px 0 rgba(30, 64, 175, 0.35);
 }
 
 .soft-metal-card {
   background:
-    linear-gradient(180deg, rgba(255,253,249,0.98) 0%, rgba(246,238,228,0.96) 100%);
+    linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(243,247,255,0.96) 100%);
   box-shadow:
-    0 22px 56px rgba(77, 53, 28, 0.09),
+    0 22px 56px rgba(30, 64, 175, 0.12),
     inset 0 1px 0 rgba(255,255,255,0.88);
 }
 
 .ink-panel {
   background:
-    radial-gradient(circle at top left, rgba(204, 154, 96, 0.16), transparent 34%),
-    linear-gradient(180deg, rgba(35, 29, 23, 0.97) 0%, rgba(22, 18, 15, 0.99) 100%);
+    radial-gradient(circle at top left, rgba(125, 211, 252, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.99) 100%);
   box-shadow:
-    0 28px 84px rgba(25, 18, 11, 0.24),
+    0 28px 84px rgba(15, 23, 42, 0.28),
     inset 0 1px 0 rgba(255,255,255,0.05);
 }
 

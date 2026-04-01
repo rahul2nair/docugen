@@ -8,7 +8,7 @@ export function MetallicButton({
   return (
     <button
       className={cn(
-        "metal-button inline-flex items-center justify-center rounded-2xl border border-[rgba(108,73,40,0.28)] px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:scale-[0.99]",
+        "metal-button inline-flex items-center justify-center rounded-2xl border border-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:scale-[0.99]",
         className
       )}
       {...props}
@@ -23,7 +23,7 @@ export function SecondaryButton({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center rounded-2xl border border-[rgba(120,90,58,0.18)] bg-[rgba(255,255,255,0.88)] px-5 py-3 text-sm font-semibold text-ink-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] transition hover:border-[rgba(120,90,58,0.26)] hover:bg-white",
+        "inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50",
         className
       )}
       {...props}

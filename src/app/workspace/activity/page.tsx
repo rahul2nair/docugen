@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
 import { WorkspaceActivity } from "@/components/workspace-activity";
 
 export default async function WorkspaceActivityPage({
@@ -11,9 +10,6 @@ export default async function WorkspaceActivityPage({
 
   return (
     <main className="pb-12">
-      <Suspense fallback={null}>
-        <Header />
-      </Suspense>
       <WorkspaceActivity initialSessionToken={s} />
     </main>
   );

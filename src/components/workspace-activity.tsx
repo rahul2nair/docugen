@@ -118,9 +118,9 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
     <section className="page-shell py-10">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Activity</div>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-ink-900">Recent documents and exports</h2>
-          <div className="mt-1 text-sm text-ink-600">Track recent runs, reopen finished files, and check progress when a document is still processing.</div>
+          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Activity</div>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Recent documents and exports</h2>
+          <div className="mt-1 text-sm text-slate-600">Track recent runs, reopen finished files, and check progress when a document is still processing.</div>
         </div>
         <a href={`/workspace${sessionToken ? `?s=${encodeURIComponent(sessionToken)}` : ""}`}>
           <SecondaryButton className="px-4 py-2 text-xs">Back to create</SecondaryButton>
@@ -128,12 +128,12 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
       </div>
 
       <div className="mb-5 glass-panel p-4">
-        <label className="mb-2 block text-sm font-medium text-ink-700">Shared workspace link</label>
+        <label className="mb-2 block text-sm font-medium text-slate-700">Shared workspace link</label>
         <div className="flex flex-wrap items-center gap-3">
           <input
             value={sessionToken}
             onChange={(event) => setSessionToken(event.target.value)}
-            className="min-w-[280px] flex-1 rounded-[22px] border border-[#eadfce] bg-white/85 px-4 py-3 text-sm outline-none"
+            className="min-w-[280px] flex-1 rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
             placeholder="Paste a shared workspace code if you want to view another workspace"
           />
           <SecondaryButton className="px-4 py-3 text-xs" onClick={() => loadJobs(sessionToken)}>
@@ -141,23 +141,23 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
             Refresh jobs
           </SecondaryButton>
         </div>
-        <div className="mt-2 text-xs text-ink-500">For most users this is managed automatically. Only paste a code when someone has shared a workspace with you.</div>
-        {errorMessage && <div className="mt-3 text-sm text-[#92443c]">{errorMessage}</div>}
+        <div className="mt-2 text-xs text-slate-500">For most users this is managed automatically. Only paste a code when someone has shared a workspace with you.</div>
+        {errorMessage && <div className="mt-3 text-sm text-[#be123c]">{errorMessage}</div>}
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="glass-panel p-5">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <FileClock size={16} /> Session jobs
             </div>
-            <div className="inline-flex rounded-full border border-[#eadfce] bg-[#f9f4ed] p-1">
+            <div className="inline-flex rounded-full border border-[#dbe4f0] bg-[#f8fafc] p-1">
               {(["all", "queued", "active", "completed", "failed", "not_found"] as const).map((item) => (
                 <button
                   key={item}
                   onClick={() => setFilter(item)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    filter === item ? "bg-white text-ink-900 shadow" : "text-ink-600"
+                    filter === item ? "bg-white text-slate-900 shadow" : "text-slate-600"
                   }`}
                 >
                   {item}
@@ -167,18 +167,18 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
           </div>
           <div className="mt-4 space-y-3">
             {loading ? (
-              <div className="rounded-[22px] border border-dashed border-[#eadfce] px-4 py-6 text-sm text-ink-500">
+              <div className="rounded-2xl border border-dashed border-[#dbe4f0] px-4 py-6 text-sm text-slate-500">
                 Loading shared jobs...
               </div>
             ) : filteredJobs.length ? (
               filteredJobs.map((job) => (
-                <div key={job.id} className="rounded-[22px] border border-[#eadfce] bg-[#fcf8f2] px-4 py-3">
+                <div key={job.id} className="rounded-2xl border border-[#dbe4f0] bg-[#f8fafc] px-4 py-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-ink-900">Job {job.id}</div>
-                      <div className="mt-1 text-xs text-ink-500">{formatTimestamp(job.createdAt)}</div>
-                      <div className="mt-1 text-xs uppercase tracking-[0.14em] text-[#8f6a44]">{job.status}</div>
-                      {job.error && <div className="mt-1 text-xs text-[#92443c]">{job.error}</div>}
+                      <div className="text-sm font-medium text-slate-900">Job {job.id}</div>
+                      <div className="mt-1 text-xs text-slate-500">{formatTimestamp(job.createdAt)}</div>
+                      <div className="mt-1 text-xs uppercase tracking-[0.14em] text-[#2563eb]">{job.status}</div>
+                      {job.error && <div className="mt-1 text-xs text-[#be123c]">{job.error}</div>}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {(job.result?.outputs || []).map((item) => (
@@ -191,12 +191,12 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
                 </div>
               ))
             ) : (
-              <div className="rounded-[22px] border border-dashed border-[#eadfce] bg-[#fffdf8] px-4 py-8 text-center text-sm text-ink-500">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8efe1] text-[#8f6a44]">
+              <div className="rounded-2xl border border-dashed border-[#dbe4f0] bg-[#f8fafc] px-4 py-8 text-center text-sm text-slate-500">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#dbeafe] text-[#2563eb]">
                   <Inbox size={20} />
                 </div>
-                <div className="mt-3 text-sm font-medium text-ink-800">No matching jobs yet</div>
-                <div className="mt-1 text-xs text-ink-500">
+                <div className="mt-3 text-sm font-medium text-slate-800">No matching jobs yet</div>
+                <div className="mt-1 text-xs text-slate-500">
                   Run a generation from the template or custom editor, then refresh this page.
                 </div>
               </div>
@@ -205,16 +205,16 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
         </div>
 
         <div className="glass-panel p-5">
-          <div className="text-sm font-semibold text-ink-900">Recent generations</div>
-          <div className="mt-1 text-xs text-ink-500">Stored locally in your browser so you can quickly reopen valid links.</div>
+          <div className="text-sm font-semibold text-slate-900">Recent generations</div>
+          <div className="mt-1 text-xs text-slate-500">Stored locally in your browser so you can quickly reopen valid links.</div>
           <div className="mt-4 space-y-3">
             {history.length ? (
               history.map((item) => (
-                <div key={item.id} className="rounded-[22px] border border-[#eadfce] bg-[#fcf8f2] px-4 py-3">
+                <div key={item.id} className="rounded-2xl border border-[#dbe4f0] bg-[#f8fafc] px-4 py-3">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-ink-900">{item.label}</div>
-                      <div className="mt-1 text-xs text-ink-500">{formatTimestamp(item.createdAt)}</div>
+                      <div className="text-sm font-medium text-slate-900">{item.label}</div>
+                      <div className="mt-1 text-xs text-slate-500">{formatTimestamp(item.createdAt)}</div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(item.outputs).map(([format, url]) => (
@@ -227,12 +227,12 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
                 </div>
               ))
             ) : (
-              <div className="rounded-[22px] border border-dashed border-[#eadfce] bg-[#fffdf8] px-4 py-8 text-center text-sm text-ink-500">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8efe1] text-[#8f6a44]">
+              <div className="rounded-2xl border border-dashed border-[#dbe4f0] bg-[#f8fafc] px-4 py-8 text-center text-sm text-slate-500">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#dbeafe] text-[#2563eb]">
                   <Sparkles size={20} />
                 </div>
-                <div className="mt-3 text-sm font-medium text-ink-800">No recent generations</div>
-                <div className="mt-1 text-xs text-ink-500">
+                <div className="mt-3 text-sm font-medium text-slate-800">No recent generations</div>
+                <div className="mt-1 text-xs text-slate-500">
                   Generate a document from Workspace or Custom and links will appear here.
                 </div>
               </div>
