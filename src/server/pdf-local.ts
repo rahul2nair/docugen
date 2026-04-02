@@ -6,19 +6,50 @@ export interface PdfOptions {
   margin?: "normal" | "narrow";
 }
 
-export async function renderHtmlToPdfLocal(html: string, opts?: PdfOptions) {
-  const launchArgs = [
+const CHROMIUM_LAUNCH_PROFILES: string[][] = [
+  [
     "--no-sandbox",
     "--disable-setuid-sandbox",
     "--disable-dev-shm-usage",
-    "--disable-gpu"
-  ];
+    "--disable-gpu",
+    "--no-zygote"
+  ],
+  [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--no-zygote",
+    "--single-process",
+    "--disable-software-rasterizer"
+  ]
+];
 
+async function launchChromiumWithFallback() {
+  let lastError: unknown;
+
+  for (const args of CHROMIUM_LAUNCH_PROFILES) {
+    try {
+      return await chromium.launch({
+        headless: true,
+        args
+      });
+    } catch (error) {
+      lastError = error;
+      logError("pdf_chromium_launch_profile_failed", error, {
+        args: args.join(" ")
+      });
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Unable to launch Chromium with available profiles");
+}
+
+export async function renderHtmlToPdfLocal(html: string, opts?: PdfOptions) {
   try {
-    const browser = await chromium.launch({
-      headless: true,
-      args: launchArgs
-    });
+    const browser = await launchChromiumWithFallback();
 
     try {
       const page = await browser.newPage();

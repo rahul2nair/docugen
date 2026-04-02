@@ -32,7 +32,7 @@ async function renderWithRemoteRenderer(html: string, opts?: PdfOptions) {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "");
-      throw new Error(`Remote renderer failed with ${response.status}: ${errorBody.slice(0, 400)}`);
+      throw new Error(`Remote renderer failed with ${response.status}: ${errorBody.slice(0, 4000)}`);
     }
 
     const bytes = new Uint8Array(await response.arrayBuffer());
