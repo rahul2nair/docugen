@@ -126,7 +126,7 @@ Use 3 Railway services from the same repo:
 
 3. `renderer` service
 - Purpose: isolated PDF rendering
-- Start command: `npm run start`
+- Start command: `npm run start:renderer`
 - Uses endpoint `POST /api/internal/pdf`
 
 Shared env across services:
@@ -192,6 +192,7 @@ Watch in Railway while test runs:
 Important:
 - UI has always hidden bulk behind paid access.
 - API now also enforces paid access (session-token calls from free/anonymous users return `402`).
+- For paid account API key calls, `saveToMyFiles` now defaults to `true`; send `saveToMyFiles: false` to opt out.
 
 ### Programmatic test-user lifecycle
 

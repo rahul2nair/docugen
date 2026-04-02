@@ -165,22 +165,31 @@ export async function POST(request: Request) {
       : false;
 
     const ownerKeyForJobs = accountApiAuth?.ownerKey || (sessionOwnerHasPaidAccess ? persistenceContext?.ownerKey || null : null);
-    const shouldSaveToMyFiles = parsed.data.saveToMyFiles === true;
 
     const jobs = await Promise.all(
-      parsed.data.requests.map((payload) =>
-        generationQueue.add(
+      parsed.data.requests.map((payload) => {
+        const requestSavePreference = payload.saveToMyFiles;
+        const globalSavePreference = parsed.data.saveToMyFiles;
+        const shouldSaveToMyFiles = ownerKeyForJobs
+          ? (requestSavePreference ?? globalSavePreference ?? true)
+          : false;
+
+        return generationQueue.add(
           "generate",
           ownerKeyForJobs && shouldSaveToMyFiles
             ? {
                 ...payload,
+                saveToMyFiles: true,
                 persistence: {
                   ownerKey: ownerKeyForJobs
                 }
               }
-            : payload
-        )
-      )
+            : {
+                ...payload,
+                saveToMyFiles: false
+              }
+        );
+      })
     );
 
     if (sessionToken) {

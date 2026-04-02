@@ -71,6 +71,7 @@ export async function POST(request: Request) {
       content: body?.template?.content
     },
     data: body?.data || {},
+    saveToMyFiles: body?.saveToMyFiles,
     outputs: body?.outputs || ["html"]
   };
 
@@ -89,7 +90,22 @@ export async function POST(request: Request) {
     );
   }
 
-  const job = await generationQueue.add("generate", parsed.data);
+  const shouldSaveToMyFiles = parsed.data.saveToMyFiles !== false;
+
+  const queuePayload = shouldSaveToMyFiles
+    ? {
+        ...parsed.data,
+        saveToMyFiles: true,
+        persistence: {
+          ownerKey: accountApiAuth.ownerKey
+        }
+      }
+    : {
+        ...parsed.data,
+        saveToMyFiles: false
+      };
+
+  const job = await generationQueue.add("generate", queuePayload);
   if (job.id) {
     await trackGenerationJobForOwnerKey(accountApiAuth.ownerKey, String(job.id));
   }

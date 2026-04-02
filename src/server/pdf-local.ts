@@ -7,10 +7,17 @@ export interface PdfOptions {
 }
 
 export async function renderHtmlToPdfLocal(html: string, opts?: PdfOptions) {
+  const launchArgs = [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu"
+  ];
+
   try {
     const browser = await chromium.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+      args: launchArgs
     });
 
     try {

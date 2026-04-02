@@ -44,6 +44,7 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
   const [sessionToken, setSessionToken] = useState<string>(() => initialSessionToken || getStoredWorkspaceSessionToken());
   const [loading, setLoading] = useState<boolean>(false);
   const [jobs, setJobs] = useState<SessionJob[]>([]);
+  const [accountJobs, setAccountJobs] = useState<SessionJob[]>([]);
   const [history, setHistory] = useState<GenerationHistoryItem[]>([]);
   const [filter, setFilter] = useState<ActivityFilter>("all");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -60,10 +61,38 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
     return "in_progress";
   }
 
+  const mergedJobs = useMemo(() => {
+    const merged = new Map<string, SessionJob>();
+
+    for (const item of accountJobs) {
+      merged.set(item.id, item);
+    }
+
+    for (const item of jobs) {
+      const existing = merged.get(item.id);
+      if (!existing) {
+        merged.set(item.id, item);
+        continue;
+      }
+
+      merged.set(item.id, {
+        ...existing,
+        ...item,
+        createdAt: item.createdAt || existing.createdAt
+      });
+    }
+
+    return Array.from(merged.values()).sort((left, right) => {
+      const leftAt = left.createdAt ? new Date(left.createdAt).getTime() : 0;
+      const rightAt = right.createdAt ? new Date(right.createdAt).getTime() : 0;
+      return rightAt - leftAt;
+    });
+  }, [accountJobs, jobs]);
+
   const filteredJobs = useMemo(() => {
-    if (filter === "all") return jobs;
-    return jobs.filter((job) => simplifyStatus(job.status) === filter);
-  }, [jobs, filter]);
+    if (filter === "all") return mergedJobs;
+    return mergedJobs.filter((job) => simplifyStatus(job.status) === filter);
+  }, [mergedJobs, filter]);
 
   useEffect(() => {
     try {
@@ -119,11 +148,28 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
     }
   }
 
-  useEffect(() => {
-    if (!sessionToken) {
-      return;
+  async function loadAccountJobs() {
+    try {
+      const response = await fetch("/api/v1/account/jobs?limit=100");
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setAccountJobs([]);
+        return;
+      }
+
+      setAccountJobs(Array.isArray(payload.jobs) ? payload.jobs : []);
+    } catch {
+      setAccountJobs([]);
     }
-    void loadJobs(sessionToken);
+  }
+
+  useEffect(() => {
+    void loadAccountJobs();
+
+    if (sessionToken) {
+      void loadJobs(sessionToken);
+    }
   }, [sessionToken]);
 
   return (
@@ -152,12 +198,18 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
             className="min-w-[280px] flex-1 rounded-2xl border border-[#dbe4f0] bg-white/85 px-4 py-3 text-sm outline-none"
             placeholder="Paste a shared workspace code if you want to view another workspace"
           />
-          <SecondaryButton className="px-4 py-3 text-xs" onClick={() => loadJobs(sessionToken)}>
+          <SecondaryButton
+            className="px-4 py-3 text-xs"
+            onClick={() => {
+              void loadJobs(sessionToken);
+              void loadAccountJobs();
+            }}
+          >
             <RefreshCw size={14} className="mr-2" />
             Refresh jobs
           </SecondaryButton>
         </div>
-        <div className="mt-2 text-xs text-slate-500">For most users this is managed automatically. Only paste a code when someone has shared a workspace with you.</div>
+        <div className="mt-2 text-xs text-slate-500">Signed-in users see account-wide activity. Paste a shared code only when viewing another workspace session.</div>
         {errorMessage && <div className="mt-3 text-sm text-[#be123c]">{errorMessage}</div>}
       </div>
 
@@ -165,7 +217,7 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
         <div className="glass-panel p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <FileClock size={16} /> Session requests
+              <FileClock size={16} /> Activity feed
             </div>
             <div className="inline-flex rounded-full border border-[#dbe4f0] bg-[#f8fafc] p-1">
               {(["all", "in_progress", "success", "failed"] as const).map((item) => (

@@ -141,16 +141,20 @@ export async function POST(request: Request) {
     ? await hasActivePaidAccessForOwnerKey(persistenceContext.ownerKey)
     : false;
   const ownerKeyForJob = accountApiAuth?.ownerKey || (sessionOwnerHasPaidAccess ? persistenceContext?.ownerKey || null : null);
-  const shouldSaveToMyFiles = parsed.data.saveToMyFiles === true;
+  const shouldSaveToMyFiles = ownerKeyForJob ? parsed.data.saveToMyFiles !== false : false;
   const queuePayload = ownerKeyForJob
     && shouldSaveToMyFiles
     ? {
         ...parsed.data,
+        saveToMyFiles: true,
         persistence: {
           ownerKey: ownerKeyForJob
         }
       }
-    : parsed.data;
+    : {
+        ...parsed.data,
+        saveToMyFiles: false
+      };
 
   const job = await generationQueue.add("generate", queuePayload);
 
