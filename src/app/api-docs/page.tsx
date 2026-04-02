@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ApiConsole } from "@/components/api-console";
 import { PaidFeatureNotice } from "@/components/paid-feature-notice";
 import { getAuthenticatedAccountAccess } from "@/server/account-access";
 import { endpoints, apiExamples, EndpointDoc } from "@/server/openapi";
@@ -111,7 +112,7 @@ export default async function ApiDocsPage() {
             </div>
           </div>
           <div className="mt-4 rounded-2xl border border-[#eadfce] bg-[#fcf8f2] px-4 py-3 text-sm leading-6 text-ink-700">
-            Generate account API keys from Settings. Template discovery stays public, while generation endpoints accept either a workspace session token from the UI or a scoped account API key from your backend.
+            Generate account API keys below. Template discovery stays public, while generation endpoints accept either a workspace session token from the UI or a scoped account API key from your backend.
           </div>
         </div>
 
@@ -205,6 +206,10 @@ money amount currency      — format as locale currency  (e.g. {{money 1500 "EU
 #if / #unless / #each      — standard Handlebars blocks`}</pre>
           </div>
         </div>
+
+        <Suspense fallback={null}>
+          <ApiConsole />
+        </Suspense>
 
       </section>
       )}

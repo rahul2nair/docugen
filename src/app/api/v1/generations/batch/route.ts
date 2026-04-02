@@ -99,6 +99,23 @@ export async function POST(request: Request) {
       }
 
       persistenceContext = await resolvePersistenceContext(sessionToken);
+
+      if (!persistenceContext?.hasPaidAccess) {
+        logWarn("batch_request_paid_plan_required", {
+          reason: "session_without_paid_access",
+          sessionToken,
+          authenticatedUserId: persistenceContext?.authenticatedUserId || null
+        });
+        return NextResponse.json(
+          {
+            error: {
+              code: "PAYMENT_REQUIRED",
+              message: "Batch generation is available on paid plans only"
+            }
+          },
+          { status: 402 }
+        );
+      }
     }
 
     const rateLimitViolation = await enforceRateLimits(
@@ -148,12 +165,13 @@ export async function POST(request: Request) {
       : false;
 
     const ownerKeyForJobs = accountApiAuth?.ownerKey || (sessionOwnerHasPaidAccess ? persistenceContext?.ownerKey || null : null);
+    const shouldSaveToMyFiles = parsed.data.saveToMyFiles === true;
 
     const jobs = await Promise.all(
       parsed.data.requests.map((payload) =>
         generationQueue.add(
           "generate",
-          ownerKeyForJobs
+          ownerKeyForJobs && shouldSaveToMyFiles
             ? {
                 ...payload,
                 persistence: {

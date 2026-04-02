@@ -42,6 +42,7 @@ interface Props {
   templates: BuiltinTemplate[];
   templatePreviews: BuiltinTemplatePreview[];
   initialSessionToken?: string;
+  hasPaidAccess?: boolean;
 }
 
 type JobStatus = "idle" | "queued" | "processing" | "completed" | "failed";
@@ -285,7 +286,7 @@ function buildCardPreviewHtml(html: string) {
   `;
 }
 
-export function Workspace({ templates, templatePreviews, initialSessionToken }: Props) {
+export function Workspace({ templates, templatePreviews, initialSessionToken, hasPaidAccess = false }: Props) {
   const mode: Mode = "template_fill";
   const [personalTemplates, setPersonalTemplates] = useState<BuiltinTemplate[]>([]);
   const allTemplates = useMemo(
@@ -319,6 +320,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken }: 
   const [outputFormat, setOutputFormat] = useState<"html" | "pdf">("pdf");
   const [pdfFormat, setPdfFormat] = useState<"A4" | "Letter">("A4");
   const [pdfMargin, setPdfMargin] = useState<"normal" | "narrow">("normal");
+  const [saveToMyFiles, setSaveToMyFiles] = useState<boolean>(hasPaidAccess);
   const [status, setStatus] = useState<JobStatus>("idle");
   const [previewHtml, setPreviewHtml] = useState<string>(previewMap.get(templates[0]?.id || "") || "");
   const [previewStatus, setPreviewStatus] = useState<string>("Template preview");
@@ -1040,6 +1042,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken }: 
       mode: workspaceState.mode,
       templateSource,
       data: workspaceState.data,
+      saveToMyFiles,
       outputs: workspaceState.outputs,
       session: {
         token: token,
@@ -1375,6 +1378,29 @@ export function Workspace({ templates, templatePreviews, initialSessionToken }: 
                 <MetallicButton className="px-4 py-3 text-sm" onClick={handleGenerate}>
                   <Sparkles size={16} className="mr-2" /> {outputFormat === "pdf" ? "Generate PDF" : "Generate HTML"}
                 </MetallicButton>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4">
+              <label className="inline-flex items-start gap-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={saveToMyFiles}
+                  onChange={(event) => setSaveToMyFiles(event.target.checked)}
+                  disabled={!hasPaidAccess}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="block font-semibold text-slate-900">Save to My Files for 30 days</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    When this is off, files stay temporary and are only available from the current request.
+                  </span>
+                </span>
+              </label>
+              <div className="max-w-sm text-xs leading-5 text-slate-500">
+                {hasPaidAccess
+                  ? "Saved files can be downloaded again from My Files until the 30-day retention window ends."
+                  : "My Files saving is available on paid signed-in accounts. You can still generate and download files immediately."}
               </div>
             </div>
           </div>

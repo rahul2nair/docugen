@@ -12,7 +12,7 @@ async function deleteOutputsForFile(file: StoredGeneratedFile) {
   await Promise.all(
     file.availableFormats.map(async (format) => {
       try {
-        await deleteOutput(file.jobId, format);
+        await deleteOutput(file.ownerKey, file.jobId, format);
       } catch (error) {
         console.error(
           `Failed to delete stored output ${file.jobId}.${format}:`,

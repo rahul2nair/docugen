@@ -7,11 +7,25 @@ export const config = {
   sessionTtlHours: Number(process.env.SESSION_TTL_HOURS || 48),
   sessionSnapshotLimit: Number(process.env.SESSION_SNAPSHOT_LIMIT || 50),
   redisKeyPrefix: process.env.REDIS_KEY_PREFIX || "templify",
+  worker: {
+    concurrency: Number(process.env.WORKER_CONCURRENCY || 1)
+  },
+  pdfRenderer: {
+    // When set, the worker will POST HTML here and expect an application/pdf response.
+    // Example: https://pdf-renderer.your-domain.com/api/internal/pdf
+    endpoint: process.env.PDF_RENDERER_ENDPOINT || "",
+    authToken: process.env.PDF_RENDERER_AUTH_TOKEN || "",
+    timeoutMs: Number(process.env.PDF_RENDERER_TIMEOUT_MS || 45000),
+    fallbackToLocal: (process.env.PDF_RENDERER_FALLBACK_TO_LOCAL || "true").toLowerCase() === "true"
+  },
   rateLimit: {
     sessionCreateLimit: Number(process.env.RATE_LIMIT_SESSION_CREATE_LIMIT || 10),
     sessionCreateWindowSeconds: Number(process.env.RATE_LIMIT_SESSION_CREATE_WINDOW_SECONDS || 900),
     anonymousWriteLimit: Number(process.env.RATE_LIMIT_ANONYMOUS_WRITE_LIMIT || 30),
     anonymousWriteWindowSeconds: Number(process.env.RATE_LIMIT_ANONYMOUS_WRITE_WINDOW_SECONDS || 900),
+    freeDailyGenerationLimit: Number(process.env.RATE_LIMIT_FREE_DAILY_GENERATION_LIMIT || 10),
+    paidDailyGenerationLimit: Number(process.env.RATE_LIMIT_PAID_DAILY_GENERATION_LIMIT || 20),
+    dailyGenerationWindowSeconds: Number(process.env.RATE_LIMIT_DAILY_GENERATION_WINDOW_SECONDS || 86400),
     anonymousReadLimit: Number(process.env.RATE_LIMIT_ANONYMOUS_READ_LIMIT || 240),
     anonymousReadWindowSeconds: Number(process.env.RATE_LIMIT_ANONYMOUS_READ_WINDOW_SECONDS || 60),
     apiWriteLimit: Number(process.env.RATE_LIMIT_API_WRITE_LIMIT || 120),
@@ -79,6 +93,18 @@ if (typeof window === "undefined") {
 
   if (Number.isNaN(config.sessionSnapshotLimit) || config.sessionSnapshotLimit <= 0) {
     console.warn("⚠️  SESSION_SNAPSHOT_LIMIT is invalid. Falling back to 50 snapshots.");
+  }
+
+  if (Number.isNaN(config.worker.concurrency) || config.worker.concurrency <= 0) {
+    console.warn("⚠️  WORKER_CONCURRENCY is invalid. Falling back to 1.");
+  }
+
+  if (Number.isNaN(config.pdfRenderer.timeoutMs) || config.pdfRenderer.timeoutMs <= 0) {
+    console.warn("⚠️  PDF_RENDERER_TIMEOUT_MS is invalid. Falling back to 45000ms.");
+  }
+
+  if (config.pdfRenderer.endpoint && !config.pdfRenderer.authToken) {
+    console.warn("⚠️  PDF_RENDERER_ENDPOINT is set without PDF_RENDERER_AUTH_TOKEN; secure token is strongly recommended.");
   }
 
   if (!config.supabaseUrl || !config.supabaseServiceRoleKey) {

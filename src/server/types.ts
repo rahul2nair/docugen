@@ -40,6 +40,7 @@ export interface GenerationRequest {
   mode: Mode;
   templateSource?: TemplateSource;
   data?: Record<string, unknown>;
+  saveToMyFiles?: boolean;
   source?: {
     type: "text" | "html";
     content: string;

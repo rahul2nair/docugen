@@ -80,8 +80,27 @@ export async function POST(request: Request) {
     persistenceContext = await resolvePersistenceContext(sessionToken);
   }
 
+  const hasPaidAccess = accountApiAuth
+    ? true
+    : Boolean(persistenceContext?.hasPaidAccess);
+  const dailyLimit = hasPaidAccess
+    ? config.rateLimit.paidDailyGenerationLimit
+    : config.rateLimit.freeDailyGenerationLimit;
+  const dailyIdentifiers = accountApiAuth
+    ? [accountApiAuth.ownerKey]
+    : persistenceContext?.accountOwnerKey
+      ? [persistenceContext.accountOwnerKey]
+      : [sessionToken, clientIp];
+
   const rateLimitViolation = await enforceRateLimits(
-    accountApiAuth
+    [
+      {
+        bucket: hasPaidAccess ? "generation-write:daily:paid" : "generation-write:daily:free",
+        identifiers: dailyIdentifiers,
+        limit: dailyLimit,
+        windowSeconds: config.rateLimit.dailyGenerationWindowSeconds
+      },
+      ...(accountApiAuth
       ? [
           {
             bucket: "generation-write:api-key",
@@ -103,13 +122,18 @@ export async function POST(request: Request) {
             limit: config.rateLimit.anonymousWriteLimit,
             windowSeconds: config.rateLimit.anonymousWriteWindowSeconds
           }
-        ]
+        ])
+    ]
   );
 
   if (rateLimitViolation) {
+    const limitMessage = rateLimitViolation.bucket.startsWith("generation-write:daily")
+      ? `Daily generation limit reached. ${hasPaidAccess ? "Paid accounts can create up to 20 standard documents per day." : "Free accounts can create up to 10 standard documents per day."} Use bulk generation for larger runs.`
+      : "Generation rate limit exceeded. Wait briefly before queueing more jobs.";
+
     return rateLimitExceededResponse(
       rateLimitViolation,
-      "Generation rate limit exceeded. Wait briefly before queueing more jobs."
+      limitMessage
     );
   }
 
@@ -117,7 +141,9 @@ export async function POST(request: Request) {
     ? await hasActivePaidAccessForOwnerKey(persistenceContext.ownerKey)
     : false;
   const ownerKeyForJob = accountApiAuth?.ownerKey || (sessionOwnerHasPaidAccess ? persistenceContext?.ownerKey || null : null);
+  const shouldSaveToMyFiles = parsed.data.saveToMyFiles === true;
   const queuePayload = ownerKeyForJob
+    && shouldSaveToMyFiles
     ? {
         ...parsed.data,
         persistence: {

@@ -4,6 +4,27 @@ import type { OutputFormat } from "@/server/types";
 
 let s3Client: S3Client | null = null;
 
+function normalizeOwnerSegment(ownerKey: string) {
+  if (ownerKey.startsWith("user:")) {
+    return ownerKey.slice(5);
+  }
+
+  if (ownerKey.startsWith("session:")) {
+    return ownerKey.slice(8);
+  }
+
+  return ownerKey;
+}
+
+function buildOwnerOutputKey(ownerKey: string, jobId: string, format: OutputFormat) {
+  const ownerSegment = normalizeOwnerSegment(ownerKey).replace(/[^a-zA-Z0-9._/-]/g, "_");
+  return `${ownerSegment}/files/${jobId}.${format}`;
+}
+
+function buildLegacyOutputKey(jobId: string, format: OutputFormat) {
+  return `documents/${jobId}.${format}`;
+}
+
 function validateB2Config() {
   if (!config.b2.accessKeyId) {
     throw new Error("B2_KEY_ID is not configured in environment variables");
@@ -48,11 +69,11 @@ function getS3Client() {
   }
 }
 
-export async function saveOutput(jobId: string, format: OutputFormat, content: Buffer | string) {
+export async function saveOutput(ownerKey: string, jobId: string, format: OutputFormat, content: Buffer | string) {
   try {
     const s3 = getS3Client();
-    
-    const key = `documents/${jobId}.${format}`;
+
+    const key = buildOwnerOutputKey(ownerKey, jobId, format);
     const contentBuffer = typeof content === "string" ? Buffer.from(content) : content;
 
     console.log(`📤 Uploading ${format} to Backblaze B2: ${key}`);
@@ -73,11 +94,11 @@ export async function saveOutput(jobId: string, format: OutputFormat, content: B
   }
 }
 
-export async function readOutput(jobId: string, format: OutputFormat) {
+async function readLegacyOutput(jobId: string, format: OutputFormat) {
   try {
     const s3 = getS3Client();
-    
-    const key = `documents/${jobId}.${format}`;
+
+    const key = buildLegacyOutputKey(jobId, format);
 
     console.log(`📥 Downloading ${format} from Backblaze B2: ${key}`);
 
@@ -116,23 +137,89 @@ export async function readOutput(jobId: string, format: OutputFormat) {
   }
 }
 
-export async function deleteOutput(jobId: string, format: OutputFormat) {
+export async function readOutput(ownerKey: string, jobId: string, format: OutputFormat) {
+  const ownerKeyPath = buildOwnerOutputKey(ownerKey, jobId, format);
+
   try {
     const s3 = getS3Client();
-    const key = `documents/${jobId}.${format}`;
 
-    console.log(`🗑️ Deleting ${format} from Backblaze B2: ${key}`);
+    console.log(`📥 Downloading ${format} from Backblaze B2: ${ownerKeyPath}`);
+
+    const command = new GetObjectCommand({
+      Bucket: config.b2.bucket,
+      Key: ownerKeyPath
+    });
+
+    const response = await s3.send(command);
+
+    if (!response.Body) {
+      throw new Error(`File not found: ${ownerKeyPath}`);
+    }
+
+    const chunks: Uint8Array[] = [];
+    const reader = response.Body as any;
+
+    if (reader[Symbol.asyncIterator]) {
+      for await (const chunk of reader) {
+        chunks.push(chunk);
+      }
+    } else if (typeof reader.read === "function") {
+      let chunk;
+      while ((chunk = reader.read()) !== null) {
+        chunks.push(chunk);
+      }
+    }
+
+    const buffer = Buffer.concat(chunks);
+    console.log(`✅ Successfully downloaded ${format} from Backblaze B2 (${buffer.length} bytes)`);
+    return buffer;
+  } catch (error) {
+    console.warn(
+      `⚠️ Failed to read owner-scoped key (${ownerKeyPath}), attempting legacy key fallback`,
+      error instanceof Error ? error.message : error
+    );
+    return readLegacyOutput(jobId, format);
+  }
+}
+
+export async function deleteOutput(ownerKey: string, jobId: string, format: OutputFormat) {
+  try {
+    const s3 = getS3Client();
+    const ownerKeyPath = buildOwnerOutputKey(ownerKey, jobId, format);
+
+    console.log(`🗑️ Deleting ${format} from Backblaze B2: ${ownerKeyPath}`);
 
     const command = new DeleteObjectCommand({
       Bucket: config.b2.bucket,
-      Key: key
+      Key: ownerKeyPath
     });
 
     await s3.send(command);
     console.log(`✅ Deleted ${format} from Backblaze B2`);
   } catch (error) {
-    console.error(`❌ Error deleting ${format} from Backblaze B2:`, error instanceof Error ? error.message : error);
-    throw error;
+    console.warn(
+      `⚠️ Failed to delete owner-scoped key for ${jobId}.${format}, attempting legacy key fallback`,
+      error instanceof Error ? error.message : error
+    );
+
+    try {
+      const s3 = getS3Client();
+      const legacyKey = buildLegacyOutputKey(jobId, format);
+
+      const command = new DeleteObjectCommand({
+        Bucket: config.b2.bucket,
+        Key: legacyKey
+      });
+
+      await s3.send(command);
+      console.log(`✅ Deleted legacy ${format} output from Backblaze B2`);
+    } catch (legacyError) {
+      console.error(
+        `❌ Error deleting ${format} from Backblaze B2:`,
+        legacyError instanceof Error ? legacyError.message : legacyError
+      );
+      throw legacyError;
+    }
   }
 }
 

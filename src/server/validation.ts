@@ -49,6 +49,7 @@ export const generationRequestSchema = z.object({
   mode: z.enum(["template_fill", "draft_to_document"]),
   templateSource: templateSourceSchema.optional(),
   data: z.record(z.any()).optional(),
+  saveToMyFiles: z.boolean().optional(),
   source: z
     .object({
       type: z.enum(["text", "html"]),
@@ -100,8 +101,9 @@ export const generationRequestSchema = z.object({
 export type GenerationRequestInput = z.infer<typeof generationRequestSchema>;
 
 export const batchGenerationRequestSchema = z.object({
-  requests: z.array(generationRequestSchema).min(1).max(200),
-  sessionToken: z.string().min(1).optional()
+  requests: z.array(generationRequestSchema).min(1).max(25),
+  sessionToken: z.string().min(1).optional(),
+  saveToMyFiles: z.boolean().optional()
 });
 
 export type BatchGenerationRequestInput = z.infer<typeof batchGenerationRequestSchema>;

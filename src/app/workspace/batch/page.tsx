@@ -20,7 +20,7 @@ export default async function BatchPage({
   return (
     <main className="pb-12">
       {hasPaidAccess ? (
-        <BatchGenerator templates={builtinTemplates} templatePreviews={templatePreviews} initialSessionToken={s} />
+        <BatchGenerator templates={builtinTemplates} templatePreviews={templatePreviews} initialSessionToken={s} hasPaidAccess={hasPaidAccess} />
       ) : (
         <PaidFeatureNotice
           feature="Batch generation"

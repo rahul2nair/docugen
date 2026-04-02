@@ -17,6 +17,8 @@
     "postinstall": "prisma generate && playwright install --with-deps chromium",
     "start": "next start",
     "test": "node -r dotenv/config --import tsx --test tests/**/*.test.ts",
+    "test:load:bulk": "node scripts/load-test-bulk.mjs",
+    "test:load:lifecycle": "tsx scripts/loadtest-lifecycle.ts",
     "worker": "playwright install-deps chromium && NODE_ENV=production tsx src/server/worker.ts",
     "lint": "next lint",
     "prisma:generate": "prisma generate",

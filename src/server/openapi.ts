@@ -59,13 +59,14 @@ export const endpoints: EndpointDoc[] = [
     method: "POST",
     path: "/api/v1/generations",
     summary: "Start a generation job",
-    description: "Enqueues a document generation job. Provide either a workspace session token in the request body or an account API key in the `Authorization: Bearer <api-key>` or `x-api-key` header. Account API access is available only on active paid plans, and API keys need the `generations:create` scope. Returns a `jobId` immediately — poll `GET /api/v1/generations/:jobId` to track completion and retrieve output URLs.",
+    description: "Enqueues a document generation job. Provide either a workspace session token in the request body or an account API key in the `Authorization: Bearer <api-key>` or `x-api-key` header. Account API access is available only on active paid plans, and API keys need the `generations:create` scope. Standard generation is limited to 10 documents per day on free accounts and 20 documents per day on paid accounts. Returns a `jobId` immediately — poll `GET /api/v1/generations/:jobId` to track completion and retrieve output URLs.",
     requestBody: {
       mode: "template_fill",
       templateSource: {
         type: "builtin",
         templateId: "invoice"
       },
+      saveToMyFiles: true,
       data: {
         seller_name: "Acme Labs",
         seller_address: "12 Main St, Dublin, D01 AB12",
@@ -106,6 +107,9 @@ export const endpoints: EndpointDoc[] = [
       },
       "402": {
         description: "The account tied to the API key does not have an active paid plan"
+      },
+      "429": {
+        description: "Daily generation limit reached"
       }
     }
   },
@@ -240,6 +244,7 @@ export const apiExamples = {
   invoiceRequest: {
     mode: "template_fill",
     templateSource: { type: "builtin", templateId: "invoice" },
+    saveToMyFiles: true,
     data: {
       seller_name: "Acme Labs",
       seller_address: "12 Main St, Dublin, D01 AB12",

@@ -29,6 +29,7 @@ interface Props {
   templates: BuiltinTemplate[];
   templatePreviews: BuiltinTemplatePreview[];
   initialSessionToken?: string;
+  hasPaidAccess?: boolean;
 }
 
 type WizardStep = 0 | 1 | 2 | 3;
@@ -56,7 +57,7 @@ function formatBadge(format: BatchInputFormat) {
   return format.toUpperCase();
 }
 
-export function BatchGenerator({ templates, templatePreviews, initialSessionToken }: Props) {
+export function BatchGenerator({ templates, templatePreviews, initialSessionToken, hasPaidAccess = false }: Props) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<WizardStep>(0);
   const [templateId, setTemplateId] = useState<string>(templates[0]?.id || "");
@@ -67,8 +68,9 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
   const [pdfFormat, setPdfFormat] = useState<"A4" | "Letter">("A4");
   const [pdfMargin, setPdfMargin] = useState<"normal" | "narrow">("normal");
   const [sessionToken, setSessionToken] = useState<string>(() => initialSessionToken || getStoredWorkspaceSessionToken());
+  const [saveToMyFiles, setSaveToMyFiles] = useState<boolean>(hasPaidAccess);
   const [queuedCount, setQueuedCount] = useState<number>(0);
-  const [showQueueNotice, setShowQueueNotice] = useState<boolean>(false);
+  const [showQueueDialog, setShowQueueDialog] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [uploadMessage, setUploadMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -108,7 +110,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
       warningIssues,
       previewRows,
       hiddenRowCount: Math.max(nextAnalysis.rows.length - previewRows.length, 0),
-      canQueue: Boolean(fileContent.trim()) && blockingIssues.length === 0 && nextAnalysis.rows.length > 0
+      canQueue: Boolean(fileContent.trim()) && blockingIssues.length === 0 && nextAnalysis.rows.length > 0 && nextAnalysis.rows.length <= 25
     };
   }, [fileContent, inputFormat, selectedTemplate]);
 
@@ -217,7 +219,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
       setFileContent(raw);
       setUploadedFileName(file.name);
       setQueuedCount(0);
-      setShowQueueNotice(false);
+      setShowQueueDialog(false);
       setErrorMessage("");
       setUploadMessage(`Loaded ${file.name}. Continue to review the parsed rows and validation results.`);
       setCurrentStep(3);
@@ -252,7 +254,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
     setFileContent("");
     setUploadedFileName("");
     setQueuedCount(0);
-    setShowQueueNotice(false);
+    setShowQueueDialog(false);
     resetMessages();
     setCurrentStep(2);
   }
@@ -310,10 +312,14 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
   async function handleQueueBatch() {
     setErrorMessage("");
     setQueuedCount(0);
-    setShowQueueNotice(false);
+    setShowQueueDialog(false);
 
     if (!analysis.canQueue) {
-      setErrorMessage(analysis.blockingIssues[0]?.message || "Upload a valid batch file before queueing.");
+      setErrorMessage(
+        analysis.rows.length > 25
+          ? "A batch can include up to 25 rows at a time. Split larger files into smaller uploads."
+          : analysis.blockingIssues[0]?.message || "Upload a valid batch file before queueing."
+      );
       return;
     }
 
@@ -321,6 +327,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
     try {
       const payload = {
         sessionToken: sessionToken.trim() || undefined,
+        saveToMyFiles,
         requests: analysis.rows.map((data) => ({
           mode: "template_fill",
           templateSource: {
@@ -353,9 +360,13 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
 
       const queuedJobs = (body.jobIds || []).length;
       setQueuedCount(queuedJobs);
-      setShowQueueNotice(queuedJobs > 0);
+      setShowQueueDialog(queuedJobs > 0);
       if (queuedJobs > 0) {
-        setUploadMessage(`Queued ${queuedJobs} document request${queuedJobs === 1 ? "" : "s"}. Check Activity for status updates and My Files for completed downloads.`);
+        setUploadMessage(
+          saveToMyFiles
+            ? `Queued ${queuedJobs} document request${queuedJobs === 1 ? "" : "s"}. Track progress in Activity and collect finished files in My Files.`
+            : `Queued ${queuedJobs} document request${queuedJobs === 1 ? "" : "s"}. Track progress in Activity. Files are not being saved to My Files for this run.`
+        );
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unable to queue batch");
@@ -368,7 +379,13 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
   const nextLabel = currentStep === 2 ? "Review file" : "Next";
   const GuideIcon = formatGuide.icon;
   const totalIssues = analysis.blockingIssues.length + analysis.warningIssues.length;
-  const reviewStatusLabel = analysis.canQueue ? "Ready to queue" : totalIssues ? `${totalIssues} item${totalIssues === 1 ? "" : "s"} to review` : "Needs review";
+  const reviewStatusLabel = analysis.rows.length > 25
+    ? "Over the 25-row limit"
+    : analysis.canQueue
+      ? "Ready to queue"
+      : totalIssues
+        ? `${totalIssues} item${totalIssues === 1 ? "" : "s"} to review`
+        : "Needs review";
   const activityHref = `/workspace/activity${sessionToken ? `?s=${encodeURIComponent(sessionToken)}` : ""}`;
 
   return (
@@ -377,7 +394,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
         <div className="max-w-4xl">
           <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Batch Generator</div>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Queue many documents without building the file structure by guesswork</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">This flow keeps the user on one route but moves one decision at a time: choose a template, pick a format, upload the file, review the mapping, then queue the batch.</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">This flow keeps the user on one route but moves one decision at a time: choose a template, pick a format, upload the file, review the mapping, then queue the batch. Each upload can include up to 25 rows.</p>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
@@ -433,7 +450,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
                           onClick={() => {
                             setTemplateId(template.id);
                             setQueuedCount(0);
-                            setShowQueueNotice(false);
+                            setShowQueueDialog(false);
                             resetMessages();
                           }}
                           className={`overflow-hidden rounded-2xl border text-left transition ${
@@ -515,7 +532,7 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
                           setUploadedFileName("");
                           setFileContent("");
                           setQueuedCount(0);
-                          setShowQueueNotice(false);
+                          setShowQueueDialog(false);
                           resetMessages();
                         }}
                         className={`min-w-[170px] rounded-2xl border px-4 py-4 text-left transition ${
@@ -635,6 +652,12 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
                         </div>
                       </div>
                     </div>
+
+                    {analysis.rows.length > 25 ? (
+                      <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-sm text-[#92400e]">
+                        This file has {analysis.rows.length} rows. Queue up to 25 rows per upload, then repeat with the next file.
+                      </div>
+                    ) : null}
 
                     {analysis.previewRows.length ? (
                       <div className="mt-4 space-y-4">
@@ -773,6 +796,23 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
                           <span>Rows ready</span>
                           <span className="font-medium text-slate-900">{analysis.rows.length}</span>
                         </div>
+                        <div className="rounded-lg border border-[#efe5d7] bg-[#f8fafc] px-4 py-3">
+                          <label className="flex items-start gap-3 text-sm text-slate-700">
+                            <input
+                              type="checkbox"
+                              checked={saveToMyFiles}
+                              onChange={(event) => setSaveToMyFiles(event.target.checked)}
+                              disabled={!hasPaidAccess}
+                              className="mt-1"
+                            />
+                            <span>
+                              <span className="block font-medium text-slate-900">Save completed files to My Files for 30 days</span>
+                              <span className="mt-1 block text-xs leading-5 text-slate-500">
+                                If this stays off, the batch still runs, but completed files are not kept in My Files.
+                              </span>
+                            </span>
+                          </label>
+                        </div>
                       </div>
 
                       <div className="mt-5 flex gap-3">
@@ -783,7 +823,9 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
                       </div>
 
                       {!analysis.canQueue ? (
-                        <div className="mt-4 rounded-xl border border-[#dbeafe] bg-[#eff6ff] px-4 py-3 text-sm text-[#2563eb]">Resolve the issues above before queueing.</div>
+                        <div className="mt-4 rounded-xl border border-[#dbeafe] bg-[#eff6ff] px-4 py-3 text-sm text-[#2563eb]">
+                          {analysis.rows.length > 25 ? "Split this file into batches of 25 rows or fewer before queueing." : "Resolve the issues above before queueing."}
+                        </div>
                       ) : null}
                       </div>
 
@@ -807,32 +849,10 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
 
                     <div className="space-y-5">
                     <div className="rounded-2xl border border-[#dbe4f0] bg-white/75 p-5">
-                      {showQueueNotice ? (
-                        <div className="mb-4 rounded-xl border border-[#d6ead8] bg-[#f4fff5] px-4 py-3">
-                          <div className="text-sm font-semibold text-[#166534]">Your batch is processing in the background</div>
-                          <div className="mt-1 text-xs text-[#166534]">
-                            {queuedCount > 0
-                              ? `${queuedCount} request${queuedCount === 1 ? "" : "s"} queued. Use Activity for status and My Files for completed downloads.`
-                              : "Use Activity for status and My Files for completed downloads."}
-                          </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <a href={activityHref}>
-                              <SecondaryButton className="px-3 py-2 text-xs">Open Activity</SecondaryButton>
-                            </a>
-                            <a href="/my-files">
-                              <SecondaryButton className="px-3 py-2 text-xs">Open My Files</SecondaryButton>
-                            </a>
-                            <SecondaryButton className="px-3 py-2 text-xs" onClick={() => setShowQueueNotice(false)}>
-                              Dismiss
-                            </SecondaryButton>
-                          </div>
-                        </div>
-                      ) : null}
-
                       <div className="text-sm font-semibold text-slate-900">Status tracking</div>
-                      <div className="mt-1 text-xs text-slate-500">Activity shows in-progress, success, and failed states. Completed files appear in My Files.</div>
+                      <div className="mt-1 text-xs text-slate-500">Activity shows in-progress, success, and failed states. Only batches with saving turned on appear in My Files for 30 days.</div>
                       <div className="mt-3 space-y-2">
-                        <div className="rounded-lg border border-dashed border-[#dbe4f0] bg-white/85 px-3 py-4 text-xs text-slate-500">After you queue a batch, use Activity for progress and My Files for downloads.</div>
+                        <div className="rounded-lg border border-dashed border-[#dbe4f0] bg-white/85 px-3 py-4 text-xs text-slate-500">After you queue a batch, use Activity for progress. Use My Files only for runs saved to your account.</div>
                       </div>
                     </div>
                     </div>
@@ -861,6 +881,31 @@ export function BatchGenerator({ templates, templatePreviews, initialSessionToke
           </div>
         </div>
       </div>
+
+      {showQueueDialog ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,18,11,0.42)] p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-[28px] border border-[#d6ead8] bg-white p-6 shadow-[0_28px_90px_rgba(39,25,12,0.24)]">
+            <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#166534]">Batch queued</div>
+            <div className="mt-2 text-2xl font-semibold text-slate-900">{queuedCount} request{queuedCount === 1 ? "" : "s"} are now processing</div>
+            <div className="mt-3 text-sm leading-6 text-slate-600">
+              {saveToMyFiles
+                ? "Watch progress in Activity. Completed files will be saved in My Files for 30 days unless you delete them earlier."
+                : "Watch progress in Activity. This run is not being saved to My Files, so download management stays temporary for this batch."}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <a href={activityHref}>
+                <MetallicButton className="px-4 py-2.5 text-sm">Open Activity</MetallicButton>
+              </a>
+              <a href="/my-files">
+                <SecondaryButton className="px-4 py-2.5 text-sm">Open My Files</SecondaryButton>
+              </a>
+              <SecondaryButton className="px-4 py-2.5 text-sm" onClick={() => setShowQueueDialog(false)}>
+                Stay here
+              </SecondaryButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
     </section>
   );

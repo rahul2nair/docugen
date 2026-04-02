@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getGenerationJobOwnerKey } from "@/server/api-job-store";
 import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
 import { config } from "@/server/config";
+import { buildDownloadFilename } from "@/server/generated-file-name";
 import { getAuthenticatedOwnerKey } from "@/server/persistence-context";
 import { generationQueue } from "@/server/queue";
 import { readOutput } from "@/server/output-store";
@@ -161,15 +162,16 @@ export async function GET(
   }
 
   try {
-    const file = await readOutput(jobId, format);
+    const file = await readOutput(requiredOwnerKey, jobId, format);
+    const fileName = buildDownloadFilename(persistedFile?.label || jobId, format);
 
     return new NextResponse(file, {
       headers: {
         "Content-Type": format === "html" ? "text/html; charset=utf-8" : "application/pdf",
         "Content-Disposition":
           format === "pdf"
-            ? `attachment; filename="${jobId}.pdf"`
-            : `inline; filename="${jobId}.html"`
+            ? `attachment; filename="${fileName}"`
+            : `inline; filename="${fileName}"`
       }
     });
   } catch {

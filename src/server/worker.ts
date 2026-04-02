@@ -4,30 +4,13 @@ import { logError, logInfo, logWarn } from "@/server/logger";
 import { builtinTemplates } from "@/server/templates";
 import { connection, generationQueue } from "@/server/queue";
 import { config } from "@/server/config";
+import { buildDownloadFilename, deriveGeneratedFileLabel } from "@/server/generated-file-name";
 import { renderRequest } from "@/server/render";
 import { saveOutput, outputUrl } from "@/server/output-store";
 import { cleanupExpiredGeneratedFiles } from "@/server/my-files-store";
 import { htmlToPdf } from "@/server/pdf";
 import { saveGeneratedFileByOwnerKey } from "@/server/user-data-store";
 import type { GenerationRequest, GenerationResult } from "@/server/types";
-
-function deriveFileLabel(request: GenerationRequest) {
-  if (request.options?.documentType?.trim()) {
-    return request.options.documentType.trim();
-  }
-
-  if (request.templateSource?.type === "builtin") {
-    const templateId = request.templateSource.templateId;
-    const template = builtinTemplates.find((item) => item.id === templateId);
-    return template?.name || templateId;
-  }
-
-  if (request.mode === "draft_to_document") {
-    return "Drafted Document";
-  }
-
-  return "Generated Document";
-}
 
 function computeMyFilesExpiry() {
   const retentionDays = Number.isNaN(config.myFilesRetentionDays) || config.myFilesRetentionDays <= 0
@@ -37,16 +20,17 @@ function computeMyFilesExpiry() {
   return new Date(Date.now() + retentionDays * 24 * 60 * 60 * 1000).toISOString();
 }
 
-function encodeEphemeralOutput(content: Buffer | string, format: "html" | "pdf") {
+function encodeEphemeralOutput(content: Buffer | string, format: "html" | "pdf", label: string) {
   const buffer = typeof content === "string" ? Buffer.from(content, "utf8") : content;
+  const fileName = buildDownloadFilename(label, format);
 
   return {
     bodyBase64: buffer.toString("base64"),
     contentType: format === "html" ? "text/html; charset=utf-8" : "application/pdf",
     contentDisposition:
       format === "pdf"
-        ? 'attachment; filename="document.pdf"'
-        : 'inline; filename="document.html"'
+        ? `attachment; filename="${fileName}"`
+        : `inline; filename="${fileName}"`
   };
 }
 
@@ -75,11 +59,19 @@ const worker = new Worker(
     try {
       const request = job.data as GenerationRequest;
       console.log(`📋 Mode: ${request.mode}, Outputs: ${request.outputs.join(", ")}`);
+      const builtinTemplateId = request.templateSource?.type === "builtin"
+        ? request.templateSource.templateId
+        : undefined;
+      const builtinTemplateName = builtinTemplateId
+        ? builtinTemplates.find((item) => item.id === builtinTemplateId)?.name
+        : undefined;
+      const fileLabel = deriveGeneratedFileLabel(request, builtinTemplateName);
       logInfo("job_details", {
         jobId: String(job.id),
         mode: request.mode,
         outputs: request.outputs,
-        hasOwnerKey: Boolean(request.persistence?.ownerKey)
+        hasOwnerKey: Boolean(request.persistence?.ownerKey),
+        fileLabel
       });
 
       const rendered = await renderRequest(request);
@@ -96,12 +88,12 @@ const worker = new Worker(
         try {
           if (shouldPersistOutputs) {
             console.log(`📝 Saving HTML output...`);
-            await saveOutput(job.id!, "html", rendered.html);
+            await saveOutput(request.persistence!.ownerKey, job.id!, "html", rendered.html);
             logInfo("job_html_saved", {
               jobId: String(job.id)
             });
           } else {
-            ephemeralOutputs.html = encodeEphemeralOutput(rendered.html, "html");
+            ephemeralOutputs.html = encodeEphemeralOutput(rendered.html, "html", fileLabel);
           }
           outputs.push(outputUrl(job.id!, "html"));
         } catch (error) {
@@ -122,12 +114,12 @@ const worker = new Worker(
 
           if (shouldPersistOutputs) {
             console.log(`💾 Saving PDF output...`);
-            await saveOutput(job.id!, "pdf", pdf);
+            await saveOutput(request.persistence!.ownerKey, job.id!, "pdf", pdf);
             logInfo("job_pdf_saved", {
               jobId: String(job.id)
             });
           } else {
-            ephemeralOutputs.pdf = encodeEphemeralOutput(pdf, "pdf");
+            ephemeralOutputs.pdf = encodeEphemeralOutput(pdf, "pdf", fileLabel);
           }
           outputs.push(outputUrl(job.id!, "pdf"));
         } catch (error) {
@@ -140,16 +132,9 @@ const worker = new Worker(
 
       if (shouldPersistOutputs && request.persistence?.ownerKey && job.id && outputs.length) {
         try {
-          const builtinTemplateId = request.templateSource?.type === "builtin"
-            ? request.templateSource.templateId
-            : undefined;
-          const builtinTemplateName = builtinTemplateId
-            ? builtinTemplates.find((item) => item.id === builtinTemplateId)?.name
-            : undefined;
-
           await saveGeneratedFileByOwnerKey(request.persistence.ownerKey, {
             jobId: String(job.id),
-            label: deriveFileLabel(request),
+            label: fileLabel,
             templateId: builtinTemplateId,
             templateName: builtinTemplateName,
             availableFormats: outputs.map((item) => item.format),
@@ -197,7 +182,10 @@ const worker = new Worker(
   },
   {
     connection,
-    concurrency: 3
+    concurrency:
+      Number.isNaN(config.worker.concurrency) || config.worker.concurrency <= 0
+        ? 1
+        : config.worker.concurrency
   }
 );
 
@@ -246,9 +234,15 @@ worker.on("completed", (job) => {
   console.log(`✅ Job ${job.id} completed`);
 });
 
-console.log("🚀 Worker started: document-generation (concurrency: 3)");
+const workerConcurrency =
+  Number.isNaN(config.worker.concurrency) || config.worker.concurrency <= 0
+    ? 1
+    : config.worker.concurrency;
+
+console.log(`🚀 Worker started: document-generation (concurrency: ${workerConcurrency})`);
 logInfo("worker_started", {
-  concurrency: 3
+  concurrency: workerConcurrency,
+  remotePdfRendererEnabled: Boolean(config.pdfRenderer.endpoint.trim())
 });
 
 scheduleMaintenanceJobs().catch((error) => {

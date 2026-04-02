@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { Workspace } from "@/components/workspace";
+import { getOptionalAuthenticatedAccountAccess } from "@/server/account-access";
 import { builtinTemplates } from "@/server/templates";
 import { renderBuiltinTemplatePreview } from "@/server/template-preview";
 
@@ -16,11 +17,12 @@ export default async function WorkspacePage({
   searchParams: Promise<{ s?: string }>;
 }) {
   const { s } = await searchParams;
+  const { hasPaidAccess } = await getOptionalAuthenticatedAccountAccess();
   const templatePreviews = getTemplatePreviews();
 
   return (
     <main className="pb-12">
-      <Workspace templates={builtinTemplates} templatePreviews={templatePreviews} initialSessionToken={s} />
+      <Workspace templates={builtinTemplates} templatePreviews={templatePreviews} initialSessionToken={s} hasPaidAccess={hasPaidAccess} />
     </main>
   );
 }

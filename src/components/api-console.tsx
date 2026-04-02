@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SmtpSettings } from "@/components/smtp-settings";
+import { ApiKeySettings } from "@/components/api-key-settings";
 import {
   ensureWorkspaceSession,
   getStoredWorkspaceSessionToken,
   setStoredWorkspaceSessionToken
 } from "@/lib/workspace-session-client";
 
-export function SettingsConsole() {
+export function ApiConsole() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tokenFromUrl = searchParams.get("s")?.trim() || "";
@@ -50,7 +50,7 @@ export function SettingsConsole() {
         setSessionError("");
 
         if (tokenFromUrl !== resolved.token) {
-          router.replace(`/settings?s=${encodeURIComponent(resolved.token)}`);
+          router.replace(`/api-docs?s=${encodeURIComponent(resolved.token)}`);
         }
       } catch (error) {
         if (!cancelled) {
@@ -68,19 +68,5 @@ export function SettingsConsole() {
     };
   }, [router, sessionToken, tokenFromUrl]);
 
-  return (
-    <>
-      <section className="page-shell pt-8">
-        <div className="glass-panel p-8">
-          <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#2563eb]">Settings</div>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-900">Delivery and integrations</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-            Use this area for outbound email delivery. API keys now live in the API area so integration
-            docs and credentials stay together.
-          </p>
-        </div>
-      </section>
-      <SmtpSettings sessionToken={sessionToken} sessionReady={sessionReady} />
-    </>
-  );
+  return <ApiKeySettings sessionToken={sessionToken} sessionReady={sessionReady} sessionError={sessionError} />;
 }

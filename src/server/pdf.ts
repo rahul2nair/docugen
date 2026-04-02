@@ -1,58 +1,78 @@
-import { chromium } from "playwright";
-import { logError, logInfo } from "@/server/logger";
+import { config } from "@/server/config";
+import { logError, logInfo, logWarn } from "@/server/logger";
+import { renderHtmlToPdfLocal, type PdfOptions } from "@/server/pdf-local";
 
-export async function htmlToPdf(html: string, opts?: { format?: "A4" | "Letter"; margin?: "normal" | "narrow"; }) {
+function rendererTimeoutMs() {
+  return Number.isNaN(config.pdfRenderer.timeoutMs) || config.pdfRenderer.timeoutMs <= 0
+    ? 45000
+    : config.pdfRenderer.timeoutMs;
+}
+
+async function renderWithRemoteRenderer(html: string, opts?: PdfOptions) {
+  const endpoint = config.pdfRenderer.endpoint.trim();
+  if (!endpoint) {
+    throw new Error("Remote PDF renderer endpoint is not configured");
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), rendererTimeoutMs());
+
   try {
-    const browser = await chromium.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.pdfRenderer.authToken
+          ? { "x-renderer-token": config.pdfRenderer.authToken }
+          : {})
+      },
+      body: JSON.stringify({ html, options: opts || {} }),
+      signal: controller.signal
     });
-    
-    try {
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "load" });
 
-      const margin =
-        opts?.margin === "narrow"
-          ? { top: "10mm", right: "10mm", bottom: "10mm", left: "10mm" }
-          : { top: "18mm", right: "18mm", bottom: "18mm", left: "18mm" };
-
-      const pdf = await page.pdf({
-        format: opts?.format || "A4",
-        printBackground: true,
-        margin
-      });
-
-      logInfo("pdf_generated", {
-        format: opts?.format || "A4",
-        margin: opts?.margin || "normal",
-        bytes: pdf.length
-      });
-      console.log(`✅ PDF generated successfully (${pdf.length} bytes)`);
-      return pdf;
-    } finally {
-      await browser.close();
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      throw new Error(`Remote renderer failed with ${response.status}: ${errorBody.slice(0, 400)}`);
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const missingLibMatch = message.match(/error while loading shared libraries:\s*([^:\s]+)(?::|\s)/i);
-    const missingLibrary = missingLibMatch?.[1];
 
-    logError("pdf_generation_failed", error, {
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const pdf = Buffer.from(bytes);
+
+    logInfo("pdf_generated_remote", {
+      endpoint,
       format: opts?.format || "A4",
       margin: opts?.margin || "normal",
-      missingLibrary,
-      hint: missingLibrary
-        ? "Install Playwright runtime dependencies (e.g. via playwright install --with-deps or apt package mapping) in the worker image"
-        : undefined
+      bytes: pdf.length
     });
-
-    if (missingLibrary) {
-      console.error(`❌ PDF generation failed: missing shared library ${missingLibrary}`);
-      console.error("   Hint: ensure the worker image installs Playwright system dependencies.");
-    } else {
-      console.error("❌ PDF generation error:", message);
-    }
+    return pdf;
+  } catch (error) {
+    logError("pdf_generation_failed_remote", error, {
+      endpoint,
+      format: opts?.format || "A4",
+      margin: opts?.margin || "normal"
+    });
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
+}
+
+export async function htmlToPdf(html: string, opts?: PdfOptions) {
+  const hasRemoteRenderer = Boolean(config.pdfRenderer.endpoint.trim());
+
+  if (hasRemoteRenderer) {
+    try {
+      return await renderWithRemoteRenderer(html, opts);
+    } catch (error) {
+      if (!config.pdfRenderer.fallbackToLocal) {
+        throw error;
+      }
+
+      logWarn("pdf_remote_renderer_fallback_to_local", {
+        reason: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  return renderHtmlToPdfLocal(html, opts);
 }

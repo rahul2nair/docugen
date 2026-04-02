@@ -11,8 +11,8 @@ const allFeatures = [
   { href: "/workspace/custom", title: "Draft from Notes",  icon: WandSparkles, requiresPaid: true, copy: "Turn rough notes into a polished document." },
   { href: "/workspace/batch",  title: "Bulk Generate",    icon: Layers3,    requiresPaid: true,  copy: "Generate many documents at once from a spreadsheet." },
   { href: "/workspace/import", title: "Import Template",  icon: Upload,     requiresPaid: true,  copy: "Convert an existing file into a reusable template." },
-  { href: "/api-docs",         title: "API & Integrations", icon: Braces,  requiresPaid: true,  copy: "Connect Templify to another system via REST API." },
-  { href: "/settings",         title: "Settings",         icon: Settings2,  requiresPaid: true,  copy: "Configure branding, SMTP, and API keys." },
+  { href: "/api-docs",         title: "API & Integrations", icon: Braces,  requiresPaid: true,  copy: "Read the API reference and manage account API keys." },
+  { href: "/settings",         title: "Settings",         icon: Settings2,  requiresPaid: true,  copy: "Configure branding and SMTP delivery settings." },
   { href: "/billing",          title: "Billing",          icon: CreditCard, requiresPaid: false, copy: "Manage your Pro plan or start a free trial." }
 ];
 
