@@ -23,7 +23,7 @@ export default async function BatchPage({
         <BatchGenerator templates={builtinTemplates} templatePreviews={templatePreviews} initialSessionToken={s} hasPaidAccess={hasPaidAccess} />
       ) : (
         <PaidFeatureNotice
-          feature="Batch generation"
+          feature="Batch Document Generation"
           title="Run high-volume document jobs with Pro."
           description="Batch generation is where document ops starts to create real queue, storage, and support cost, so it is now tied to the active Stripe-backed plan instead of being open by default."
           highlights={[
