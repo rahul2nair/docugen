@@ -6,38 +6,61 @@ export interface PdfOptions {
   margin?: "normal" | "narrow";
 }
 
-const CHROMIUM_LAUNCH_PROFILES: string[][] = [
-  [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-    "--disable-gpu",
-    "--no-zygote"
-  ],
-  [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-    "--disable-gpu",
-    "--no-zygote",
-    "--single-process",
-    "--disable-software-rasterizer"
-  ]
+type LaunchProfile = {
+  channel?: "chromium";
+  args: string[];
+};
+
+const CHROMIUM_LAUNCH_PROFILES: LaunchProfile[] = [
+  {
+    // Prefer full Chromium (new headless path) over headless_shell for container stability.
+    channel: "chromium",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--no-zygote",
+      "--disable-features=VizDisplayCompositor"
+    ]
+  },
+  {
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--no-zygote"
+    ]
+  },
+  {
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--no-zygote",
+      "--single-process",
+      "--disable-software-rasterizer"
+    ]
+  }
 ];
 
 async function launchChromiumWithFallback() {
   let lastError: unknown;
 
-  for (const args of CHROMIUM_LAUNCH_PROFILES) {
+  for (const profile of CHROMIUM_LAUNCH_PROFILES) {
     try {
       return await chromium.launch({
         headless: true,
-        args
+        channel: profile.channel,
+        args: profile.args
       });
     } catch (error) {
       lastError = error;
       logError("pdf_chromium_launch_profile_failed", error, {
-        args: args.join(" ")
+        channel: profile.channel || "default",
+        args: profile.args.join(" ")
       });
     }
   }

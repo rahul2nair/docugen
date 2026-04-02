@@ -123,10 +123,22 @@ const worker = new Worker(
           }
           outputs.push(outputUrl(job.id!, "pdf"));
         } catch (error) {
+          const hasHtmlOutput = outputs.some((item) => item.format === "html");
+
           logError("job_pdf_processing_failed", error, {
             jobId: String(job.id)
           });
-          throw error;
+
+          if (hasHtmlOutput) {
+            const reason = error instanceof Error ? error.message : String(error);
+            logWarn("job_pdf_failed_continuing_with_html", {
+              jobId: String(job.id),
+              reason
+            });
+            console.warn(`⚠️  PDF failed for job ${job.id}; continuing with HTML output only`);
+          } else {
+            throw error;
+          }
         }
       }
 
