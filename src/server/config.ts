@@ -1,5 +1,12 @@
+const redisUrlFromEnv = process.env.REDIS_URL || "";
+const isRailwayInternalRedis = redisUrlFromEnv.includes("railway.internal");
+const resolvedRedisUrl =
+  process.env.NODE_ENV !== "production" && isRailwayInternalRedis
+    ? process.env.REDIS_PUBLIC_URL || "redis://localhost:6379"
+    : redisUrlFromEnv || "redis://localhost:6379";
+
 export const config = {
-  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
+  redisUrl: resolvedRedisUrl,
   appUrl: process.env.APP_URL || "http://localhost:3000",
   jobRetentionHours: Number(process.env.JOB_RETENTION_HOURS || 24),
   myFilesRetentionDays: Number(process.env.MY_FILES_RETENTION_DAYS || 30),
