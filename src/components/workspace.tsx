@@ -311,6 +311,18 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
     () => new Set(templates.map((template) => template.id)),
     [templates]
   );
+  const [templateSearch, setTemplateSearch] = useState<string>("");
+  const filteredTemplates = useMemo(() => {
+    const q = templateSearch.trim().toLowerCase();
+    if (!q) return allTemplates;
+    return allTemplates.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q) ||
+        (t.description || "").toLowerCase().includes(q)
+    );
+  }, [allTemplates, templateSearch]);
+
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || "");
   const selectedTemplate = useMemo(
     () => allTemplates.find((template) => template.id === selectedTemplateId),
@@ -1290,12 +1302,29 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
             <div className="flex items-center justify-between gap-3 px-1 pb-3">
               <div className="text-sm font-semibold text-slate-900">Templates</div>
               <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
-                {allTemplates.length}
+                {filteredTemplates.length}
               </div>
             </div>
 
+            <div className="relative mb-3">
+              <input
+                type="search"
+                placeholder="Search templates…"
+                value={templateSearch}
+                onChange={(e) => setTemplateSearch(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 pl-8 text-xs text-slate-700 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
+              />
+              <svg className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" width="13" height="13" viewBox="0 0 16 16" fill="none">
+                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M10.5 10.5l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+
             <div className="space-y-3">
-              {allTemplates.map((template) => {
+              {filteredTemplates.length === 0 && (
+                <div className="py-6 text-center text-xs text-slate-400">No templates match your search.</div>
+              )}
+              {filteredTemplates.map((template) => {
                 const tone = getTemplateCardTone(template.category);
                 const selected = template.id === selectedTemplateId;
                 const templateThumbnailHtml = previewMap.get(template.id);

@@ -32,12 +32,12 @@ export function TemplateShowcase({
     <section id="templates" className="page-shell pt-10 pb-14">
       <div className="glass-panel p-6">
         <div className="mb-5">
-          <div className="text-sm font-medium uppercase tracking-[0.18em] text-blue-700">Document library</div>
+          <div className="text-sm font-medium uppercase tracking-[0.18em] text-blue-700">Built-in templates</div>
           <div className="mt-2 text-2xl font-semibold text-slate-900">
-            Pick a document type and start with a polished structure.
+            Ready-made document types — pick one and fill in the details.
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-            The library is grouped by use case so repeated document families like invoices can have multiple meaningful variants without turning the catalog into a wall of near-duplicates.
+            These are Templify&apos;s built-in templates. They cover common use cases across HR, Finance, Legal, and more. Your own saved templates are available inside the workspace.
           </p>
         </div>
 
