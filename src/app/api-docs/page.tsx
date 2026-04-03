@@ -153,6 +153,10 @@ export default async function ApiDocsPage() {
           </div>
         </div>
 
+        <Suspense fallback={null}>
+          <ApiConsole />
+        </Suspense>
+
         {/* Invoice example */}
         <div className="glass-panel p-8 mb-6">
           <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44] mb-1">Example Requests</div>
@@ -232,10 +236,6 @@ money amount currency      — format as locale currency  (e.g. {{money 1500 "EU
 #if / #unless / #each      — standard Handlebars blocks`}</pre>
           </div>
         </div>
-
-        <Suspense fallback={null}>
-          <ApiConsole />
-        </Suspense>
 
       </section>
       )}

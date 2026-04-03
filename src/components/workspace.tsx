@@ -1317,7 +1317,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
             <select
               value={selectedCategory === null ? "" : selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value || null)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+              className="mb-3 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
             >
               <option value="">All Templates</option>
               {personalTemplates.length > 0 && (
@@ -1330,7 +1330,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
               ))}
             </select>
 
-            <div className="space-y-3">
+            <div className="h-[420px] space-y-3 overflow-y-auto pr-1 xl:h-[calc(100vh-220px)]">
               {filteredTemplates.length === 0 && (
                 <div className="py-6 text-center text-xs text-slate-400">No templates in this category.</div>
               )}
