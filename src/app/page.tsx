@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getBillingAccountByOwnerKey, isActiveSubscriptionStatus } from "@/server/billing-store";
+import { userOwnerKey } from "@/server/user-data-store";
 
 const showcaseDocuments = [
   {
@@ -130,7 +132,10 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect("/dashboard");
+    const billing = await getBillingAccountByOwnerKey(userOwnerKey(user.id));
+    if (isActiveSubscriptionStatus(billing?.subscriptionStatus)) {
+      redirect("/dashboard");
+    }
   }
 
   return (

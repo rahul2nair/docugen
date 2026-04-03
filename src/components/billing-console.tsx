@@ -47,7 +47,7 @@ const proFeatures = [
 export function BillingConsole({ email, isConfigured, plans, billing, trialDays, trialEligible }: Props) {
   const searchParams = useSearchParams();
   const [selectedPriceId, setSelectedPriceId] = useState<string>(plans[0]?.priceId || "");
-  const [activeAction, setActiveAction] = useState<"checkout" | "portal" | "subscription" | "">("");
+  const [activeAction, setActiveAction] = useState<"checkout" | "portal" | "subscription" | "delete" | "">("");
   const [errorMessage, setErrorMessage] = useState("");
   const isTrialActive = billing?.subscriptionStatus === "trialing";
   const hasActiveSubscription = ["active", "trialing", "past_due"].includes(billing?.subscriptionStatus || "");
@@ -137,6 +137,36 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
       window.location.reload();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unable to update subscription");
+      setActiveAction("");
+    }
+  }
+
+  async function deleteAccount() {
+    const confirmation = window.confirm(
+      "Delete your account permanently? This revokes API keys, removes stored profile/template data, and cannot be undone."
+    );
+
+    if (!confirmation) {
+      return;
+    }
+
+    setActiveAction("delete");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error?.message || "Unable to delete account");
+      }
+
+      window.location.href = "/auth";
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to delete account");
       setActiveAction("");
     }
   }
@@ -309,6 +339,22 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
             Trial active
           </div>
         ) : null}
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800 shadow-sm">
+        <div className="font-semibold">Danger zone</div>
+        <p className="mt-2 leading-6">
+          You can permanently delete your account and profile data from Templify. Billing history required for tax
+          and regulatory compliance may be retained as described in our policies.
+        </p>
+        <button
+          className="mt-4 rounded-lg border border-rose-300 bg-white px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={activeAction === "delete"}
+          onClick={deleteAccount}
+          type="button"
+        >
+          {activeAction === "delete" ? "Deleting account..." : "Delete account permanently"}
+        </button>
       </div>
       </div>
     </section>

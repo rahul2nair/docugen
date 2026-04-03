@@ -5,7 +5,7 @@ import { FileText, LockKeyhole, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
-export function Footer() {
+export function Footer({ hasPaidAccess = false }: { hasPaidAccess?: boolean }) {
   const searchParams = useSearchParams();
   const { user } = useAuthUser();
   const sessionToken = searchParams.get("s")?.trim();
@@ -30,19 +30,23 @@ export function Footer() {
     : [];
 
   const publicLinks = [
-    { href: withSession("/workspace"), label: "Create" },
-    { href: withSession("/workspace/activity"), label: "Recent" },
+    { href: withSession("/workspace"), label: "Document Builder" },
+    { href: withSession("/workspace/activity"), label: "Recent Generations" },
     { href: "/templates", label: "Templates" },
-    { href: "/contact", label: "Contact" },
-    { href: "/support", label: "Support" },
-    { href: "/refunds", label: "Refunds" },
-    { href: "/subprocessors", label: "Subprocessors" }
+    { href: "/contact", label: "Contact Us" },
+    { href: "/refunds", label: "Refund Policy" }
   ];
 
+  const accountHref = user ? (hasPaidAccess ? "/dashboard" : "/billing") : "/auth?next=%2Fbilling";
+  const accountLabel = user ? (hasPaidAccess ? "Open account home" : "Open billing") : "Sign in to save more";
+
+  const openCookieSettings = () => {
+    window.dispatchEvent(new Event("templify:open-cookie-consent"));
+  };
+
   return (
-    <footer className="mt-16 bg-transparent">
-      <div className="page-shell pb-10 pt-2">
-        <div className="glass-panel overflow-hidden rounded-[28px] border border-slate-200/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] px-6 py-10 sm:px-8 lg:px-10">
+    <footer className="mt-16 border-t border-slate-200 bg-[linear-gradient(180deg,rgba(249,251,255,0.72)_0%,rgba(241,245,252,0.94)_100%)]">
+      <div className="page-shell py-12">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.8fr_0.85fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
@@ -61,7 +65,7 @@ export function Footer() {
           </div>
 
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Explore</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Product</div>
             <div className="mt-4 space-y-3 text-sm text-slate-700">
               {publicLinks.map((item) => (
                 <div key={item.href}>
@@ -73,7 +77,7 @@ export function Footer() {
 
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              <LockKeyhole size={13} /> Account Tools
+              <LockKeyhole size={13} /> Account
             </div>
             <div className="mt-4 space-y-3 text-sm text-slate-700">
               {user ? accountLinks.map((item) => (
@@ -94,15 +98,15 @@ export function Footer() {
 
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              <Sparkles size={13} /> How It Works
+              <Sparkles size={13} /> Get Started
             </div>
             <p className="mt-4 text-sm leading-7 text-slate-600">
               Start by creating a document. When your workflow grows, move into saved settings,
               imports, and integrations without changing the core experience.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Link className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50" href={user ? "/dashboard" : "/auth?next=%2Fdashboard"}>
-                {user ? "Open account home" : "Sign in to save more"}
+              <Link className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50" href={accountHref}>
+                {accountLabel}
               </Link>
             </div>
           </div>
@@ -113,11 +117,13 @@ export function Footer() {
           <div className="flex items-center gap-4">
             <Link className="hover:text-slate-700" href="/">Home</Link>
             <Link className="hover:text-slate-700" href="/templates">Templates</Link>
-            <Link className="hover:text-slate-700" href="/terms">Terms</Link>
-            <Link className="hover:text-slate-700" href="/privacy">Privacy</Link>
-            <Link className="hover:text-slate-700" href={user ? "/dashboard" : "/auth?next=%2Fdashboard"}>Account</Link>
+            <Link className="hover:text-slate-700" href="/terms">Terms of Service</Link>
+            <Link className="hover:text-slate-700" href="/privacy">Privacy Policy</Link>
+            <Link className="hover:text-slate-700" href="/dpa">DPA</Link>
+            <Link className="hover:text-slate-700" href="/cookies">Cookie Policy</Link>
+            <button className="hover:text-slate-700" onClick={openCookieSettings} type="button">Cookie settings</button>
+            <Link className="hover:text-slate-700" href={accountHref}>Account</Link>
           </div>
-        </div>
         </div>
       </div>
     </footer>

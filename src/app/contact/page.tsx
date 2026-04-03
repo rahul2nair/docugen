@@ -14,16 +14,13 @@ export default function ContactPage() {
           <ContactForm />
 
           <aside className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-700 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-900">Helpful links</h2>
+            <h2 className="text-base font-semibold text-slate-900">Legal & Policies</h2>
             <ul className="mt-3 space-y-2">
-              <li><Link href="/terms" className="text-blue-700 hover:underline">Terms of service</Link></li>
-              <li><Link href="/privacy" className="text-blue-700 hover:underline">Privacy policy</Link></li>
-              <li><Link href="/api-limits" className="text-blue-700 hover:underline">API limits</Link></li>
-              <li><Link href="/data-retention" className="text-blue-700 hover:underline">Data retention</Link></li>
-              <li><Link href="/acceptable-use" className="text-blue-700 hover:underline">Acceptable use</Link></li>
-              <li><Link href="/support" className="text-blue-700 hover:underline">Support & service levels</Link></li>
-              <li><Link href="/refunds" className="text-blue-700 hover:underline">Refund & cancellation</Link></li>
-              <li><Link href="/subprocessors" className="text-blue-700 hover:underline">Subprocessors</Link></li>
+              <li><Link href="/terms" className="text-blue-700 hover:underline">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="text-blue-700 hover:underline">Privacy Policy</Link></li>
+              <li><Link href="/dpa" className="text-blue-700 hover:underline">Data Processing Agreement (DPA)</Link></li>
+              <li><Link href="/cookies" className="text-blue-700 hover:underline">Cookie Policy</Link></li>
+              <li><Link href="/refunds" className="text-blue-700 hover:underline">Refund & Cancellation</Link></li>
             </ul>
           </aside>
         </div>

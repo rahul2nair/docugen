@@ -6,117 +6,157 @@ export default function PrivacyPage() {
         <p className="mt-3 text-sm text-slate-600">Last updated: 2026-04-03</p>
         <div className="prose mt-6 max-w-none text-slate-700">
           <p>
-            This privacy policy describes how Templify collects, uses, and protects personal information when you use
-            our service through the web application or API.
+            This Privacy Policy explains how Templify collects, uses, stores, discloses, and protects personal
+            information when you use our website, application, and APIs (collectively, the "Service").
           </p>
 
-          <h2>Information we collect</h2>
+          <h2>1. Scope</h2>
+          <p>
+            This policy applies to personal information processed in connection with account creation, product use,
+            billing, support, and security operations. It does not apply to third-party websites or services that are
+            not controlled by Templify.
+          </p>
 
-          <h3>Account data</h3>
+          <h2>2. Information we collect</h2>
+
+          <h3>Account and profile information</h3>
           <ul>
             <li>Email address</li>
             <li>Name and profile information (optional)</li>
-            <li>Avatar or profile picture (optional)</li>
-            <li>Password (encrypted)</li>
-            <li>Timezone and language preferences</li>
+            <li>Profile image and preferences (if provided)</li>
           </ul>
 
-          <h3>API and authentication</h3>
+          <h3>Authentication and API credentials</h3>
           <ul>
-            <li>API keys you generate (securely stored)</li>
-            <li>Session tokens used for web authentication</li>
-            <li>Login timestamps and IP addresses</li>
+            <li>API keys and session tokens</li>
+            <li>Login events, IP address, user agent, and request metadata</li>
           </ul>
 
-          <h3>Usage data</h3>
+          <h3>Service and usage data</h3>
           <ul>
-            <li>Generated documents and their metadata (template ID, format, timestamp)</li>
-            <li>Job status and processing times</li>
-            <li>API calls and endpoints accessed</li>
-            <li>Stored sessions and snapshots (content not indexed or analyzed)</li>
-          </ul>
-
-          <h3>Technical data</h3>
-          <ul>
-            <li>Your IP address</li>
-            <li>Browser type and user agent</li>
-            <li>Device type and operating system</li>
-            <li>Referrer and landing page</li>
+            <li>Templates, generation job metadata, and output metadata</li>
+            <li>Operational logs needed to run and secure the service</li>
+            <li>Feature usage metrics, diagnostics, and error reports</li>
           </ul>
 
           <h3>Billing data</h3>
           <ul>
-            <li>Billing email and address (if provided)</li>
-            <li>Subscription plan and pricing</li>
-            <li>Invoice records and payment metadata (Stripe)</li>
+            <li>Plan and subscription status</li>
+            <li>Invoice and payment metadata via our payment processor</li>
           </ul>
 
-          <h2>How we use your information</h2>
+          <h3>Communications</h3>
+          <ul>
+            <li>Support requests and correspondence you send to us</li>
+            <li>Service notices (security, billing, policy, and operational updates)</li>
+          </ul>
+
+          <h2>3. Legal bases for processing</h2>
+          <p>
+            Depending on your location, we process personal information under one or more legal bases, including:
+          </p>
+          <ul>
+            <li>Performance of a contract (to provide the Service you request)</li>
+            <li>Legitimate interests (security, fraud prevention, product improvement)</li>
+            <li>Compliance with legal obligations</li>
+            <li>Consent, where required by law</li>
+          </ul>
+
+          <h2>4. How we use your information</h2>
           <p>We use collected information to:</p>
           <ul>
-            <li>Authenticate your account and authorize API access</li>
-            <li>Process your document generation requests</li>
-            <li>Provide and improve the service</li>
-            <li>Send billing notifications and subscription updates</li>
-            <li>Prevent abuse and enforce limits</li>
-            <li>Troubleshoot errors and investigate incidents</li>
-            <li>Comply with legal obligations</li>
+            <li>Provide, maintain, and improve the Service</li>
+            <li>Authenticate users and authorize API access</li>
+            <li>Process generation jobs and deliver outputs</li>
+            <li>Operate billing, subscriptions, and account management</li>
+            <li>Prevent abuse, fraud, and security incidents</li>
+            <li>Comply with legal, tax, audit, and regulatory obligations</li>
+            <li>Respond to support requests and product inquiries</li>
           </ul>
 
-          <h2>Data processors</h2>
+          <h2>5. Cookies and similar technologies</h2>
           <p>
-            We share personal data with trusted vendors to operate Templify:
+            Templify uses essential cookies and similar technologies for secure authentication, session continuity,
+            and core product functionality.
           </p>
           <ul>
-            <li><strong>Supabase</strong> — Authentication, account data, database</li>
-            <li><strong>Stripe</strong> — Billing and subscription management</li>
-            <li><strong>Backblaze B2</strong> — Generated file storage</li>
-            <li><strong>Railway</strong> — Application hosting and infrastructure</li>
+            <li>Authentication and session management</li>
+            <li>Security controls and abuse prevention</li>
+            <li>Basic product settings and preferences</li>
           </ul>
-          <p>
-            These vendors process your data under data processing agreements and are required to maintain
-            confidentiality and security.
-          </p>
+          <p>We do not use third-party advertising cookies in the Service.</p>
 
-          <h2>Your rights</h2>
+          <h2>6. Sharing and disclosure</h2>
           <p>
-            Subject to local law, you have the right to:
+            We do not sell personal information. We may disclose information in the following circumstances:
           </p>
           <ul>
-            <li><strong>Access:</strong> Request a copy of your personal data</li>
-            <li><strong>Correction:</strong> Update or correct inaccurate information</li>
-            <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
-            <li><strong>Portability:</strong> Download your data in machine-readable format</li>
-            <li><strong>Objection:</strong> Opt out of non-essential processing</li>
+            <li>To service providers processing data on our behalf for legitimate business purposes</li>
+            <li>To comply with legal obligations, court orders, or lawful requests</li>
+            <li>To protect rights, safety, security, and integrity of Templify, users, and the public</li>
+            <li>In connection with a merger, acquisition, financing, or asset sale</li>
           </ul>
-          <p>Submit requests via the contact page. We aim to respond within 30 days.</p>
 
-          <h2>Cookies and tracking</h2>
+          <h2>7. International data transfers</h2>
           <p>
-            Templify uses cookies for:
+            Your information may be processed in countries other than your own. Where required, we implement
+            appropriate safeguards for cross-border transfers consistent with applicable data protection laws.
+          </p>
+
+          <h2>8. Data retention</h2>
+          <p>
+            We retain personal information for as long as necessary to provide the Service, fulfill legal
+            obligations, resolve disputes, and enforce our agreements.
           </p>
           <ul>
-            <li><strong>Authentication:</strong> Maintaining your login session</li>
-            <li><strong>Preferences:</strong> Remembering your settings and theme</li>
-            <li><strong>Essential:</strong> CSRF tokens and session IDs</li>
+            <li>Account profile and account configuration data: retained while your account remains active.</li>
+            <li>Operational and security logs: retained for limited periods based on security and audit needs.</li>
+            <li>Financial and tax-relevant records: retained where legally required.</li>
           </ul>
-          <p>We do not use cookies for behavioral tracking or advertising.</p>
 
-          <h2>Data retention</h2>
+          <h2>9. Security</h2>
           <p>
-            See our Data Retention & Deletion policy for details on how long we keep different types of data.
+            We apply reasonable technical and organizational safeguards designed to protect personal information.
+            No method of transmission or storage is completely secure, and therefore we cannot guarantee absolute
+            security.
           </p>
 
-          <h2>Security</h2>
+          <h2>10. Your privacy rights</h2>
           <p>
-            All data in transit is encrypted using TLS 1.2+. Passwords are hashed. API keys are encrypted at rest.
-            Billing data is handled by Stripe with PCI DSS compliance. We monitor for unauthorized access and
-            maintain security patches and updates.
+            Depending on your location, you may be able to request access, correction, export, or deletion of your
+            personal information, or object to and restrict certain processing.
+          </p>
+          <p>
+            In Germany and the wider EEA/UK, these rights include access, rectification, erasure, restriction,
+            data portability, withdrawal of consent, and objection to processing based on legitimate interests.
+          </p>
+          <p>
+            You can request deletion through account controls when signed in, or by contacting us through the
+            contact page. We may need to verify identity before fulfilling requests.
+          </p>
+
+          <h2>11. Supervisory authority complaints</h2>
+          <p>
+            If you are in the EEA/UK, you may lodge a complaint with your local data protection supervisory authority
+            if you believe processing of your personal data violates applicable law.
+          </p>
+
+          <h2>12. Children's privacy</h2>
+          <p>
+            The Service is not directed to children under the age required by applicable law to consent to data
+            processing in their jurisdiction. We do not knowingly collect personal information from children in
+            violation of applicable law.
+          </p>
+
+          <h2>13. Changes to this policy</h2>
+          <p>
+            We may update this Privacy Policy from time to time. Material updates will be reflected by revising
+            the "Last updated" date and, where appropriate, by additional notice.
           </p>
 
           <h2>Contact</h2>
           <p>
-            For privacy questions or concerns, contact us via the contact page.
+            For privacy-related questions or requests, contact us via the contact page.
           </p>
         </div>
       </section>

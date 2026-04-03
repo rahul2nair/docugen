@@ -20,18 +20,19 @@ import {
 } from "lucide-react";
 import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
-const mainNav = [
-  { href: "/", icon: Home, label: "Home", exact: true },
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/workspace", icon: WandSparkles, label: "Create" },
-  { href: "/workspace/activity", icon: Activity, label: "Activity" },
-  { href: "/templates", icon: LayoutTemplate, label: "Templates" },
-  { href: "/my-files", icon: FolderOpen, label: "My Files" },
-  { href: "/workspace/batch", icon: TableProperties, label: "Bulk Generate" },
-  { href: "/api-docs", icon: Braces, label: "API Docs" },
-  { href: "/contact", icon: MessageSquare, label: "Contact" },
-  { href: "/settings", icon: Settings, label: "Settings" }
-];
+function buildMainNav(hasPaidAccess: boolean) {
+  return [
+    ...(hasPaidAccess ? [{ href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }] : [{ href: "/", icon: Home, label: "Home", exact: true }]),
+    { href: "/workspace", icon: WandSparkles, label: "Create" },
+    { href: "/workspace/activity", icon: Activity, label: "Activity" },
+    { href: "/templates", icon: LayoutTemplate, label: "Templates" },
+    { href: "/my-files", icon: FolderOpen, label: "My Files" },
+    { href: "/workspace/batch", icon: TableProperties, label: "Bulk Generate" },
+    { href: "/api-docs", icon: Braces, label: "API Docs" },
+    { href: "/contact", icon: MessageSquare, label: "Contact" },
+    { href: "/settings", icon: Settings, label: "Settings" }
+  ];
+}
 
 function Tooltip({ label }: { label: string }) {
   return (
@@ -65,9 +66,10 @@ function NavLink({ href, icon: Icon, label, active }: NavLinkProps) {
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, hasPaidAccess = false }: { children: ReactNode; hasPaidAccess?: boolean }) {
   const pathname = usePathname();
   const { user, loading } = useAuthUser();
+  const mainNav = buildMainNav(hasPaidAccess);
 
   const avatarUrl = [user?.user_metadata?.avatar_url, user?.user_metadata?.picture, user?.user_metadata?.picture_url]
     .find((v): v is string => typeof v === "string" && v.trim().length > 0);
@@ -130,9 +132,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {!loading && user && (
             <Link
-              href="/dashboard"
+              href={hasPaidAccess ? "/dashboard" : "/billing"}
               className={`group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 transition-all duration-150 ${
-                isActive("/dashboard")
+                isActive(hasPaidAccess ? "/dashboard" : "/billing")
                   ? "border-blue-500 shadow-md shadow-blue-900/40"
                   : "border-white/20 hover:border-blue-400"
               }`}
