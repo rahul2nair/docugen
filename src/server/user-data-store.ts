@@ -588,6 +588,17 @@ export async function listTemplatesByOwnerKeys(ownerKeys: string[]) {
   return Array.from(merged.values()).map(mapTemplate);
 }
 
+export async function getTemplateByOwnerKey(ownerKey: string, templateId: string) {
+  const data = await prisma.userTemplate.findFirst({
+    where: {
+      ownerKey,
+      id: templateId
+    }
+  });
+
+  return data ? mapTemplate(data) : null;
+}
+
 export async function saveTemplateByOwnerKey(
   ownerKey: string,
   payload: {

@@ -45,6 +45,22 @@ const templateSourceSchema = z.discriminatedUnion("type", [
   })
 ]);
 
+const generationOptionsSchema = z
+  .object({
+    locale: z.string().optional(),
+    documentType: z.string().optional(),
+    branding: brandingSchema,
+    clauses: z.array(clauseSelectionSchema).optional(),
+    customClauses: z.array(customClauseSchema).optional(),
+    pdf: z
+      .object({
+        format: z.enum(["A4", "Letter"]).optional(),
+        margin: z.enum(["normal", "narrow"]).optional()
+      })
+      .optional()
+  })
+  .optional();
+
 export const generationRequestSchema = z.object({
   mode: z.enum(["template_fill", "draft_to_document"]),
   templateSource: templateSourceSchema.optional(),
@@ -65,21 +81,7 @@ export const generationRequestSchema = z.object({
       editorId: z.string().min(1).optional()
     })
     .optional(),
-  options: z
-    .object({
-      locale: z.string().optional(),
-      documentType: z.string().optional(),
-      branding: brandingSchema,
-      clauses: z.array(clauseSelectionSchema).optional(),
-      customClauses: z.array(customClauseSchema).optional(),
-      pdf: z
-        .object({
-          format: z.enum(["A4", "Letter"]).optional(),
-          margin: z.enum(["normal", "narrow"]).optional()
-        })
-        .optional()
-    })
-    .optional()
+  options: generationOptionsSchema
 }).superRefine((value, ctx) => {
   if (value.mode === "template_fill" && !value.templateSource) {
     ctx.addIssue({
@@ -99,6 +101,16 @@ export const generationRequestSchema = z.object({
 });
 
 export type GenerationRequestInput = z.infer<typeof generationRequestSchema>;
+
+export const generationFromSavedTemplateSchema = z.object({
+  templateId: z.string().trim().min(1).max(64),
+  data: z.record(z.any()).optional(),
+  saveToMyFiles: z.boolean().optional(),
+  outputs: z.array(z.enum(["html", "pdf"])).min(1),
+  options: generationOptionsSchema
+});
+
+export type GenerationFromSavedTemplateInput = z.infer<typeof generationFromSavedTemplateSchema>;
 
 export const batchGenerationRequestSchema = z.object({
   requests: z.array(generationRequestSchema).min(1).max(25),

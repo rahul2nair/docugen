@@ -5,7 +5,8 @@ import { config } from "@/server/config";
 import { generationQueue } from "@/server/queue";
 import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limit";
 import { readRequestIp } from "@/server/request-context";
-import { generationRequestSchema } from "@/server/validation";
+import { getTemplateByOwnerKey } from "@/server/user-data-store";
+import { generationFromSavedTemplateSchema } from "@/server/validation";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -17,19 +18,31 @@ export async function POST(request: Request) {
       {
         error: {
           code: "UNAUTHORIZED",
-          message: "Provide an account API key to access inline template generation"
+          message: "Provide an account API key to generate from a saved template"
         }
       },
       { status: 401 }
     );
   }
 
-  if (!hasAccountApiKeyScope(accountApiAuth, "generations:create:inline")) {
+  if (!hasAccountApiKeyScope(accountApiAuth, "generations:create")) {
     return NextResponse.json(
       {
         error: {
           code: "FORBIDDEN",
-          message: "This API key cannot create inline-template jobs"
+          message: "This API key cannot create standard generation jobs"
+        }
+      },
+      { status: 403 }
+    );
+  }
+
+  if (!hasAccountApiKeyScope(accountApiAuth, "templates:read")) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "FORBIDDEN",
+          message: "This API key cannot read saved templates"
         }
       },
       { status: 403 }
@@ -43,13 +56,13 @@ export async function POST(request: Request) {
 
   const rateLimitViolation = await enforceRateLimits([
     {
-      bucket: "generation-inline:api-key",
+      bucket: "generation-write:api-key",
       identifiers: [accountApiAuth.id, accountApiAuth.ownerKey],
       limit: config.rateLimit.apiWriteLimit,
       windowSeconds: config.rateLimit.apiWriteWindowSeconds
     },
     {
-      bucket: "generation-inline:ip-safety",
+      bucket: "generation-write:ip-safety",
       identifiers: [clientIp],
       limit: config.rateLimit.ipSafetyLimit,
       windowSeconds: config.rateLimit.ipSafetyWindowSeconds
@@ -59,39 +72,18 @@ export async function POST(request: Request) {
   if (rateLimitViolation) {
     return rateLimitExceededResponse(
       rateLimitViolation,
-      "Inline template generation is temporarily rate limited. Try again shortly."
+      "Generation rate limit exceeded. Wait briefly before queueing more jobs."
     );
   }
 
-  // Accept both legacy { template: { content } } and canonical { templateSource } payloads.
-  const payload = body?.templateSource
-    ? {
-        mode: "template_fill",
-        templateSource: body.templateSource,
-        data: body?.data || {},
-        saveToMyFiles: body?.saveToMyFiles,
-        outputs: body?.outputs || ["html"]
-      }
-    : {
-        mode: "template_fill",
-        templateSource: {
-          type: "inline",
-          syntax: "handlebars",
-          content: body?.template?.content
-        },
-        data: body?.data || {},
-        saveToMyFiles: body?.saveToMyFiles,
-        outputs: body?.outputs || ["html"]
-      };
-
-  const parsed = generationRequestSchema.safeParse(payload);
+  const parsed = generationFromSavedTemplateSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
       {
         error: {
           code: "VALIDATION_ERROR",
-          message: "Invalid inline template request",
+          message: "Invalid saved-template generation request",
           details: parsed.error.flatten()
         }
       },
@@ -99,20 +91,37 @@ export async function POST(request: Request) {
     );
   }
 
+  const savedTemplate = await getTemplateByOwnerKey(accountApiAuth.ownerKey, parsed.data.templateId);
+
+  if (!savedTemplate) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "NOT_FOUND",
+          message: "Saved template not found"
+        }
+      },
+      { status: 404 }
+    );
+  }
+
   const shouldSaveToMyFiles = parsed.data.saveToMyFiles !== false;
 
-  const queuePayload = shouldSaveToMyFiles
-    ? {
-        ...parsed.data,
-        saveToMyFiles: true,
-        persistence: {
-          ownerKey: accountApiAuth.ownerKey
-        }
-      }
-    : {
-        ...parsed.data,
-        saveToMyFiles: false
-      };
+  const queuePayload = {
+    mode: "template_fill" as const,
+    templateSource: {
+      type: "inline" as const,
+      syntax: "handlebars" as const,
+      content: savedTemplate.content
+    },
+    data: parsed.data.data || {},
+    outputs: parsed.data.outputs,
+    options: parsed.data.options,
+    saveToMyFiles: shouldSaveToMyFiles,
+    persistence: {
+      ownerKey: accountApiAuth.ownerKey
+    }
+  };
 
   const job = await generationQueue.add("generate", queuePayload);
   if (job.id) {
@@ -121,6 +130,8 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     jobId: job.id,
-    status: "queued"
+    status: "queued",
+    templateId: savedTemplate.id,
+    templateName: savedTemplate.name
   });
 }

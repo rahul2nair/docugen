@@ -53,6 +53,85 @@ export const endpoints: EndpointDoc[] = [
       "404": { description: "Template not found" }
     }
   },
+  {
+    method: "GET",
+    path: "/api/v1/templates/personal",
+    summary: "List saved account templates",
+    description: "Lists templates saved for the API key owner. Requires an account API key with the `templates:read` scope and an active paid plan.",
+    responses: {
+      "200": {
+        description: "Array of account-saved templates",
+        body: {
+          templates: [
+            {
+              id: "Q2vN8r7Xx9dA1cEf",
+              name: "Partner NDA",
+              description: "NDA for partner onboarding",
+              category: "Legal",
+              supportedOutputs: ["html", "pdf"],
+              fields: [
+                { key: "party_a", label: "Party A", type: "text", required: true },
+                { key: "party_b", label: "Party B", type: "text", required: true }
+              ],
+              content: "<section><h1>NDA</h1><p>{{party_a}} and {{party_b}}</p></section>",
+              createdAt: "2026-04-03T10:12:00.000Z",
+              updatedAt: "2026-04-03T10:12:00.000Z"
+            }
+          ]
+        }
+      },
+      "401": { description: "Missing or invalid account API key" },
+      "403": { description: "The provided API key does not have the required scope" },
+      "402": { description: "The account tied to the API key does not have an active paid plan" }
+    }
+  },
+  {
+    method: "POST",
+    path: "/api/v1/templates/personal",
+    summary: "Create or update a saved account template",
+    description: "Creates a new saved template or updates an existing one (when `id` is provided). Requires an account API key with the `templates:write` scope and an active paid plan.",
+    requestBody: {
+      name: "Partner NDA",
+      description: "NDA for partner onboarding",
+      category: "Legal",
+      supportedOutputs: ["html", "pdf"],
+      fields: [
+        { key: "party_a", label: "Party A", type: "text", required: true },
+        { key: "party_b", label: "Party B", type: "text", required: true },
+        { key: "effective_date", label: "Effective Date", type: "date", required: true }
+      ],
+      content: "<section><h1>Mutual NDA</h1><p>This NDA is between {{party_a}} and {{party_b}} effective {{effective_date}}.</p></section>"
+    },
+    responses: {
+      "200": {
+        description: "Template saved",
+        body: { id: "Q2vN8r7Xx9dA1cEf" }
+      },
+      "400": { description: "Validation error" },
+      "401": { description: "Missing or invalid account API key" },
+      "403": { description: "The provided API key does not have the required scope" },
+      "402": { description: "The account tied to the API key does not have an active paid plan" }
+    }
+  },
+  {
+    method: "DELETE",
+    path: "/api/v1/templates/personal",
+    summary: "Delete a saved account template",
+    description: "Deletes one account-saved template by id. Requires an account API key with the `templates:delete` scope and an active paid plan.",
+    queryParams: [
+      { name: "id", type: "string", required: true, description: "Template id to delete" }
+    ],
+    responses: {
+      "200": {
+        description: "Template deleted",
+        body: { ok: true }
+      },
+      "400": { description: "Missing or invalid template id" },
+      "401": { description: "Missing or invalid account API key" },
+      "403": { description: "The provided API key does not have the required scope" },
+      "402": { description: "The account tied to the API key does not have an active paid plan" }
+    }
+  },
 
   // ── Generate from built-in template ───────────────────────────────────────
   {
@@ -117,7 +196,7 @@ export const endpoints: EndpointDoc[] = [
     method: "POST",
     path: "/api/v1/generations/from-template",
     summary: "Generate from an inline template",
-    description: "Generate a document from a custom Handlebars template string without saving it first. This endpoint requires an account API key via `Authorization: Bearer <api-key>` or `x-api-key` with the `generations:create:inline` scope. Account API access is limited to active paid plans.",
+    description: "Generate a document from a custom Handlebars template string without saving it first. This endpoint requires an account API key via `Authorization: Bearer <api-key>` or `x-api-key` with the `generations:create:inline` scope. Account API access is limited to active paid plans. The canonical payload uses `templateSource`; legacy `template.content` payloads are still accepted for backward compatibility.",
     requestBody: {
       mode: "template_fill",
       templateSource: {
@@ -145,6 +224,34 @@ export const endpoints: EndpointDoc[] = [
       "402": {
         description: "The account tied to the API key does not have an active paid plan"
       }
+    }
+  },
+  {
+    method: "POST",
+    path: "/api/v1/generations/from-saved-template",
+    summary: "Generate from a saved account template",
+    description: "Queues a generation job using a previously saved personal template by id. Requires an account API key with both `generations:create` and `templates:read` scopes. Account API access is limited to active paid plans.",
+    requestBody: {
+      templateId: "Q2vN8r7Xx9dA1cEf",
+      data: {
+        party_a: "Acme Corp",
+        party_b: "Beta Ltd",
+        effective_date: "2026-04-03"
+      },
+      outputs: ["html", "pdf"],
+      saveToMyFiles: true
+    },
+    responses: {
+      "200": {
+        description: "Job queued",
+        body: { jobId: "2ab99ef1-...", status: "queued", templateId: "Q2vN8r7Xx9dA1cEf", templateName: "Partner NDA" }
+      },
+      "400": { description: "Validation error" },
+      "401": { description: "Missing or invalid account API key" },
+      "403": { description: "The provided API key does not have required scopes" },
+      "402": { description: "The account tied to the API key does not have an active paid plan" },
+      "404": { description: "Saved template not found" },
+      "429": { description: "Rate limit reached" }
     }
   },
   {
@@ -349,6 +456,17 @@ export const apiExamples = {
     },
     data: { name: "Rahul Nair", order_id: "ORD-9912" },
     outputs: ["html"]
+  },
+
+  generateFromSavedTemplateRequest: {
+    templateId: "Q2vN8r7Xx9dA1cEf",
+    data: {
+      party_a: "Acme Corp",
+      party_b: "Beta Ltd",
+      effective_date: "2026-04-03"
+    },
+    outputs: ["html", "pdf"],
+    saveToMyFiles: true
   },
 
   // Completed job response shape

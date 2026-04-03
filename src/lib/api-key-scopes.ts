@@ -2,7 +2,10 @@ export const apiKeyScopes = [
   "generations:create",
   "generations:create:inline",
   "generations:create:batch",
-  "generations:read"
+  "generations:read",
+  "templates:read",
+  "templates:write",
+  "templates:delete"
 ] as const;
 
 export type ApiKeyScope = (typeof apiKeyScopes)[number];
@@ -25,5 +28,17 @@ export const apiKeyScopeLabels: Record<ApiKeyScope, { title: string; description
   "generations:read": {
     title: "Read job status and outputs",
     description: "Allow status polling plus output listing and downloads"
+  },
+  "templates:read": {
+    title: "Read saved templates",
+    description: "Allow listing your account-saved templates"
+  },
+  "templates:write": {
+    title: "Create or update templates",
+    description: "Allow creating and updating saved account templates"
+  },
+  "templates:delete": {
+    title: "Delete saved templates",
+    description: "Allow removing saved account templates"
   }
 };

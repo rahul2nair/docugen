@@ -72,10 +72,19 @@ export default async function ApiDocsPage() {
   const { hasPaidAccess } = await getAuthenticatedAccountAccess("/api-docs");
   const categories = [
     {
+      label: "Templates",
+      paths: [
+        "/api/v1/templates",
+        "/api/v1/templates/:templateId",
+        "/api/v1/templates/personal"
+      ]
+    },
+    {
       label: "Generations",
       paths: [
         "/api/v1/generations",
         "/api/v1/generations/from-template",
+        "/api/v1/generations/from-saved-template",
         "/api/v1/generations/batch",
         "/api/v1/generations/preview",
         "/api/v1/generations/:jobId"
@@ -170,6 +179,14 @@ export default async function ApiDocsPage() {
             <div className="rounded-[16px] bg-[#1f1b17] p-4 overflow-auto max-h-56">
               <pre className="text-xs text-[#efe5d8] whitespace-pre-wrap leading-5">
                 {JSON.stringify(apiExamples.inlineRequest, null, 2)}
+              </pre>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-sm font-semibold text-ink-900 mb-2">Saved template by id</div>
+            <div className="rounded-[16px] bg-[#1f1b17] p-4 overflow-auto max-h-56">
+              <pre className="text-xs text-[#efe5d8] whitespace-pre-wrap leading-5">
+                {JSON.stringify(apiExamples.generateFromSavedTemplateRequest, null, 2)}
               </pre>
             </div>
           </div>
