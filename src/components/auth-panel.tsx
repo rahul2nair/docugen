@@ -100,14 +100,14 @@ export function AuthPanel() {
           <div className="absolute inset-x-8 top-0 h-36 rounded-b-[100px] bg-[radial-gradient(circle_at_top,rgba(191,219,254,0.65),transparent_72%)]" />
           <div className="relative">
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-medium text-slate-700">
-              <KeyRound size={14} /> Supabase Auth
+              <KeyRound size={14} /> Secure Account Auth
             </div>
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900">Sign in to start Pro or manage billing.</h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-600">
               Create an account or sign in with email and password. Free document creation stays available in the workspace. Sign-in is used when you want to start a Pro trial, subscribe directly, or manage billing.
             </p>
             <div className="mt-8 space-y-3 text-sm text-slate-700">
-              <div className="rounded-3xl border border-slate-200 bg-white p-4">Email/password login backed by Supabase cookies.</div>
+              <div className="rounded-3xl border border-slate-200 bg-white p-4">Email/password login backed by secure session cookies.</div>
               <div className="rounded-3xl border border-slate-200 bg-white p-4">Confirmation link support via the auth callback route.</div>
               <div className="rounded-3xl border border-slate-200 bg-white p-4">Pro trial and paid checkout begin after sign-in so saved files and billing stay tied to one account.</div>
             </div>

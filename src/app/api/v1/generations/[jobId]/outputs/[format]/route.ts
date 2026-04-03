@@ -8,7 +8,37 @@ import { generationQueue } from "@/server/queue";
 import { readOutput } from "@/server/output-store";
 import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limit";
 import { readRequestIp } from "@/server/request-context";
+import { getSessionByToken } from "@/server/session-store";
+import { sessionOwnerKey } from "@/server/user-data-store";
 import { getGeneratedFileByJobId } from "@/server/user-data-store";
+
+function readWorkspaceSessionToken(request: Request) {
+  const fromHeader = request.headers.get("x-workspace-session")?.trim();
+  if (fromHeader) {
+    return fromHeader;
+  }
+
+  const fromQuery = new URL(request.url).searchParams.get("sessionToken")?.trim();
+  return fromQuery || "";
+}
+
+async function hasSessionOwnerAccess(request: Request, requiredOwnerKey: string) {
+  if (!requiredOwnerKey.startsWith("session:")) {
+    return false;
+  }
+
+  const token = readWorkspaceSessionToken(request);
+  if (!token) {
+    return false;
+  }
+
+  const found = await getSessionByToken(token);
+  if (!found) {
+    return false;
+  }
+
+  return sessionOwnerKey(found.session.id) === requiredOwnerKey;
+}
 
 export async function GET(
   request: Request,
@@ -20,6 +50,7 @@ export async function GET(
   const clientIp = readRequestIp(request) || "unknown";
   const authenticatedOwnerKey = requiredOwnerKey ? await getAuthenticatedOwnerKey() : null;
   const hasSignedInOwnerAccess = Boolean(requiredOwnerKey && authenticatedOwnerKey === requiredOwnerKey);
+  const hasSessionAccess = Boolean(requiredOwnerKey && await hasSessionOwnerAccess(request, requiredOwnerKey));
 
   if (persistedFile && new Date(persistedFile.expiresAt).getTime() <= Date.now()) {
     return NextResponse.json(
@@ -28,12 +59,17 @@ export async function GET(
     );
   }
 
-  if (requiredOwnerKey && !hasSignedInOwnerAccess) {
+  if (requiredOwnerKey && !hasSignedInOwnerAccess && !hasSessionAccess) {
     const accountApiAuth = await resolveAccountApiKeyAuth(request);
 
     if (!accountApiAuth) {
       return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "Provide an account API key to download this output" } },
+        {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Provide a valid workspace session token or account API key to download this output"
+          }
+        },
         { status: 401 }
       );
     }
@@ -78,11 +114,11 @@ export async function GET(
         "Output downloads are temporarily rate limited. Try again shortly."
       );
     }
-  } else if (requiredOwnerKey && hasSignedInOwnerAccess) {
+  } else if (requiredOwnerKey && (hasSignedInOwnerAccess || hasSessionAccess)) {
     const rateLimitViolation = await enforceRateLimits([
       {
         bucket: "generation-output-download:signed-in-user",
-        identifiers: [authenticatedOwnerKey || clientIp, clientIp],
+        identifiers: [authenticatedOwnerKey || requiredOwnerKey || clientIp, clientIp],
         limit: config.rateLimit.apiReadLimit,
         windowSeconds: config.rateLimit.apiReadWindowSeconds
       }

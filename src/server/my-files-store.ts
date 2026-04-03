@@ -1,5 +1,6 @@
 import { deleteOutput } from "@/server/output-store";
 import {
+  listGeneratedFilesByOwnerKey,
   deleteGeneratedFileById,
   deleteGeneratedFileByIdAndOwnerKey,
   getGeneratedFileByIdAndOwnerKey,
@@ -63,4 +64,27 @@ export async function deleteGeneratedFileForOwner(ownerKey: string, fileId: stri
   await deleteOutputsForFile(file);
   await deleteGeneratedFileByIdAndOwnerKey(ownerKey, fileId);
   return file;
+}
+
+export async function purgeGeneratedFilesForOwner(ownerKey: string) {
+  let purged = 0;
+
+  while (true) {
+    const files = await listGeneratedFilesByOwnerKey(ownerKey, {
+      includeExpired: true,
+      limit: 200
+    });
+
+    if (!files.length) {
+      break;
+    }
+
+    for (const file of files) {
+      await deleteOutputsForFile(file);
+      await deleteGeneratedFileByIdAndOwnerKey(ownerKey, file.id);
+      purged += 1;
+    }
+  }
+
+  return { purged };
 }

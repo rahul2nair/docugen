@@ -349,7 +349,7 @@ export function SmtpSettings({
           </div>
 
           <div className="rounded-xl border border-[#dbe4f0] bg-[#f8fafc] p-4 text-xs leading-6 text-slate-600">
-            <strong className="text-slate-800">Privacy:</strong> SMTP credentials are stored per workspace session and the password is encrypted on the server before it is written to Supabase. This is user-configured mail transport for sending generated documents from the app on the user&apos;s behalf.
+            <strong className="text-slate-800">Privacy:</strong> SMTP credentials are stored per workspace session and the password is encrypted on the server before it is written to persistent storage. This is user-configured mail transport for sending generated documents from the app on the user&apos;s behalf.
           </div>
         </div>
       </div>

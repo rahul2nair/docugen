@@ -55,8 +55,8 @@ export default function TermsPage() {
 
           <h2>6. Acceptable use</h2>
           <p>
-            You must use Templify lawfully and in accordance with our Acceptable Use Policy. Prohibited behavior
-            includes abuse, fraud, unauthorized access, rights infringement, or attempts to disrupt the Service.
+            You must use Templify lawfully and in accordance with these Terms. Prohibited behavior includes abuse,
+            fraud, unauthorized access, rights infringement, or attempts to disrupt the Service.
           </p>
 
           <h2>7. Subscription, billing, and taxes</h2>
@@ -91,7 +91,7 @@ export default function TermsPage() {
           <p>
             We may suspend or terminate access if required by law, if your use violates these Terms or policy,
             or if your use creates material risk to the Service, users, or third parties. You may stop using the
-            Service at any time and may request account deletion via the contact page.
+            Service at any time and may request account deletion through account controls when available.
           </p>
 
           <h2>12. Disclaimer of warranties</h2>

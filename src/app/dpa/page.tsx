@@ -68,8 +68,8 @@ export default function DpaPage() {
           <h2>8. Sub-processing</h2>
           <p>
             Templify may engage subprocessors for infrastructure, storage, authentication, and payment operations.
-            Templify remains responsible for subprocessors' processing obligations under applicable data protection law
-            and uses contractual safeguards requiring confidentiality and appropriate security controls.
+            Templify requires subprocessors by contract to protect Customer Personal Data, maintain confidentiality,
+            and implement appropriate technical and organizational security measures.
           </p>
 
           <h2>9. International transfers</h2>
@@ -88,8 +88,8 @@ export default function DpaPage() {
           <h2>11. Audit and information rights</h2>
           <p>
             On reasonable request and subject to confidentiality obligations, Templify will provide information
-            necessary to demonstrate compliance with this DPA. Audit requests must be proportionate, non-disruptive,
-            and limited to once per year unless required by law.
+            reasonably necessary to demonstrate compliance with this DPA. Any audit or assessment request must be
+            proportionate, non-disruptive, and limited to once per year unless required by law.
           </p>
 
           <h2>12. Return and deletion</h2>
@@ -107,7 +107,7 @@ export default function DpaPage() {
 
           <h2>Contact</h2>
           <p>
-            For DPA requests, signed versions, or privacy compliance questions, contact us via the contact page.
+            For questions about our data processing practices and privacy compliance, contact us via the contact page.
           </p>
         </div>
       </section>

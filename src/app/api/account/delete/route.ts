@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getBillingAccountByOwnerKey } from "@/server/billing-store";
 import { prisma } from "@/server/prisma";
 import { config } from "@/server/config";
+import { purgeGeneratedFilesForOwner } from "@/server/my-files-store";
 import { getStripe, isStripeConfigured } from "@/server/stripe";
 import { getSupabaseAdminClient } from "@/server/supabase";
 import { userOwnerKey } from "@/server/user-data-store";
@@ -45,16 +46,25 @@ export async function POST() {
     }
   }
 
+  try {
+    await purgeGeneratedFilesForOwner(ownerKey);
+  } catch {
+    return NextResponse.json(
+      {
+        error: {
+          code: "FILE_PURGE_FAILED",
+          message: "Unable to remove stored files. Please retry account deletion."
+        }
+      },
+      { status: 502 }
+    );
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.userTemplate.deleteMany({ where: { ownerKey } });
     await tx.userApiKey.deleteMany({ where: { ownerKey } });
     await tx.userSmtpSettings.deleteMany({ where: { ownerKey } });
     await tx.userProfile.deleteMany({ where: { ownerKey } });
-
-    await tx.$executeRaw`
-      DELETE FROM user_generated_files
-      WHERE owner_session_id = ${ownerKey}
-    `;
 
     await tx.$executeRaw`
       DELETE FROM user_billing_accounts

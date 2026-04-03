@@ -91,7 +91,10 @@ export default function PrivacyPage() {
             We do not sell personal information. We may disclose information in the following circumstances:
           </p>
           <ul>
-            <li>To service providers processing data on our behalf for legitimate business purposes</li>
+            <li>
+              To service providers (including infrastructure, authentication, storage, and payment providers)
+              processing data on our behalf for legitimate business purposes under contractual safeguards
+            </li>
             <li>To comply with legal obligations, court orders, or lawful requests</li>
             <li>To protect rights, safety, security, and integrity of Templify, users, and the public</li>
             <li>In connection with a merger, acquisition, financing, or asset sale</li>
@@ -119,6 +122,10 @@ export default function PrivacyPage() {
             We apply reasonable technical and organizational safeguards designed to protect personal information.
             No method of transmission or storage is completely secure, and therefore we cannot guarantee absolute
             security.
+          </p>
+          <p>
+            To the extent permitted by law, liability for security incidents and service issues is governed by our
+            Terms of Service, including applicable limitations and exclusions.
           </p>
 
           <h2>10. Your privacy rights</h2>

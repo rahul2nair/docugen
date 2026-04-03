@@ -140,6 +140,7 @@ export async function POST(request: Request) {
   const sessionOwnerHasPaidAccess = persistenceContext?.authenticatedUserId
     ? await hasActivePaidAccessForOwnerKey(persistenceContext.ownerKey)
     : false;
+  const ownerKeyForAccess = accountApiAuth?.ownerKey || persistenceContext?.ownerKey || null;
   const ownerKeyForJob = accountApiAuth?.ownerKey || (sessionOwnerHasPaidAccess ? persistenceContext?.ownerKey || null : null);
   const shouldSaveToMyFiles = ownerKeyForJob ? parsed.data.saveToMyFiles !== false : false;
   const queuePayload = ownerKeyForJob
@@ -166,8 +167,8 @@ export async function POST(request: Request) {
     }
   }
 
-  if (ownerKeyForJob && job.id) {
-    await trackGenerationJobForOwnerKey(ownerKeyForJob, String(job.id));
+  if (ownerKeyForAccess && job.id) {
+    await trackGenerationJobForOwnerKey(ownerKeyForAccess, String(job.id));
   }
 
   return NextResponse.json({

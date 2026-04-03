@@ -286,6 +286,20 @@ function buildCardPreviewHtml(html: string) {
   `;
 }
 
+function withSessionToken(url: string, token?: string | null) {
+  if (!token) {
+    return url;
+  }
+
+  try {
+    const parsed = new URL(url, window.location.origin);
+    parsed.searchParams.set("sessionToken", token);
+    return `${parsed.pathname}${parsed.search}`;
+  } catch {
+    return url;
+  }
+}
+
 export function Workspace({ templates, templatePreviews, initialSessionToken, hasPaidAccess = false }: Props) {
   const mode: Mode = "template_fill";
   const [personalTemplates, setPersonalTemplates] = useState<BuiltinTemplate[]>([]);
@@ -947,13 +961,14 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
 
     while (tries < 40) {
       tries += 1;
-      const res = await fetch(`/api/v1/generations/${jobId}`);
+      const statusUrl = withSessionToken(`/api/v1/generations/${jobId}`, sessionToken);
+      const res = await fetch(statusUrl);
       const payload = await res.json();
 
       if (payload.status === "completed") {
         setStatus("completed");
         const nextLinks = Object.fromEntries(
-          (payload.result?.outputs || []).map((item: any) => [item.format, item.downloadUrl])
+          (payload.result?.outputs || []).map((item: any) => [item.format, withSessionToken(item.downloadUrl, sessionToken)])
         );
         setDownloadLinks(nextLinks);
         setHistory((current) => [
@@ -969,7 +984,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
 
         const htmlOutput = (payload.result?.outputs || []).find((item: any) => item.format === "html");
         if (htmlOutput?.downloadUrl) {
-          const htmlRes = await fetch(htmlOutput.downloadUrl);
+          const htmlRes = await fetch(withSessionToken(htmlOutput.downloadUrl, sessionToken));
           setPreviewHtml(await htmlRes.text());
         }
 

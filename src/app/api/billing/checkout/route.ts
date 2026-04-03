@@ -12,20 +12,14 @@ const checkoutSchema = z.object({
 });
 
 function resolveAppOrigin(request: Request) {
-  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-  const host = forwardedHost || request.headers.get("host")?.split(",")[0]?.trim();
-  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-
-  if (host) {
-    const protocol = forwardedProto || (host.includes("localhost") ? "http" : "https");
-    return `${protocol}://${host}`;
-  }
-
   try {
-    const url = new URL(request.url);
-    return url.origin;
+    return new URL(config.appUrl).origin;
   } catch {
-    return config.appUrl;
+    try {
+      return new URL(request.url).origin;
+    } catch {
+      return "http://localhost:3000";
+    }
   }
 }
 
