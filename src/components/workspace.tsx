@@ -311,17 +311,25 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
     () => new Set(templates.map((template) => template.id)),
     [templates]
   );
-  const [templateSearch, setTemplateSearch] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  const availableCategories = useMemo(() => {
+    const cats = new Set<string>();
+    for (const template of allTemplates) {
+      cats.add(template.category);
+    }
+    return Array.from(cats).sort();
+  }, [allTemplates]);
+
   const filteredTemplates = useMemo(() => {
-    const q = templateSearch.trim().toLowerCase();
-    if (!q) return allTemplates;
-    return allTemplates.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.category.toLowerCase().includes(q) ||
-        (t.description || "").toLowerCase().includes(q)
-    );
-  }, [allTemplates, templateSearch]);
+    if (selectedCategory === "my-templates") {
+      return personalTemplates;
+    }
+    if (selectedCategory) {
+      return allTemplates.filter((t) => t.category === selectedCategory);
+    }
+    return allTemplates;
+  }, [allTemplates, personalTemplates, selectedCategory]);
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || "");
   const selectedTemplate = useMemo(
@@ -1306,23 +1314,25 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
               </div>
             </div>
 
-            <div className="relative mb-3">
-              <input
-                type="search"
-                placeholder="Search templates…"
-                value={templateSearch}
-                onChange={(e) => setTemplateSearch(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 pl-8 text-xs text-slate-700 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
-              />
-              <svg className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" width="13" height="13" viewBox="0 0 16 16" fill="none">
-                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M10.5 10.5l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </div>
+            <select
+              value={selectedCategory === null ? "" : selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value || null)}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+            >
+              <option value="">All Templates</option>
+              {personalTemplates.length > 0 && (
+                <option value="my-templates">My Templates ({personalTemplates.length})</option>
+              )}
+              {availableCategories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
 
             <div className="space-y-3">
               {filteredTemplates.length === 0 && (
-                <div className="py-6 text-center text-xs text-slate-400">No templates match your search.</div>
+                <div className="py-6 text-center text-xs text-slate-400">No templates in this category.</div>
               )}
               {filteredTemplates.map((template) => {
                 const tone = getTemplateCardTone(template.category);
