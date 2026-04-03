@@ -70,6 +70,7 @@ export default function DpaPage() {
             Templify may engage subprocessors for infrastructure, storage, authentication, and payment operations.
             Templify requires subprocessors by contract to protect Customer Personal Data, maintain confidentiality,
             and implement appropriate technical and organizational security measures.
+            A current sub-processor list is available on request via the contact page.
           </p>
 
           <h2>9. International transfers</h2>

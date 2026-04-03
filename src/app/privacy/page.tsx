@@ -99,6 +99,9 @@ export default function PrivacyPage() {
             <li>To protect rights, safety, security, and integrity of Templify, users, and the public</li>
             <li>In connection with a merger, acquisition, financing, or asset sale</li>
           </ul>
+          <p>
+            A current sub-processor list is available on request via the contact page.
+          </p>
 
           <h2>7. International data transfers</h2>
           <p>
