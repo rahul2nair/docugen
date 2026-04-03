@@ -47,7 +47,7 @@ const proFeatures = [
 export function BillingConsole({ email, isConfigured, plans, billing, trialDays, trialEligible }: Props) {
   const searchParams = useSearchParams();
   const [selectedPriceId, setSelectedPriceId] = useState<string>(plans[0]?.priceId || "");
-  const [activeAction, setActiveAction] = useState<"checkout" | "portal" | "">("");
+  const [activeAction, setActiveAction] = useState<"checkout" | "portal" | "subscription" | "">("");
   const [errorMessage, setErrorMessage] = useState("");
   const isTrialActive = billing?.subscriptionStatus === "trialing";
   const hasActiveSubscription = ["active", "trialing", "past_due"].includes(billing?.subscriptionStatus || "");
@@ -114,6 +114,29 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
       window.location.href = payload.url;
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unable to open billing portal");
+      setActiveAction("");
+    }
+  }
+
+  async function updateSubscription(action: "cancel" | "resume") {
+    setActiveAction("subscription");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/billing/subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action })
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error?.message || "Unable to update subscription");
+      }
+
+      window.location.reload();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to update subscription");
       setActiveAction("");
     }
   }
@@ -253,6 +276,20 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
               <ExternalLink size={14} className="mr-2" />
               {activeAction === "portal" ? "Opening..." : hasActiveSubscription ? "Manage billing" : "Billing portal"}
             </button>
+
+            {hasActiveSubscription ? (
+              <button
+                className="rounded-lg border border-rose-300 bg-rose-50 px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={activeAction === "subscription"}
+                onClick={() => updateSubscription(billing?.cancelAtPeriodEnd ? "resume" : "cancel")}
+              >
+                {activeAction === "subscription"
+                  ? "Updating..."
+                  : billing?.cancelAtPeriodEnd
+                    ? "Resume subscription"
+                    : "Cancel at period end"}
+              </button>
+            ) : null}
           </div>
         </article>
       </div>
@@ -263,6 +300,9 @@ export function BillingConsole({ email, isConfigured, plans, billing, trialDays,
         <div className="mt-1">Subscription status: <span className="font-medium text-slate-900">{billing?.subscriptionStatus ? billing.subscriptionStatus.replace(/_/g, " ") : "No active subscription"}</span></div>
         {billing?.currentPeriodEnd ? (
           <div className="mt-1">Current period ends: <span className="font-medium text-slate-900">{new Date(billing.currentPeriodEnd).toLocaleDateString()}</span></div>
+        ) : null}
+        {billing?.cancelAtPeriodEnd ? (
+          <div className="mt-1 text-amber-700">Cancellation scheduled at the end of the current billing period.</div>
         ) : null}
         {isTrialActive ? (
           <div className="mt-2 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">

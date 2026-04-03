@@ -11,6 +11,7 @@ import {
   FolderOpen,
   Home,
   LayoutTemplate,
+  MessageSquare,
   LogIn,
   Settings,
   TableProperties,
@@ -28,6 +29,7 @@ const mainNav = [
   { href: "/my-files", icon: FolderOpen, label: "My Files" },
   { href: "/workspace/batch", icon: TableProperties, label: "Bulk Generate" },
   { href: "/api-docs", icon: Braces, label: "API Docs" },
+  { href: "/contact", icon: MessageSquare, label: "Contact" },
   { href: "/settings", icon: Settings, label: "Settings" }
 ];
 

@@ -32,7 +32,13 @@ export function Footer() {
   const publicLinks = [
     { href: withSession("/workspace"), label: "Create" },
     { href: withSession("/workspace/activity"), label: "Recent" },
-    { href: "/templates", label: "Templates" }
+    { href: "/templates", label: "Templates" },
+    { href: "/contact", label: "Contact" },
+    { href: "/support", label: "Support" },
+    { href: "/refunds", label: "Refunds" },
+    { href: "/subprocessors", label: "Subprocessors" },
+    { href: "/terms", label: "Terms" },
+    { href: "/privacy", label: "Privacy" }
   ];
 
   return (
@@ -108,6 +114,8 @@ export function Footer() {
           <div className="flex items-center gap-4">
             <Link className="hover:text-ink-700" href="/">Home</Link>
             <Link className="hover:text-ink-700" href="/templates">Templates</Link>
+            <Link className="hover:text-ink-700" href="/terms">Terms</Link>
+            <Link className="hover:text-ink-700" href="/privacy">Privacy</Link>
             <Link className="hover:text-ink-700" href={user ? "/dashboard" : "/auth?next=%2Fdashboard"}>Account</Link>
           </div>
         </div>
