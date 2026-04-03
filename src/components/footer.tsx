@@ -116,13 +116,11 @@ export function Footer({ hasPaidAccess = false }: { hasPaidAccess?: boolean }) {
           <div>Create first. Add advanced tools only when you need them.</div>
           <div className="flex items-center gap-4">
             <Link className="hover:text-slate-700" href="/">Home</Link>
-            <Link className="hover:text-slate-700" href="/templates">Templates</Link>
             <Link className="hover:text-slate-700" href="/terms">Terms of Service</Link>
             <Link className="hover:text-slate-700" href="/privacy">Privacy Policy</Link>
             <Link className="hover:text-slate-700" href="/dpa">DPA</Link>
             <Link className="hover:text-slate-700" href="/cookies">Cookie Policy</Link>
             <button className="hover:text-slate-700" onClick={openCookieSettings} type="button">Cookie settings</button>
-            <Link className="hover:text-slate-700" href={accountHref}>Account</Link>
           </div>
         </div>
       </div>
