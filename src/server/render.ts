@@ -370,18 +370,19 @@ function wrapHtml(body: string, title = "Generated Document", branding?: Documen
           * { box-sizing: border-box; }
           body {
             margin: 0;
-            padding: 42px;
+            padding: 16px;
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             color: #221c16;
             background: linear-gradient(180deg, #f7f3ee 0%, #fbfaf8 100%);
           }
           .page {
-            max-width: 820px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
             background: #fffdfa;
             border: 1px solid rgba(162, 145, 126, 0.18);
             border-radius: 28px;
-            padding: 48px;
+            padding: 30px;
             box-shadow: 0 24px 60px rgba(53, 35, 16, 0.08);
           }
           .doc-shell {
@@ -466,6 +467,28 @@ function wrapHtml(body: string, title = "Generated Document", branding?: Documen
           p, li { margin: 0 0 16px; }
           h1, h2, h3 { margin: 0 0 12px; }
           a { color: ${primaryColor}; }
+
+          @media print {
+            body {
+              padding: 0;
+              background: #ffffff;
+            }
+
+            .page {
+              border: none;
+              border-radius: 0;
+              box-shadow: none;
+              padding: 0;
+            }
+
+            .doc-shell {
+              gap: 18px;
+            }
+
+            .doc-signature-grid {
+              grid-template-columns: 1fr;
+            }
+          }
         </style>
       </head>
       <body>

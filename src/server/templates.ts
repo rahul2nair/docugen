@@ -144,7 +144,7 @@ export const builtinTemplates: BuiltinTemplate[] = [
           </div>
 
           <div style="padding:30px 32px 34px;">
-            <div style="display:grid;grid-template-columns:1fr 240px;gap:24px;align-items:start;">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,240px);gap:20px;align-items:start;">
               <div>
                 <div style="font-size:14px;line-height:1.9;color:#5d4d42;">
                   {{company_name}}<br />
@@ -158,7 +158,7 @@ export const builtinTemplates: BuiltinTemplate[] = [
 
                 <div style="margin-top:28px;padding-bottom:18px;border-bottom:1px solid #ebdfd2;">
                   <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9b7551;">Subject</div>
-                  <div style="margin-top:10px;font-size:38px;font-weight:800;line-height:1.06;letter-spacing:-0.05em;color:#2f241e;">Offer of employment as {{job_title}}</div>
+                  <div style="margin-top:10px;font-size:34px;font-weight:800;line-height:1.1;letter-spacing:-0.04em;color:#2f241e;word-break:break-word;overflow-wrap:anywhere;">Offer of employment as {{job_title}}</div>
                 </div>
 
                 <div style="margin-top:24px;font-size:16px;line-height:1.98;color:#352922;">
@@ -212,7 +212,7 @@ export const builtinTemplates: BuiltinTemplate[] = [
                   <div style="margin-top:12px;"><strong style="color:#2f241e;">Company</strong></div>
                   <div>{{company_name}}</div>
                 </div>
-                <div style="margin-top:18px;padding:14px 16px;border-radius:18px;background:#fffaf4;border:1px solid #eadfce;font-size:13px;line-height:1.85;color:#6a5b4d;">This letter is intended to read as an official appointment document rather than a profile or résumé layout.</div>
+                <div style="margin-top:18px;padding:14px 16px;border-radius:18px;background:#fffaf4;border:1px solid #eadfce;font-size:13px;line-height:1.85;color:#6a5b4d;word-break:break-word;overflow-wrap:anywhere;">This letter is intended to read as an official appointment document rather than a profile or résumé layout.</div>
               </div>
             </div>
           </div>

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
 const showcaseDocuments = [
   {
@@ -121,9 +123,18 @@ function DocumentMockup({
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
-    <main className="min-h-full bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.96),rgba(244,247,252,0.95)_42%,rgba(236,242,252,0.92)_100%)] pb-14">
+    <main className="min-h-full bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.96),rgba(244,247,252,0.95)_42%,rgba(236,242,252,0.92)_100%)] pb-20 lg:pb-24">
       <section className="page-shell py-8 sm:py-10 lg:py-12">
         <div className="overflow-hidden rounded-[40px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,255,0.95)_100%)] px-6 py-8 shadow-[0_35px_90px_rgba(15,23,42,0.10)] sm:px-10 sm:py-10 lg:px-14 lg:py-14">
           <div className="mx-auto max-w-3xl text-center">
@@ -145,7 +156,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-14">
+          <div className="mt-14 pb-8 lg:pb-14">
             <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:justify-center lg:overflow-visible lg:pb-0">
               {showcaseDocuments.map((document, index) => (
                 <div
