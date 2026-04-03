@@ -59,7 +59,7 @@ export const endpoints: EndpointDoc[] = [
     method: "POST",
     path: "/api/v1/generations",
     summary: "Start a generation job",
-    description: "Enqueues a document generation job. Provide either a workspace session token in the request body or an account API key in the `Authorization: Bearer <api-key>` or `x-api-key` header. Account API access is available only on active paid plans, and API keys need the `generations:create` scope. Standard generation is limited to 10 documents per day on free accounts and 20 documents per day on paid accounts. Returns a `jobId` immediately — poll `GET /api/v1/generations/:jobId` to track completion and retrieve output URLs.",
+    description: "Enqueues a document generation job. Requires an account API key in the `Authorization: Bearer <api-key>` or `x-api-key` header with the `generations:create` scope. Account API access is available only on active paid plans. Returns a `jobId` immediately — poll `GET /api/v1/generations/:jobId` to track completion and retrieve output URLs.",
     requestBody: {
       mode: "template_fill",
       templateSource: {
@@ -100,7 +100,7 @@ export const endpoints: EndpointDoc[] = [
         body: { error: { code: "VALIDATION_ERROR", message: "Invalid generation request", details: {} } }
       },
       "401": {
-        description: "Missing workspace session token and missing/invalid account API key"
+        description: "Missing or invalid account API key"
       },
       "403": {
         description: "The provided API key does not have the required scope"
@@ -109,7 +109,7 @@ export const endpoints: EndpointDoc[] = [
         description: "The account tied to the API key does not have an active paid plan"
       },
       "429": {
-        description: "Daily generation limit reached"
+        description: "Rate limit reached"
       }
     }
   },
@@ -147,13 +147,73 @@ export const endpoints: EndpointDoc[] = [
       }
     }
   },
+  {
+    method: "POST",
+    path: "/api/v1/generations/batch",
+    summary: "Queue a batch of generation jobs",
+    description: "Queues up to 25 generation requests in one call. Requires an account API key with the `generations:create:batch` scope. Account API access is available only on active paid plans.",
+    requestBody: {
+      saveToMyFiles: true,
+      requests: [
+        {
+          mode: "template_fill",
+          templateSource: { type: "builtin", templateId: "invoice" },
+          data: {
+            client_name: "Northstar Systems",
+            invoice_number: "INV-5001",
+            subtotal: 1200,
+            tax_rate: 20,
+            currency: "EUR"
+          },
+          outputs: ["html", "pdf"]
+        }
+      ]
+    },
+    responses: {
+      "200": {
+        description: "Batch queued",
+        body: { queued: 1, jobIds: ["9d4f22c1-..."] }
+      },
+      "400": { description: "Validation error" },
+      "401": { description: "Missing or invalid account API key" },
+      "403": { description: "The provided API key does not have the required scope" },
+      "402": { description: "The account tied to the API key does not have an active paid plan" },
+      "429": { description: "Rate limit reached" }
+    }
+  },
+  {
+    method: "POST",
+    path: "/api/v1/generations/preview",
+    summary: "Render an HTML preview",
+    description: "Renders HTML preview output for a generation payload without queueing a persisted output file. Requires an account API key with the `generations:create` scope. Account API access is available only on active paid plans.",
+    requestBody: {
+      mode: "template_fill",
+      templateSource: {
+        type: "builtin",
+        templateId: "proposal"
+      },
+      data: {
+        client_name: "Northstar Systems",
+        project_name: "Operations Redesign"
+      },
+      outputs: ["html"]
+    },
+    responses: {
+      "200": { description: "Rendered HTML" },
+      "400": { description: "Validation error" },
+      "401": { description: "Missing or invalid account API key" },
+      "403": { description: "The provided API key does not have the required scope" },
+      "402": { description: "The account tied to the API key does not have an active paid plan" },
+      "429": { description: "Rate limit reached" }
+    }
+  },
 
   // ── Job status ─────────────────────────────────────────────────────────────
   {
     method: "GET",
     path: "/api/v1/generations/:jobId",
     summary: "Get job status",
-    description: "Poll this endpoint to know when generation is complete. When a job was created with an account API key, the same account API key is required here and it must include the `generations:read` scope. Account API access is limited to active paid plans. When `status` is `completed` the `outputs` map will contain signed download URLs for each requested format.",
+    description: "Poll this endpoint to know when generation is complete. Requires the same account API key owner that created the job, with the `generations:read` scope. Account API access is limited to active paid plans. When `status` is `completed` the `outputs` map will contain download URLs for each requested format.",
     pathParams: [
       { name: "jobId", type: "string", description: "The job ID returned from the generation request" }
     ],
@@ -163,12 +223,20 @@ export const endpoints: EndpointDoc[] = [
         body: {
           jobId: "7f3c91a2-...",
           status: "completed",
-          outputs: {
-            html: "https://cdn.example.com/outputs/7f3c91a2/document.html",
-            pdf:  "https://cdn.example.com/outputs/7f3c91a2/document.pdf"
-          },
-          createdAt: "2026-03-27T10:12:00Z",
-          completedAt: "2026-03-27T10:12:04Z"
+          result: {
+            outputs: [
+              {
+                format: "html",
+                downloadUrl: "https://your-domain.com/api/v1/generations/7f3c91a2/outputs/html",
+                expiresAt: "2026-03-27T18:12:04Z"
+              },
+              {
+                format: "pdf",
+                downloadUrl: "https://your-domain.com/api/v1/generations/7f3c91a2/outputs/pdf",
+                expiresAt: "2026-03-27T18:12:04Z"
+              }
+            ]
+          }
         }
       },
       "401": { description: "Missing or invalid account API key for an API-key-owned job" },
@@ -183,7 +251,7 @@ export const endpoints: EndpointDoc[] = [
     method: "GET",
     path: "/api/v1/generations/:jobId/outputs",
     summary: "List outputs for a job",
-    description: "Returns all generated output files for the given job with format labels and download URLs. API-key-owned jobs require the same account API key used to create them, with the `generations:read` scope. Account API access is limited to active paid plans.",
+    description: "Returns all generated output files for the given job with format labels and download URLs. Requires the same account API key owner that created the job, with the `generations:read` scope. Account API access is limited to active paid plans.",
     pathParams: [
       { name: "jobId", type: "string", description: "The generation job ID" }
     ],
@@ -191,8 +259,16 @@ export const endpoints: EndpointDoc[] = [
       "200": {
         description: "Array of output descriptors",
         body: [
-          { format: "html", url: "https://cdn.example.com/outputs/7f3c91a2/document.html" },
-          { format: "pdf",  url: "https://cdn.example.com/outputs/7f3c91a2/document.pdf"  }
+          {
+            format: "html",
+            downloadUrl: "https://your-domain.com/api/v1/generations/7f3c91a2/outputs/html",
+            expiresAt: "2026-03-27T18:12:04Z"
+          },
+          {
+            format: "pdf",
+            downloadUrl: "https://your-domain.com/api/v1/generations/7f3c91a2/outputs/pdf",
+            expiresAt: "2026-03-27T18:12:04Z"
+          }
         ]
       },
       "401": { description: "Missing or invalid account API key for an API-key-owned job" },
@@ -279,11 +355,19 @@ export const apiExamples = {
   jobCompletedResponse: {
     jobId: "7f3c91a2-1234-4bcd-abcd-1234567890ab",
     status: "completed",
-    outputs: {
-      html: "https://cdn.example.com/outputs/7f3c91a2/document.html",
-      pdf:  "https://cdn.example.com/outputs/7f3c91a2/document.pdf"
-    },
-    createdAt: "2026-03-27T10:12:00Z",
-    completedAt: "2026-03-27T10:12:04Z"
+    result: {
+      outputs: [
+        {
+          format: "html",
+          downloadUrl: "https://your-domain.com/api/v1/generations/7f3c91a2/outputs/html",
+          expiresAt: "2026-03-27T18:12:04Z"
+        },
+        {
+          format: "pdf",
+          downloadUrl: "https://your-domain.com/api/v1/generations/7f3c91a2/outputs/pdf",
+          expiresAt: "2026-03-27T18:12:04Z"
+        }
+      ]
+    }
   }
 };

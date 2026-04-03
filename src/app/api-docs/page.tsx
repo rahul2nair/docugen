@@ -71,9 +71,17 @@ function EndpointCard({ ep }: { ep: EndpointDoc }) {
 export default async function ApiDocsPage() {
   const { hasPaidAccess } = await getAuthenticatedAccountAccess("/api-docs");
   const categories = [
-    { label: "Templates",    paths: ["/api/v1/templates", "/api/v1/templates/:templateId"] },
-    { label: "Generations",  paths: ["/api/v1/generations", "/api/v1/generations/from-template", "/api/v1/generations/:jobId"] },
-    { label: "Outputs",      paths: ["/api/v1/generations/:jobId/outputs", "/api/v1/generations/:jobId/outputs/:format"] }
+    {
+      label: "Generations",
+      paths: [
+        "/api/v1/generations",
+        "/api/v1/generations/from-template",
+        "/api/v1/generations/batch",
+        "/api/v1/generations/preview",
+        "/api/v1/generations/:jobId"
+      ]
+    },
+    { label: "Outputs", paths: ["/api/v1/generations/:jobId/outputs", "/api/v1/generations/:jobId/outputs/:format"] }
   ];
 
   return (
@@ -97,8 +105,8 @@ export default async function ApiDocsPage() {
           <div className="text-sm font-medium uppercase tracking-[0.18em] text-[#8f6a44]">Developer API</div>
           <h1 className="mt-2 text-3xl font-semibold text-ink-900">API Reference</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-ink-700">
-            The REST API shares the same queue-backed document generation engine as the UI.
-            List templates, generate documents from built-in or custom Handlebars templates, and retrieve HTML/PDF outputs via signed URLs.
+            This reference documents paid account API endpoints for queue-backed document generation,
+            job polling, and output retrieval.
           </p>
           <div className="mt-5 flex flex-wrap gap-3 text-xs">
             <div className="rounded-full border border-[#eadfce] bg-white/80 px-4 py-1.5 text-ink-700">
@@ -112,7 +120,8 @@ export default async function ApiDocsPage() {
             </div>
           </div>
           <div className="mt-4 rounded-2xl border border-[#eadfce] bg-[#fcf8f2] px-4 py-3 text-sm leading-6 text-ink-700">
-            Generate account API keys below. Template discovery stays public, while generation endpoints accept either a workspace session token from the UI or a scoped account API key from your backend.
+            All endpoints shown on this page are intended for server-to-server use with a scoped account API key.
+            API key access requires an active paid plan.
           </div>
         </div>
 
@@ -122,9 +131,9 @@ export default async function ApiDocsPage() {
           <h2 className="text-xl font-semibold text-ink-900 mb-4">Generate an invoice in 3 steps</h2>
           <div className="grid gap-4 lg:grid-cols-3">
             {[
-              { step: "1", label: "Discover templates", code: `GET /api/v1/templates` },
-              { step: "2", label: "Start generation", code: `POST /api/v1/generations` },
-              { step: "3", label: "Poll for outputs", code: `GET /api/v1/generations/:jobId` }
+              { step: "1", label: "Start generation", code: `POST /api/v1/generations` },
+              { step: "2", label: "Poll for status", code: `GET /api/v1/generations/:jobId` },
+              { step: "3", label: "Download output", code: `GET /api/v1/generations/:jobId/outputs/:format` }
             ].map(({ step, label, code }) => (
               <div key={step} className="rounded-2xl border border-[#eadfce] bg-[#fcf8f2] p-4">
                 <div className="text-xs text-[#8f6a44] font-semibold mb-1">Step {step}</div>
