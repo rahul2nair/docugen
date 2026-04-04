@@ -7,7 +7,7 @@ export default function ContactPage() {
       <section className="glass-panel p-6 lg:p-8">
         <h1 className="text-3xl font-bold text-slate-900">Contact Us</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Use this form for support requests, billing questions, partnership inquiries, and data privacy requests.
+          Use this form for support requests, billing questions, partnership inquiries, and data privacy requests. Messages are sent directly from Templify and we reply by email.
         </p>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_1fr]">

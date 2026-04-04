@@ -32,7 +32,10 @@ export function Footer({ hasPaidAccess = false }: { hasPaidAccess?: boolean }) {
   const publicLinks = [
     { href: withSession("/workspace"), label: "Document Builder" },
     { href: withSession("/workspace/activity"), label: "Recent Generations" },
-    { href: "/templates", label: "Templates" },
+    { href: "/templates", label: "Templates" }
+  ];
+
+  const companyLinks = [
     { href: "/contact", label: "Contact Us" },
     { href: "/refunds", label: "Refund Policy" }
   ];
@@ -99,6 +102,14 @@ export function Footer({ hasPaidAccess = false }: { hasPaidAccess?: boolean }) {
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               <Sparkles size={13} /> Get Started
+            </div>
+            <div className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Company</div>
+            <div className="mt-3 space-y-2 text-sm text-slate-700">
+              {companyLinks.map((item) => (
+                <div key={item.href}>
+                  <Link className="hover:text-slate-900" href={item.href}>{item.label}</Link>
+                </div>
+              ))}
             </div>
             <p className="mt-4 text-sm leading-7 text-slate-600">
               Start by creating a document. When your workflow grows, move into saved settings,

@@ -33,6 +33,7 @@ import {
   FilePlus2,
   FileWarning,
   History,
+  Mail,
   RefreshCw,
   Save,
   Sparkles
@@ -355,6 +356,9 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
   const [pdfFormat, setPdfFormat] = useState<"A4" | "Letter">("A4");
   const [pdfMargin, setPdfMargin] = useState<"normal" | "narrow">("normal");
   const [saveToMyFiles, setSaveToMyFiles] = useState<boolean>(hasPaidAccess);
+  const [emailFeatureVoted, setEmailFeatureVoted] = useState<boolean>(() => {
+    try { return localStorage.getItem("templify-vote-email-send") === "1"; } catch { return false; }
+  });
   const [status, setStatus] = useState<JobStatus>("idle");
   const [previewHtml, setPreviewHtml] = useState<string>(previewMap.get(templates[0]?.id || "") || "");
   const [previewStatus, setPreviewStatus] = useState<string>("Template preview");
@@ -814,6 +818,19 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
     }
 
     await saveSnapshot("manual", "Manual snapshot");
+  }
+
+  function handleEmailFeatureVote() {
+    if (emailFeatureVoted) return;
+    // Optimistic — flip state immediately so the UI responds instantly
+    try { localStorage.setItem("templify-vote-email-send", "1"); } catch { /* ignore */ }
+    setEmailFeatureVoted(true);
+    // Fire-and-forget — failure is silent, vote is already recorded locally
+    fetch("/api/v1/feature-votes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ feature: "email-send", sessionToken: sessionToken ?? undefined })
+    }).catch(() => { /* best-effort */ });
   }
 
   async function copyShareLink() {
@@ -1641,6 +1658,27 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
                   </SecondaryButton>
                 </a>
               )}
+
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-400">
+                  <Mail size={15} />
+                  Send via email
+                  <span className="ml-auto rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-500">Soon</span>
+                </div>
+                <p className="mt-2 text-xs text-slate-400">
+                  Email the generated document directly to a recipient.
+                </p>
+                {emailFeatureVoted ? (
+                  <p className="mt-2 text-xs font-medium text-green-600">Thanks for your feedback!</p>
+                ) : (
+                  <button
+                    onClick={handleEmailFeatureVote}
+                    className="mt-2 text-xs text-blue-500 underline underline-offset-2 hover:text-blue-700"
+                  >
+                    Would you use this? Tell us
+                  </button>
+                )}
+              </div>
 
               <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start gap-3 text-sm text-slate-700">

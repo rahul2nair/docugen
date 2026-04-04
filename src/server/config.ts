@@ -83,6 +83,11 @@ export const config = {
     accessKeyId: process.env.B2_KEY_ID || "",
     secretAccessKey: process.env.B2_SECRET_KEY || "",
     bucket: process.env.B2_BUCKET || ""
+  },
+  // Resend Configuration (for app-owned email delivery)
+  resend: {
+    apiKey: process.env.RESEND_API_KEY || "",
+    fromEmail: process.env.RESEND_FROM_EMAIL || "noreply@templify.app"
   }
 };
 
@@ -182,5 +187,11 @@ if (typeof window === "undefined") {
     config.b2.endpoint
   ) {
     console.log("✅ Backblaze B2 configuration loaded successfully");
+  }
+
+  if (config.resend.apiKey) {
+    console.log("✅ Resend email configuration loaded successfully");
+  } else if (process.env.NODE_ENV === "production") {
+    console.warn("⚠️  RESEND_API_KEY is not configured; app-owned email sending will be unavailable");
   }
 }

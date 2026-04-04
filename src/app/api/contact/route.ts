@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
 import { z } from "zod";
+import { sendEmailViaResend } from "@/server/resend-email";
 import { config } from "@/server/config";
 import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limit";
 import { readRequestIp } from "@/server/request-context";
@@ -51,13 +51,8 @@ export async function POST(request: Request) {
   }
 
   const toEmail = readRequiredEnv("CONTACT_FORM_TO_EMAIL") || readRequiredEnv("SUPPORT_EMAIL");
-  const smtpHost = readRequiredEnv("CONTACT_SMTP_HOST");
-  const smtpPort = Number(process.env.CONTACT_SMTP_PORT || "587");
-  const smtpUser = readRequiredEnv("CONTACT_SMTP_USER");
-  const smtpPass = readRequiredEnv("CONTACT_SMTP_PASS");
-  const fromEmail = readRequiredEnv("CONTACT_FORM_FROM_EMAIL") || smtpUser;
 
-  if (!toEmail || !smtpHost || !smtpUser || !smtpPass || !fromEmail || Number.isNaN(smtpPort)) {
+  if (!toEmail || !config.resend.apiKey || !config.resend.fromEmail) {
     return NextResponse.json(
       {
         error: {
@@ -69,31 +64,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465,
-    auth: {
-      user: smtpUser,
-      pass: smtpPass
-    }
-  });
-
   const payload = parsed.data;
 
-  await transporter.sendMail({
-    from: fromEmail,
-    to: toEmail,
+  await sendEmailViaResend({
+    toEmail,
     replyTo: payload.email,
     subject: `[Templify Contact] ${payload.subject}`,
-    text: [
+    textBody: [
       `Name: ${payload.name}`,
       `Email: ${payload.email}`,
       `Company: ${payload.company || "-"}`,
       "",
       payload.message
     ].join("\n"),
-    html: `
+    htmlBody: `
       <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;">
         <h2 style="margin:0 0 12px;">New Contact Form Submission</h2>
         <p style="margin:0 0 4px;"><strong>Name:</strong> ${payload.name}</p>

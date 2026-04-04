@@ -2,30 +2,56 @@
 
 import { FormEvent, useState } from "react";
 
-const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
-
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSubmitting(true);
+    setSubmitMessage(null);
+    setSubmitError(null);
 
-    const bodyLines = [
-      `Name: ${name}`,
-      `Email: ${email}`,
-      company ? `Company: ${company}` : null,
-      "",
-      message,
-    ]
-      .filter((line): line is string => line !== null)
-      .join("\n");
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          company: company.trim() || undefined,
+          subject,
+          message
+        })
+      });
 
-    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines)}`;
-    window.location.href = mailto;
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const fallback = response.status === 503
+          ? "Contact service is not configured yet. Please try again later."
+          : "Unable to send your message right now. Please try again shortly.";
+        throw new Error(payload?.error?.message || fallback);
+      }
+
+      setSubmitMessage("Message sent. We will get back to you by email.");
+      setName("");
+      setEmail("");
+      setCompany("");
+      setSubject("");
+      setMessage("");
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to send your message right now.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -56,12 +82,20 @@ export function ContactForm() {
         <textarea required rows={6} value={message} onChange={(event) => setMessage(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
       </label>
 
-      <p className="text-xs text-slate-500">
-        Clicking &ldquo;Send message&rdquo; will open your email client with the message pre-filled.
-      </p>
+      {submitMessage ? (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+          {submitMessage}
+        </p>
+      ) : null}
 
-      <button className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white">
-        Send message
+      {submitError ? (
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+          {submitError}
+        </p>
+      ) : null}
+
+      <button disabled={submitting} className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
+        {submitting ? "Sending..." : "Send message"}
       </button>
     </form>
   );
