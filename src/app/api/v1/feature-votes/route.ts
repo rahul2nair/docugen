@@ -62,9 +62,11 @@ export async function POST(request: Request) {
       subject: `[Templify Feature Vote] ${feature}`,
       textBody: lines.join("\n"),
       htmlBody: `<pre style="font-family:monospace;font-size:14px">${lines.join("\n")}</pre>`
-    }).catch(() => {
-      // Best-effort — don't fail the request if email delivery fails
+    }).catch((err) => {
+      console.warn(`⚠️ Feature vote email failed to send:`, err instanceof Error ? err.message : err);
     });
+  } else {
+    console.warn(`⚠️ Feature vote received but email not configured (missing CONTACT_FORM_TO_EMAIL or Resend config)`);
   }
 
   return NextResponse.json({ ok: true });

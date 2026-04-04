@@ -17,6 +17,8 @@ export async function sendEmailViaResend(options: SendEmailOptions): Promise<{ m
     throw new Error("Resend is not configured. RESEND_API_KEY is missing.");
   }
 
+  console.log(`📧 Resend send attempt: ${options.subject} → ${options.toEmail}`);
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -40,10 +42,11 @@ export async function sendEmailViaResend(options: SendEmailOptions): Promise<{ m
       : payload && payload.error && typeof payload.error.message === "string"
         ? payload.error.message
         : "Resend email request failed.";
+    console.error(`❌ Resend send failed (${response.status}): ${message}`);
     throw new Error(message);
   }
 
-  return {
-    messageId: payload && typeof payload.id === "string" ? payload.id : ""
-  };
+  const messageId = payload && typeof payload.id === "string" ? payload.id : "";
+  console.log(`✅ Resend email sent: ${options.subject} → ${options.toEmail} (id: ${messageId})`);
+  return { messageId };
 }

@@ -1,4 +1,5 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { config } from "@/server/config";
 import type { OutputFormat } from "@/server/types";
 
@@ -23,6 +24,36 @@ function buildOwnerOutputKey(ownerKey: string, jobId: string, format: OutputForm
 
 function buildLegacyOutputKey(jobId: string, format: OutputFormat) {
   return `documents/${jobId}.${format}`;
+}
+
+async function keyExists(key: string) {
+  try {
+    const s3 = getS3Client();
+    await s3.send(
+      new HeadObjectCommand({
+        Bucket: config.b2.bucket,
+        Key: key
+      })
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveReadableKey(ownerKey: string, jobId: string, format: OutputFormat) {
+  const ownerKeyPath = buildOwnerOutputKey(ownerKey, jobId, format);
+  if (await keyExists(ownerKeyPath)) {
+    return ownerKeyPath;
+  }
+
+  const legacyKey = buildLegacyOutputKey(jobId, format);
+  if (await keyExists(legacyKey)) {
+    console.warn(`⚠️ Falling back to legacy output key for ${jobId}.${format}: ${legacyKey}`);
+    return legacyKey;
+  }
+
+  throw new Error(`File not found for owner key path (${ownerKeyPath}) or legacy key (${legacyKey})`);
 }
 
 function validateB2Config() {
@@ -221,6 +252,32 @@ export async function deleteOutput(ownerKey: string, jobId: string, format: Outp
       throw legacyError;
     }
   }
+}
+
+export async function getOutputSignedDownloadUrl(options: {
+  ownerKey: string;
+  jobId: string;
+  format: OutputFormat;
+  fileName: string;
+  expiresInSeconds?: number;
+}) {
+  const { ownerKey, jobId, format, fileName, expiresInSeconds = 120 } = options;
+  const key = await resolveReadableKey(ownerKey, jobId, format);
+  const s3 = getS3Client();
+  const contentType = format === "html" ? "text/html; charset=utf-8" : "application/pdf";
+  const contentDisposition =
+    format === "pdf"
+      ? `attachment; filename="${fileName}"`
+      : `inline; filename="${fileName}"`;
+
+  const command = new GetObjectCommand({
+    Bucket: config.b2.bucket,
+    Key: key,
+    ResponseContentType: contentType,
+    ResponseContentDisposition: contentDisposition
+  });
+
+  return getSignedUrl(s3, command, { expiresIn: expiresInSeconds });
 }
 
 export function outputUrl(jobId: string, format: OutputFormat) {

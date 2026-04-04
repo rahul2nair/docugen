@@ -5,7 +5,7 @@ import { config } from "@/server/config";
 import { buildDownloadFilename } from "@/server/generated-file-name";
 import { getAuthenticatedOwnerKey } from "@/server/persistence-context";
 import { generationQueue } from "@/server/queue";
-import { readOutput } from "@/server/output-store";
+import { getOutputSignedDownloadUrl } from "@/server/output-store";
 import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limit";
 import { readRequestIp } from "@/server/request-context";
 import { getSessionByToken } from "@/server/session-store";
@@ -203,18 +203,16 @@ export async function GET(
   }
 
   try {
-    const file = await readOutput(requiredOwnerKey, jobId, format);
     const fileName = buildDownloadFilename(persistedFile?.label || jobId, format);
-
-    return new NextResponse(file, {
-      headers: {
-        "Content-Type": format === "html" ? "text/html; charset=utf-8" : "application/pdf",
-        "Content-Disposition":
-          format === "pdf"
-            ? `attachment; filename="${fileName}"`
-            : `inline; filename="${fileName}"`
-      }
+    const signedUrl = await getOutputSignedDownloadUrl({
+      ownerKey: requiredOwnerKey,
+      jobId,
+      format,
+      fileName,
+      expiresInSeconds: 120
     });
+
+    return NextResponse.redirect(signedUrl, { status: 302 });
   } catch {
     return NextResponse.json(
       { error: { code: "NOT_FOUND", message: "Output not found" } },
