@@ -1112,6 +1112,8 @@ export const builtinTemplates: BuiltinTemplate[] = [
     family: "invoice",
     supportedOutputs: ["html", "pdf"],
     fields: [
+      { key: "header_eyebrow", label: "Header Label", type: "text", required: true, placeholder: "Independent Invoice" },
+      { key: "header_title", label: "Header Title", type: "text", required: true, placeholder: "Freelancer Invoice" },
       { key: "provider_name", label: "Provider Name", type: "text", required: true, placeholder: "Rahul Nair Studio" },
       { key: "provider_email", label: "Provider Email", type: "text", required: true, placeholder: "hello@rahulnair.studio" },
       { key: "client_name", label: "Client Name", type: "text", required: true, placeholder: "Northstar Systems" },
@@ -1132,8 +1134,8 @@ export const builtinTemplates: BuiltinTemplate[] = [
           <div style="padding:30px;background:linear-gradient(140deg,#f5ede2 0%,#ffffff 55%,#f1e0cb 100%);border-bottom:1px solid #eadfce;">
             <div style="display:grid;grid-template-columns:1.08fr 0.92fr;gap:22px;align-items:start;">
               <div>
-                <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#9a6a3a;">Independent Invoice</div>
-                <div style="margin-top:12px;font-size:40px;font-weight:800;letter-spacing:-0.06em;color:#342419;">Freelancer Invoice</div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#9a6a3a;">{{header_eyebrow}}</div>
+                <div style="margin-top:12px;font-size:40px;font-weight:800;letter-spacing:-0.06em;color:#342419;">{{header_title}}</div>
                 <div style="margin-top:10px;font-size:15px;line-height:1.85;color:#705844;">Issued by {{provider_name}} for work completed during {{service_period}}.</div>
               </div>
               <div style="padding:18px 20px;border-radius:22px;background:#fffaf4;border:1px solid #eadfce;">

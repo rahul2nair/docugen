@@ -348,6 +348,8 @@ function wrapHtml(body: string, title = "Generated Document", branding?: Documen
   const primaryColor = sanitizeColor(branding?.primaryColor, "#8d6334");
   const accentColor = sanitizeColor(branding?.accentColor, "#efe3d3");
   const companyName = branding?.companyName || "Generated Document";
+  const headerLabel = getFirstString(data, ["doc_header_label", "header_eyebrow"]) || title;
+  const headerTitle = getFirstString(data, ["doc_header_title", "header_title"]) || companyName;
   const safeLogoUrl = sanitizeLogoUrl(branding?.logoUrl);
   const logoMarkup = safeLogoUrl
     ? `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(companyName)} logo" style="height:40px;max-width:160px;object-fit:contain;" />`
@@ -496,8 +498,8 @@ function wrapHtml(body: string, title = "Generated Document", branding?: Documen
           <div class="doc-shell">
             <header class="doc-header">
               <div>
-                <div class="doc-title">${escapeHtml(title)}</div>
-                <div style="margin-top:10px;font-size:28px;font-weight:700;color:#2e241d;">${escapeHtml(companyName)}</div>
+                <div class="doc-title">${escapeHtml(headerLabel)}</div>
+                <div style="margin-top:10px;font-size:28px;font-weight:700;color:#2e241d;">${escapeHtml(headerTitle)}</div>
                 ${contactLine}
               </div>
               <div>${logoMarkup}</div>

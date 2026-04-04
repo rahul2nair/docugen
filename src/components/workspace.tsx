@@ -60,6 +60,8 @@ interface GenerationHistoryItem {
 
 const GENERATION_HISTORY_KEY = "templify-generation-history";
 const EDITOR_ID_KEY = "templify-editor-id";
+const GLOBAL_HEADER_LABEL_KEY = "doc_header_label";
+const GLOBAL_HEADER_TITLE_KEY = "doc_header_title";
 
 const defaultProfile: CompanyProfile = {
   companyName: "Acme Labs",
@@ -111,6 +113,14 @@ function templateDefaultsFromProfile(profile: CompanyProfile) {
     sender_name:   profile.signerName,
     signer_name:   profile.signerName
   };
+}
+
+function defaultGlobalHeaderLabel(template?: BuiltinTemplate) {
+  return template?.category || "Document";
+}
+
+function defaultGlobalHeaderTitle(template?: BuiltinTemplate, profile?: CompanyProfile) {
+  return template?.name || profile?.companyName || "Generated Document";
 }
 
 function makeClauseSelections(clauses: TemplateClause[] = []): ClauseSelection[] {
@@ -522,6 +532,14 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
         if (fallback && !String(next[field.key] || "").trim()) {
           next[field.key] = fallback;
         }
+      }
+
+      if (!String(next[GLOBAL_HEADER_LABEL_KEY] || "").trim()) {
+        next[GLOBAL_HEADER_LABEL_KEY] = defaultGlobalHeaderLabel(selectedTemplate);
+      }
+
+      if (!String(next[GLOBAL_HEADER_TITLE_KEY] || "").trim()) {
+        next[GLOBAL_HEADER_TITLE_KEY] = defaultGlobalHeaderTitle(selectedTemplate, profile);
       }
 
       return next;
@@ -1036,8 +1054,16 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
 
         const htmlOutput = (payload.result?.outputs || []).find((item: any) => item.format === "html");
         if (htmlOutput?.downloadUrl) {
-          const htmlRes = await fetch(withSessionToken(htmlOutput.downloadUrl, sessionToken));
-          setPreviewHtml(await htmlRes.text());
+          try {
+            const htmlRes = await fetch(withSessionToken(htmlOutput.downloadUrl, sessionToken));
+            if (htmlRes.ok) {
+              setPreviewHtml(await htmlRes.text());
+            } else {
+              console.warn(`Preview fetch failed with status ${htmlRes.status}; keeping existing preview.`);
+            }
+          } catch (error) {
+            console.warn("Preview fetch failed; keeping existing preview.", error);
+          }
         }
 
         if (sessionToken) {
@@ -1318,6 +1344,15 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
   const prioritizedFields = selectedTemplate ? prioritizeTemplateFields(selectedTemplate.fields) : [];
   const primaryFields = prioritizedFields.slice(0, 4);
   const additionalFields = prioritizedFields.slice(4);
+  const totalInputFields = (selectedTemplate?.fields.length || 0) + 2;
+  const activeDownloadFormat = downloadLinks[outputFormat]
+    ? outputFormat
+    : downloadLinks.pdf
+      ? "pdf"
+      : downloadLinks.html
+        ? "html"
+        : null;
+  const activeDownloadLink = activeDownloadFormat ? downloadLinks[activeDownloadFormat] : null;
 
   return (
     <section className="page-shell space-y-5 pt-6">
@@ -1504,11 +1539,35 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
                     <div className="text-sm font-semibold text-slate-900">Input data</div>
                     <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
-                      {selectedTemplate.fields.length} fields
+                      {totalInputFields} fields
                     </div>
                   </div>
 
                   <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Document Header Label</label>
+                      <input
+                        type="text"
+                        value={String(data[GLOBAL_HEADER_LABEL_KEY] || "")}
+                        onChange={(event) =>
+                          setData((current) => ({ ...current, [GLOBAL_HEADER_LABEL_KEY]: event.target.value }))
+                        }
+                        placeholder={defaultGlobalHeaderLabel(selectedTemplate)}
+                        className="w-full rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Document Header Title</label>
+                      <input
+                        type="text"
+                        value={String(data[GLOBAL_HEADER_TITLE_KEY] || "")}
+                        onChange={(event) =>
+                          setData((current) => ({ ...current, [GLOBAL_HEADER_TITLE_KEY]: event.target.value }))
+                        }
+                        placeholder={defaultGlobalHeaderTitle(selectedTemplate, profile)}
+                        className="w-full rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                      />
+                    </div>
                     {primaryFields.map(renderFieldInput)}
                     {additionalFields.map(renderFieldInput)}
                   </div>
@@ -1651,10 +1710,10 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
             </div>
 
             <div className="space-y-5">
-              {downloadLinks[outputFormat] && (
-                <a href={downloadLinks[outputFormat]} target="_blank">
+              {activeDownloadLink && (
+                <a href={activeDownloadLink} target="_blank">
                   <SecondaryButton className="w-full justify-center px-5 py-4">
-                    <Download size={16} className="mr-2" /> Download {outputFormat.toUpperCase()}
+                    <Download size={16} className="mr-2" /> Download {activeDownloadFormat?.toUpperCase()}
                   </SecondaryButton>
                 </a>
               )}
