@@ -33,8 +33,20 @@ export async function POST(request: Request) {
   const clientIp = readRequestIp(request) || "unknown";
   let persistenceContext: Awaited<ReturnType<typeof resolvePersistenceContext>> | null = null;
 
-  if (accountApiAuth && "error" in accountApiAuth && accountApiAuth.error === "expired") {
-    return apiKeyExpiredResponse();
+  if (accountApiAuth && "error" in accountApiAuth) {
+    if (accountApiAuth.error === "expired") {
+      return apiKeyExpiredResponse();
+    }
+
+    return NextResponse.json(
+      {
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Invalid API key"
+        }
+      },
+      { status: 401 }
+    );
   }
 
   if (!sessionToken && !accountApiAuth) {

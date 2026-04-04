@@ -33,8 +33,20 @@ export async function POST(request: Request) {
   const accountApiAuth = await resolveAccountApiKeyAuth(request);
   const sessionToken = parsed.data.session?.token?.trim() || readWorkspaceSessionTokenFromRequest(request);
   const clientIp = readRequestIp(request) || "unknown";
-  if (accountApiAuth && "error" in accountApiAuth && accountApiAuth.error === "expired") {
-    return apiKeyExpiredResponse();
+  if (accountApiAuth && "error" in accountApiAuth) {
+    if (accountApiAuth.error === "expired") {
+      return apiKeyExpiredResponse();
+    }
+
+    return NextResponse.json(
+      {
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Invalid API key"
+        }
+      },
+      { status: 401 }
+    );
   }
   if (!sessionToken && !accountApiAuth) {
     return NextResponse.json(
