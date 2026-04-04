@@ -1884,6 +1884,737 @@ export const builtinTemplates: BuiltinTemplate[] = [
         </div>
       </section>
     `
+  },
+  {
+    id: "resignation_letter",
+    name: "Resignation Letter",
+    description: "Professional resignation letter with configurable notice period.",
+    category: "HR",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "employee_name", label: "Your Name", type: "text", required: true, placeholder: "Rahul Nair" },
+      { key: "employee_title", label: "Your Job Title", type: "text", required: true, placeholder: "Senior Engineer" },
+      { key: "manager_name", label: "Manager's Name", type: "text", required: true, placeholder: "Priya Kapoor" },
+      { key: "company_name", label: "Company Name", type: "text", required: true, placeholder: "Acme Labs" },
+      { key: "resignation_date", label: "Resignation Date", type: "date", required: true },
+      { key: "last_working_day", label: "Last Working Day", type: "date", required: true },
+      { key: "reason", label: "Reason (optional)", type: "textarea", required: false, placeholder: "I have decided to pursue a new opportunity that aligns closely with my long-term career goals." },
+      { key: "gratitude", label: "Gratitude Note", type: "textarea", required: false, placeholder: "I am grateful for the opportunities, support, and experiences I have gained during my time here." }
+    ],
+    content: `
+      <section>
+        <div style="padding:32px 36px 24px;border-radius:28px;background:linear-gradient(135deg,#1a2636 0%,#243347 100%);color:#eef2f7;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#8da4bc;margin-bottom:14px;">Resignation Letter</div>
+          <div style="font-size:34px;font-weight:800;letter-spacing:-0.04em;line-height:1.1;">{{employee_name}}</div>
+          <div style="margin-top:6px;font-size:14px;color:#a8bed4;">{{employee_title}}</div>
+        </div>
+
+        <div style="margin-top:24px;padding:28px 32px;border-radius:20px;background:#fff;border:1px solid #e4e9f0;">
+          <div style="font-size:14px;color:#6b7a8d;margin-bottom:20px;">{{resignation_date}}</div>
+
+          <p style="font-size:15px;color:#2c3a4a;line-height:1.8;margin:0 0 16px;"><strong>Dear {{manager_name}},</strong></p>
+
+          <p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 14px;">I am writing to formally resign from my position as <strong>{{employee_title}}</strong> at <strong>{{company_name}}</strong>, effective <strong>{{last_working_day}}</strong>.</p>
+
+          {{#if reason}}<p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 14px;">{{reason}}</p>{{/if}}
+
+          {{#if gratitude}}<p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 14px;">{{gratitude}}</p>{{/if}}
+
+          <p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 24px;">I am committed to a smooth transition and will work to hand over all responsibilities effectively before my last day.</p>
+
+          <div style="border-top:1px solid #e4e9f0;padding-top:20px;">
+            <p style="font-size:15px;color:#2c3a4a;margin:0 0 6px;">Sincerely,</p>
+            <p style="font-size:16px;font-weight:700;color:#1a2636;margin:0;">{{employee_name}}</p>
+          </div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "reference_letter",
+    name: "Reference Letter",
+    description: "Professional character or employment reference letter.",
+    category: "HR",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "referee_name", label: "Person Being Referenced", type: "text", required: true, placeholder: "Rahul Nair" },
+      { key: "referee_title", label: "Their Job Title", type: "text", required: true, placeholder: "Software Engineer" },
+      { key: "author_name", label: "Your Name", type: "text", required: true, placeholder: "Priya Kapoor" },
+      { key: "author_title", label: "Your Job Title", type: "text", required: true, placeholder: "Engineering Manager" },
+      { key: "company_name", label: "Your Company", type: "text", required: true, placeholder: "Acme Labs" },
+      { key: "relationship", label: "Working Relationship", type: "text", required: true, placeholder: "direct manager for 3 years" },
+      { key: "letter_date", label: "Date", type: "date", required: true },
+      { key: "strengths", label: "Key Strengths", type: "textarea", required: true, placeholder: "Rahul consistently delivered high-quality work under tight deadlines.\nHis collaborative approach made the whole team more effective.\nHe demonstrated exceptional problem-solving skills." },
+      { key: "closing", label: "Closing Recommendation", type: "textarea", required: true, placeholder: "I wholeheartedly recommend Rahul for any senior engineering role. He would be an asset to any team." },
+      { key: "contact_email", label: "Contact Email", type: "text", required: true, placeholder: "priya@acmelabs.io" }
+    ],
+    content: `
+      <section>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid #e4e9f0;">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#6b7a8d;">Letter of Reference</div>
+            <div style="margin-top:8px;font-size:30px;font-weight:800;letter-spacing:-0.04em;color:#1a2636;">{{referee_name}}</div>
+            <div style="font-size:14px;color:#6b7a8d;margin-top:4px;">{{referee_title}}</div>
+          </div>
+          <div style="text-align:right;font-size:13px;color:#6b7a8d;line-height:1.8;">
+            <div>{{author_name}}</div>
+            <div>{{author_title}}, {{company_name}}</div>
+            <div>{{letter_date}}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;font-size:15px;color:#2c3a4a;line-height:1.85;">
+          <p style="margin:0 0 16px;">To Whom It May Concern,</p>
+
+          <p style="margin:0 0 16px;">It is my pleasure to recommend <strong>{{referee_name}}</strong>. I have worked with {{referee_name}} as their {{relationship}} at {{company_name}}, and I can speak with confidence about their abilities and character.</p>
+
+          <div style="margin:20px 0;padding:20px 24px;border-radius:16px;background:#f7f9fc;border-left:4px solid #2563eb;">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#2563eb;margin-bottom:10px;">Key Highlights</div>
+            <div style="white-space:pre-line;font-size:14px;line-height:1.9;color:#2c3a4a;">{{strengths}}</div>
+          </div>
+
+          <p style="margin:16px 0;">{{closing}}</p>
+
+          <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e4e9f0;">
+            <p style="margin:0 0 4px;font-size:15px;">Sincerely,</p>
+            <p style="margin:0 0 2px;font-size:16px;font-weight:700;color:#1a2636;">{{author_name}}</p>
+            <p style="margin:0;font-size:13px;color:#6b7a8d;">{{author_title}}, {{company_name}} · {{contact_email}}</p>
+          </div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "employment_verification",
+    name: "Employment Verification",
+    description: "Formal letter confirming employment status, title, and tenure for banks, landlords, or visa applications.",
+    category: "HR",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "employee_name", label: "Employee Name", type: "text", required: true, placeholder: "Rahul Nair" },
+      { key: "employee_title", label: "Job Title", type: "text", required: true, placeholder: "Senior Software Engineer" },
+      { key: "employment_type", label: "Employment Type", type: "text", required: true, placeholder: "Full-time" },
+      { key: "start_date", label: "Employment Start Date", type: "date", required: true },
+      { key: "annual_salary", label: "Annual Salary (optional)", type: "text", required: false, placeholder: "€75,000" },
+      { key: "company_name", label: "Company Name", type: "text", required: true, placeholder: "Acme Labs" },
+      { key: "company_address", label: "Company Address", type: "textarea", required: true, placeholder: "12 Innovation Drive\nDublin D01 AB12\nIreland" },
+      { key: "issuer_name", label: "Issuer Name", type: "text", required: true, placeholder: "Priya Kapoor" },
+      { key: "issuer_title", label: "Issuer Title", type: "text", required: true, placeholder: "Head of People" },
+      { key: "issue_date", label: "Issue Date", type: "date", required: true },
+      { key: "contact_email", label: "Contact Email", type: "text", required: true, placeholder: "hr@acmelabs.io" }
+    ],
+    content: `
+      <section>
+        <div style="padding:28px 32px;border-radius:24px;background:linear-gradient(135deg,#0d3349 0%,#1a4f6e 100%);color:#e8f4fd;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#82c4e8;margin-bottom:10px;">Official Document</div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:-0.04em;">Employment Verification Letter</div>
+          <div style="margin-top:6px;font-size:13px;color:#a8d4ec;">{{company_name}} · Issued {{issue_date}}</div>
+        </div>
+
+        <div style="margin-top:24px;padding:28px 32px;border-radius:20px;background:#fff;border:1px solid #dce8f0;">
+          <p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 20px;">To Whom It May Concern,</p>
+
+          <p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 16px;">This letter confirms that <strong>{{employee_name}}</strong> is currently employed at <strong>{{company_name}}</strong> in the role of <strong>{{employee_title}}</strong> on a <strong>{{employment_type}}</strong> basis, with a start date of <strong>{{start_date}}</strong>.</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0;">
+            <div style="padding:16px 20px;border-radius:14px;background:#f0f6fb;border:1px solid #cfe0ee;">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#1a4f6e;margin-bottom:6px;">Employee</div>
+              <div style="font-size:15px;font-weight:700;color:#1a2636;">{{employee_name}}</div>
+              <div style="font-size:13px;color:#5a7a90;margin-top:2px;">{{employee_title}}</div>
+            </div>
+            <div style="padding:16px 20px;border-radius:14px;background:#f0f6fb;border:1px solid #cfe0ee;">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#1a4f6e;margin-bottom:6px;">Employment Since</div>
+              <div style="font-size:15px;font-weight:700;color:#1a2636;">{{start_date}}</div>
+              <div style="font-size:13px;color:#5a7a90;margin-top:2px;">{{employment_type}}</div>
+            </div>
+          </div>
+
+          {{#if annual_salary}}<p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 16px;">The employee's current annual compensation is <strong>{{annual_salary}}</strong>.</p>{{/if}}
+
+          <p style="font-size:15px;color:#2c3a4a;line-height:1.85;margin:0 0 24px;">This letter is issued upon request and is valid as of the date shown above. For any further verification, please contact us at <strong>{{contact_email}}</strong>.</p>
+
+          <div style="border-top:1px solid #dce8f0;padding-top:18px;">
+            <p style="font-size:15px;font-weight:700;color:#1a2636;margin:0 0 2px;">{{issuer_name}}</p>
+            <p style="font-size:13px;color:#5a7a90;margin:0 0 8px;">{{issuer_title}}, {{company_name}}</p>
+            <p style="font-size:12px;color:#6b7a8d;white-space:pre-line;margin:0;">{{company_address}}</p>
+          </div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "credit_note",
+    name: "Credit Note",
+    description: "Formal credit note to offset or refund a previous invoice.",
+    category: "Finance",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "credit_note_number", label: "Credit Note Number", type: "text", required: true, placeholder: "CN-2026-007" },
+      { key: "issue_date", label: "Issue Date", type: "date", required: true },
+      { key: "original_invoice_number", label: "Original Invoice Number", type: "text", required: true, placeholder: "INV-2026-041" },
+      { key: "company_name", label: "Your Company Name", type: "text", required: true, placeholder: "Acme Labs" },
+      { key: "company_address", label: "Your Company Address", type: "textarea", required: true, placeholder: "12 Innovation Drive\nDublin D01 AB12\nIreland" },
+      { key: "client_name", label: "Client Name", type: "text", required: true, placeholder: "Globex Corp" },
+      { key: "client_address", label: "Client Address", type: "textarea", required: true, placeholder: "99 Enterprise Road\nLondon EC1A 1BB\nUnited Kingdom" },
+      { key: "reason", label: "Reason for Credit", type: "textarea", required: true, placeholder: "Duplicate charge on Invoice INV-2026-041 for consulting services in March 2026." },
+      { key: "line_items", label: "Line Items", type: "textarea", required: true, placeholder: "Consulting overage — 8 hrs × €150\nProject management credit" },
+      { key: "subtotal", label: "Subtotal", type: "text", required: true, placeholder: "€1,200.00" },
+      { key: "tax", label: "Tax (if applicable)", type: "text", required: false, placeholder: "€240.00" },
+      { key: "total_credit", label: "Total Credit Amount", type: "text", required: true, placeholder: "€1,440.00" },
+      { key: "currency", label: "Currency", type: "text", required: true, placeholder: "EUR" },
+      { key: "contact_email", label: "Billing Contact Email", type: "text", required: true, placeholder: "billing@acmelabs.io" }
+    ],
+    content: `
+      <section>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid #e4e9f0;">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#059669;">Credit Note</div>
+            <div style="font-size:34px;font-weight:800;letter-spacing:-0.04em;color:#1a2636;margin-top:6px;">{{credit_note_number}}</div>
+            <div style="font-size:13px;color:#6b7a8d;margin-top:4px;">Issued {{issue_date}} · Ref: {{original_invoice_number}}</div>
+          </div>
+          <div style="text-align:right;font-size:13px;color:#6b7a8d;line-height:1.9;">
+            <div style="font-weight:700;color:#1a2636;">{{company_name}}</div>
+            <div style="white-space:pre-line;">{{company_address}}</div>
+            <div>{{contact_email}}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;">
+          <div style="padding:16px 20px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#059669;margin-bottom:6px;">Credit Issued To</div>
+            <div style="font-size:15px;font-weight:700;color:#1a2636;">{{client_name}}</div>
+            <div style="font-size:13px;color:#374151;white-space:pre-line;margin-top:4px;">{{client_address}}</div>
+          </div>
+          <div style="padding:16px 20px;border-radius:14px;background:#fff;border:1px solid #e4e9f0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;margin-bottom:6px;">Reason</div>
+            <div style="font-size:13px;color:#374151;line-height:1.75;white-space:pre-line;">{{reason}}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;border-radius:16px;overflow:hidden;border:1px solid #e4e9f0;">
+          <div style="padding:10px 20px;background:#f7f9fc;display:grid;grid-template-columns:1fr auto;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;">
+            <span>Description</span><span>Amount ({{currency}})</span>
+          </div>
+          <div style="padding:16px 20px;font-size:14px;white-space:pre-line;color:#2c3a4a;line-height:2;border-top:1px solid #e4e9f0;">{{line_items}}</div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+          <div style="min-width:260px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#6b7a8d;padding:6px 0;border-bottom:1px solid #f0f2f5;">
+              <span>Subtotal</span><span>{{subtotal}}</span>
+            </div>
+            {{#if tax}}<div style="display:flex;justify-content:space-between;font-size:13px;color:#6b7a8d;padding:6px 0;border-bottom:1px solid #f0f2f5;"><span>Tax</span><span>{{tax}}</span></div>{{/if}}
+            <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:#059669;padding:10px 0;border-top:2px solid #bbf7d0;margin-top:4px;">
+              <span>Total Credit</span><span>{{total_credit}}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "meeting_agenda",
+    name: "Meeting Agenda",
+    description: "Structured meeting agenda with agenda items, time allocations, and attendee list.",
+    category: "Operations",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "meeting_title", label: "Meeting Title", type: "text", required: true, placeholder: "Q2 Planning Review" },
+      { key: "meeting_date", label: "Meeting Date", type: "date", required: true },
+      { key: "meeting_time", label: "Meeting Time", type: "text", required: true, placeholder: "10:00 AM – 11:30 AM IST" },
+      { key: "location", label: "Location / Link", type: "text", required: true, placeholder: "Google Meet: meet.google.com/abc-defg-hij" },
+      { key: "organiser", label: "Organiser", type: "text", required: true, placeholder: "Priya Kapoor" },
+      { key: "attendees", label: "Attendees", type: "textarea", required: true, placeholder: "Rahul Nair – Engineering\nPriya Kapoor – Product\nAisha Patel – Design" },
+      { key: "objective", label: "Meeting Objective", type: "textarea", required: true, placeholder: "Align on Q2 priorities, review current sprint blockers, and agree on the release timeline." },
+      { key: "agenda_items", label: "Agenda Items", type: "textarea", required: true, placeholder: "1. Welcome & context (5 min)\n2. Q1 retrospective highlights (15 min)\n3. Q2 roadmap walkthrough (30 min)\n4. Open discussion & blockers (20 min)\n5. Next steps & action items (10 min)" },
+      { key: "pre_read", label: "Pre-read / Materials", type: "textarea", required: false, placeholder: "Q1 metrics dashboard\nQ2 roadmap draft (shared on Notion)" }
+    ],
+    content: `
+      <section>
+        <div style="padding:28px 32px;border-radius:24px;background:linear-gradient(135deg,#1e1b4b 0%,#312e81 100%);color:#eef2ff;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#a5b4fc;margin-bottom:10px;">Meeting Agenda</div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:-0.04em;line-height:1.1;">{{meeting_title}}</div>
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#c7d2fe;">
+            <span>📅 {{meeting_date}}</span>
+            <span>🕙 {{meeting_time}}</span>
+            <span>📍 {{location}}</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.3fr 0.7fr;gap:18px;margin-top:20px;">
+          <div>
+            <div style="padding:20px 24px;border-radius:18px;background:#fff;border:1px solid #e4e9f0;margin-bottom:16px;">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;margin-bottom:10px;">Objective</div>
+              <div style="font-size:14px;color:#2c3a4a;line-height:1.8;">{{objective}}</div>
+            </div>
+
+            <div style="padding:20px 24px;border-radius:18px;background:#fff;border:1px solid #e4e9f0;">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;margin-bottom:12px;">Agenda</div>
+              <div style="font-size:14px;color:#2c3a4a;line-height:2.1;white-space:pre-line;">{{agenda_items}}</div>
+            </div>
+          </div>
+
+          <div>
+            <div style="padding:18px 20px;border-radius:18px;background:#f5f3ff;border:1px solid #ddd6fe;margin-bottom:12px;">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#7c3aed;margin-bottom:10px;">Attendees</div>
+              <div style="font-size:13px;color:#2c3a4a;line-height:1.9;white-space:pre-line;">{{attendees}}</div>
+            </div>
+
+            {{#if pre_read}}<div style="padding:18px 20px;border-radius:18px;background:#fff;border:1px solid #e4e9f0;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;margin-bottom:10px;">Pre-read</div><div style="font-size:13px;color:#2c3a4a;line-height:1.9;white-space:pre-line;">{{pre_read}}</div></div>{{/if}}
+
+            <div style="margin-top:12px;padding:14px 18px;border-radius:14px;background:#f7f9fc;border:1px solid #e4e9f0;font-size:12px;color:#6b7a8d;">Organised by <strong style="color:#2c3a4a;">{{organiser}}</strong></div>
+          </div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "meeting_minutes",
+    name: "Meeting Minutes",
+    description: "Formal record of a meeting including decisions made, action items, and next steps.",
+    category: "Operations",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "meeting_title", label: "Meeting Title", type: "text", required: true, placeholder: "Q2 Planning Review" },
+      { key: "meeting_date", label: "Meeting Date", type: "date", required: true },
+      { key: "meeting_time", label: "Meeting Time", type: "text", required: true, placeholder: "10:00 AM – 11:30 AM IST" },
+      { key: "location", label: "Location / Link", type: "text", required: true, placeholder: "Google Meet" },
+      { key: "facilitator", label: "Facilitator", type: "text", required: true, placeholder: "Priya Kapoor" },
+      { key: "minutes_recorder", label: "Minutes Recorded By", type: "text", required: true, placeholder: "Rahul Nair" },
+      { key: "attendees", label: "Attendees Present", type: "textarea", required: true, placeholder: "Rahul Nair – Engineering\nPriya Kapoor – Product\nAisha Patel – Design" },
+      { key: "agenda_covered", label: "Agenda Items Covered", type: "textarea", required: true, placeholder: "1. Q1 retrospective highlights\n2. Q2 roadmap walkthrough\n3. Open blockers discussion" },
+      { key: "discussion_summary", label: "Discussion Summary", type: "textarea", required: true, placeholder: "The team reviewed Q1 metrics and identified three key learnings to carry forward. The Q2 roadmap was presented and approved with minor amendments to the delivery timeline." },
+      { key: "decisions", label: "Decisions Made", type: "textarea", required: true, placeholder: "Approved Q2 roadmap with revised release date of June 15.\nAgreed to move sprint reviews to Thursdays.\nBudget for design tool approved at €500/month." },
+      { key: "action_items", label: "Action Items", type: "textarea", required: true, placeholder: "Rahul – Update milestone tracker by Friday\nPriya – Share revised roadmap with stakeholders by EOD Monday\nAisha – Provide final designs for feature X by next Tuesday" },
+      { key: "next_meeting", label: "Next Meeting", type: "text", required: false, placeholder: "14 May 2026, 10:00 AM – Q2 Mid-Sprint Check-in" }
+    ],
+    content: `
+      <section>
+        <div style="padding:28px 32px;border-radius:24px;background:linear-gradient(135deg,#0c2340 0%,#1a3a5c 100%);color:#e8f4fd;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#7ec8e3;margin-bottom:10px;">Meeting Minutes</div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:-0.04em;line-height:1.1;">{{meeting_title}}</div>
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#a8d4ec;">
+            <span>📅 {{meeting_date}}</span>
+            <span>🕙 {{meeting_time}}</span>
+            <span>📍 {{location}}</span>
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:#7ec8e3;">Facilitated by {{facilitator}} · Recorded by {{minutes_recorder}}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;">
+          <div style="padding:18px 22px;border-radius:16px;background:#fff;border:1px solid #e4e9f0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;margin-bottom:10px;">Attendees</div>
+            <div style="font-size:13px;color:#2c3a4a;line-height:1.9;white-space:pre-line;">{{attendees}}</div>
+          </div>
+          <div style="padding:18px 22px;border-radius:16px;background:#fff;border:1px solid #e4e9f0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;margin-bottom:10px;">Agenda Covered</div>
+            <div style="font-size:13px;color:#2c3a4a;line-height:2;white-space:pre-line;">{{agenda_covered}}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding:20px 24px;border-radius:16px;background:#fff;border:1px solid #e4e9f0;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6b7a8d;margin-bottom:10px;">Discussion Summary</div>
+          <div style="font-size:14px;color:#2c3a4a;line-height:1.85;white-space:pre-line;">{{discussion_summary}}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+          <div style="padding:18px 22px;border-radius:16px;background:#f0fdf4;border:1px solid #bbf7d0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#059669;margin-bottom:10px;">Decisions Made</div>
+            <div style="font-size:13px;color:#2c3a4a;line-height:2;white-space:pre-line;">{{decisions}}</div>
+          </div>
+          <div style="padding:18px 22px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#ea580c;margin-bottom:10px;">Action Items</div>
+            <div style="font-size:13px;color:#2c3a4a;line-height:2;white-space:pre-line;">{{action_items}}</div>
+          </div>
+        </div>
+
+        {{#if next_meeting}}<div style="margin-top:16px;padding:14px 20px;border-radius:14px;background:#f7f9fc;border:1px solid #e4e9f0;display:flex;align-items:center;gap:10px;font-size:13px;color:#2c3a4a;"><span style="font-weight:700;color:#6b7a8d;">Next Meeting:</span> {{next_meeting}}</div>{{/if}}
+      </section>
+    `
+  },
+  {
+    id: "offer_letter_simple",
+    name: "Offer Letter (Simple)",
+    description: "Clean one-page offer letter for fast hiring workflows.",
+    category: "HR",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "candidate_name", label: "Candidate Name", type: "text", required: true, placeholder: "Rahul Nair" },
+      { key: "job_title", label: "Job Title", type: "text", required: true, placeholder: "Product Engineer" },
+      { key: "company_name", label: "Company Name", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "start_date", label: "Start Date", type: "date", required: true },
+      { key: "compensation", label: "Compensation", type: "text", required: true, placeholder: "EUR 72,000 per year" },
+      { key: "location", label: "Work Location", type: "text", required: true, placeholder: "Remote (EU time zone overlap)" },
+      { key: "manager_name", label: "Reporting Manager", type: "text", required: true, placeholder: "Priya Kapoor" },
+      { key: "accept_by", label: "Acceptance Deadline", type: "date", required: true }
+    ],
+    content: `
+      <section>
+        <div style="padding:28px 30px;border-radius:22px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#eef2ff;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#94a3b8;">Employment Offer</div>
+          <div style="margin-top:8px;font-size:34px;font-weight:800;letter-spacing:-0.04em;">{{candidate_name}}</div>
+          <div style="margin-top:4px;font-size:14px;color:#cbd5e1;">{{job_title}} · {{company_name}}</div>
+        </div>
+
+        <div style="margin-top:18px;padding:24px 26px;border-radius:16px;background:#fff;border:1px solid #e2e8f0;">
+          <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:#1f2937;">Dear {{candidate_name}},</p>
+          <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:#1f2937;">We are pleased to offer you the position of <strong>{{job_title}}</strong> at <strong>{{company_name}}</strong>.</p>
+          <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:#1f2937;">Your start date will be <strong>{{start_date}}</strong>, reporting to <strong>{{manager_name}}</strong>, and your work location will be <strong>{{location}}</strong>.</p>
+
+          <div style="margin:16px 0;padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;">
+            <div style="font-size:12px;color:#64748b;">Compensation</div><div style="font-size:14px;font-weight:700;color:#0f172a;">{{compensation}}</div>
+            <div style="font-size:12px;color:#64748b;">Acceptance Deadline</div><div style="font-size:14px;font-weight:700;color:#0f172a;">{{accept_by}}</div>
+          </div>
+
+          <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:#1f2937;">Please confirm your acceptance by signing and returning this offer before the deadline.</p>
+          <p style="margin:0;font-size:15px;color:#1f2937;">Sincerely,<br /><strong>{{company_name}} Hiring Team</strong></p>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "invoice_simple",
+    name: "Invoice (Simple)",
+    description: "Minimal invoice layout with clear totals and payment details.",
+    category: "Finance",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "invoice_number", label: "Invoice Number", type: "text", required: true, placeholder: "INV-2026-118" },
+      { key: "issue_date", label: "Issue Date", type: "date", required: true },
+      { key: "due_date", label: "Due Date", type: "date", required: true },
+      { key: "from_company", label: "From Company", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "from_address", label: "From Address", type: "textarea", required: true, placeholder: "12 Main Street\nDublin\nIreland" },
+      { key: "bill_to", label: "Bill To", type: "textarea", required: true, placeholder: "Acme Corporation\nAccounts Payable\nLondon" },
+      { key: "line_items", label: "Line Items", type: "textarea", required: true, placeholder: "Template customization package\nSupport retainer (April)" },
+      { key: "subtotal", label: "Subtotal", type: "text", required: true, placeholder: "EUR 1,200.00" },
+      { key: "tax", label: "Tax", type: "text", required: false, placeholder: "EUR 240.00" },
+      { key: "total", label: "Total", type: "text", required: true, placeholder: "EUR 1,440.00" },
+      { key: "payment_details", label: "Payment Details", type: "textarea", required: true, placeholder: "Bank: Revolut Business\nIBAN: IE00 0000 0000 0000 0000 00\nReference: INV-2026-118" }
+    ],
+    content: `
+      <section>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#64748b;">Invoice</div>
+            <div style="margin-top:6px;font-size:34px;font-weight:800;letter-spacing:-0.04em;color:#0f172a;">{{invoice_number}}</div>
+          </div>
+          <div style="text-align:right;font-size:13px;line-height:1.8;color:#475569;">
+            <div><strong>Issued:</strong> {{issue_date}}</div>
+            <div><strong>Due:</strong> {{due_date}}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;">
+          <div style="padding:14px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.12em;">From</div>
+            <div style="margin-top:6px;font-size:13px;line-height:1.8;color:#1f2937;white-space:pre-line;"><strong>{{from_company}}</strong>\n{{from_address}}</div>
+          </div>
+          <div style="padding:14px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.12em;">Bill To</div>
+            <div style="margin-top:6px;font-size:13px;line-height:1.8;color:#1f2937;white-space:pre-line;">{{bill_to}}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding:14px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.12em;margin-bottom:8px;">Description</div>
+          <div style="font-size:14px;line-height:2;color:#1f2937;white-space:pre-line;">{{line_items}}</div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;justify-content:flex-end;">
+          <div style="min-width:260px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#475569;padding:6px 0;"><span>Subtotal</span><span>{{subtotal}}</span></div>
+            {{#if tax}}<div style="display:flex;justify-content:space-between;font-size:13px;color:#475569;padding:6px 0;"><span>Tax</span><span>{{tax}}</span></div>{{/if}}
+            <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:800;color:#0f172a;padding:8px 0;border-top:2px solid #e2e8f0;margin-top:4px;"><span>Total</span><span>{{total}}</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;padding:14px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.12em;margin-bottom:6px;">Payment Details</div>
+          <div style="font-size:13px;line-height:1.8;color:#1f2937;white-space:pre-line;">{{payment_details}}</div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "nda_simple",
+    name: "NDA (Simple)",
+    description: "Concise one-page NDA for early conversations and quick evaluations.",
+    category: "Legal",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "effective_date", label: "Effective Date", type: "date", required: true },
+      { key: "disclosing_party", label: "Disclosing Party", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "receiving_party", label: "Receiving Party", type: "text", required: true, placeholder: "Acme Corp" },
+      { key: "purpose", label: "Purpose", type: "text", required: true, placeholder: "evaluate a potential integration partnership" },
+      { key: "term_years", label: "Confidentiality Term (years)", type: "number", required: true, placeholder: "2" },
+      { key: "confidential_examples", label: "Examples of Confidential Information", type: "textarea", required: true, placeholder: "product roadmap\npricing models\nsource code and technical architecture" },
+      { key: "governing_law", label: "Governing Law", type: "text", required: true, placeholder: "Ireland" }
+    ],
+    content: `
+      <section>
+        <div style="padding:24px 28px;border-radius:18px;background:#111827;color:#f9fafb;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#9ca3af;">Confidentiality Agreement</div>
+          <div style="margin-top:8px;font-size:30px;font-weight:800;letter-spacing:-0.04em;">Non-Disclosure Agreement</div>
+          <div style="margin-top:4px;font-size:13px;color:#d1d5db;">Effective {{effective_date}}</div>
+        </div>
+
+        <div style="margin-top:16px;padding:22px 24px;border-radius:14px;border:1px solid #e5e7eb;background:#fff;font-size:14px;line-height:1.9;color:#1f2937;">
+          <p style="margin:0 0 12px;">This Non-Disclosure Agreement ("Agreement") is entered into by and between <strong>{{disclosing_party}}</strong> ("Disclosing Party") and <strong>{{receiving_party}}</strong> ("Receiving Party") for the purpose of <strong>{{purpose}}</strong>.</p>
+
+          <p style="margin:0 0 12px;"><strong>1. Confidential Information.</strong> Confidential Information includes non-public business, financial, product, and technical information disclosed in any form, including: <span style="white-space:pre-line;">{{confidential_examples}}</span>.</p>
+
+          <p style="margin:0 0 12px;"><strong>2. Use and Protection.</strong> Receiving Party will use Confidential Information only for the Purpose and will protect it with reasonable care, not less than the care used for its own confidential information.</p>
+
+          <p style="margin:0 0 12px;"><strong>3. Exclusions.</strong> Confidential Information does not include information that is publicly available, already known without restriction, independently developed, or lawfully received from a third party.</p>
+
+          <p style="margin:0 0 12px;"><strong>4. Term.</strong> Confidentiality obligations under this Agreement remain in effect for <strong>{{term_years}}</strong> year(s) from the Effective Date.</p>
+
+          <p style="margin:0;"><strong>5. Governing Law.</strong> This Agreement is governed by the laws of <strong>{{governing_law}}</strong>.</p>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "service_agreement_simple",
+    name: "Service Agreement (Simple)",
+    description: "Short-form services agreement covering scope, fees, and termination.",
+    category: "Legal",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "effective_date", label: "Effective Date", type: "date", required: true },
+      { key: "provider_name", label: "Service Provider", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "client_name", label: "Client", type: "text", required: true, placeholder: "Acme Corp" },
+      { key: "services_scope", label: "Scope of Services", type: "textarea", required: true, placeholder: "Template setup and customization\nMonthly maintenance\nPriority support" },
+      { key: "project_timeline", label: "Timeline", type: "text", required: true, placeholder: "Initial setup in 2 weeks; ongoing monthly support" },
+      { key: "fees", label: "Fees", type: "text", required: true, placeholder: "EUR 2,000 setup + EUR 500/month" },
+      { key: "payment_terms", label: "Payment Terms", type: "text", required: true, placeholder: "Net 15 from invoice date" },
+      { key: "termination_notice", label: "Termination Notice", type: "text", required: true, placeholder: "30 days written notice" },
+      { key: "governing_law", label: "Governing Law", type: "text", required: true, placeholder: "Ireland" }
+    ],
+    content: `
+      <section>
+        <div style="padding:24px 28px;border-radius:18px;background:linear-gradient(135deg,#0b3b2d 0%,#14532d 100%);color:#ecfdf5;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a7f3d0;">Agreement</div>
+          <div style="margin-top:8px;font-size:30px;font-weight:800;letter-spacing:-0.04em;">Service Agreement</div>
+          <div style="margin-top:4px;font-size:13px;color:#d1fae5;">Effective {{effective_date}}</div>
+        </div>
+
+        <div style="margin-top:16px;padding:22px 24px;border-radius:14px;border:1px solid #d1fae5;background:#fff;font-size:14px;line-height:1.9;color:#1f2937;">
+          <p style="margin:0 0 12px;">This Service Agreement is entered into between <strong>{{provider_name}}</strong> ("Provider") and <strong>{{client_name}}</strong> ("Client").</p>
+
+          <p style="margin:0 0 10px;"><strong>1. Services.</strong> Provider will deliver the following services:</p>
+          <div style="white-space:pre-line;margin:0 0 12px;color:#374151;">{{services_scope}}</div>
+
+          <p style="margin:0 0 12px;"><strong>2. Timeline.</strong> {{project_timeline}}</p>
+          <p style="margin:0 0 12px;"><strong>3. Fees.</strong> {{fees}}</p>
+          <p style="margin:0 0 12px;"><strong>4. Payment Terms.</strong> {{payment_terms}}</p>
+          <p style="margin:0 0 12px;"><strong>5. Termination.</strong> Either party may terminate this agreement with {{termination_notice}}.</p>
+          <p style="margin:0;"><strong>6. Governing Law.</strong> This Agreement is governed by the laws of {{governing_law}}.</p>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "msa_simple",
+    name: "Master Services Agreement (Simple)",
+    description: "Short-form MSA to define baseline legal terms for ongoing projects.",
+    category: "Legal",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "effective_date", label: "Effective Date", type: "date", required: true },
+      { key: "provider_name", label: "Provider Name", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "client_name", label: "Client Name", type: "text", required: true, placeholder: "Acme Corp" },
+      { key: "services_summary", label: "Services Summary", type: "textarea", required: true, placeholder: "Provider will deliver document automation setup, template implementation, and support services." },
+      { key: "payment_terms", label: "Payment Terms", type: "text", required: true, placeholder: "Net 15 from invoice date" },
+      { key: "liability_cap", label: "Liability Cap", type: "text", required: true, placeholder: "Fees paid in the previous 12 months" },
+      { key: "notice_period", label: "Termination Notice", type: "text", required: true, placeholder: "30 days written notice" },
+      { key: "governing_law", label: "Governing Law", type: "text", required: true, placeholder: "Ireland" }
+    ],
+    content: `
+      <section>
+        <div style="padding:24px 28px;border-radius:18px;background:linear-gradient(135deg,#1f2937 0%,#111827 100%);color:#f8fafc;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#9ca3af;">Legal Framework</div>
+          <div style="margin-top:8px;font-size:28px;font-weight:800;letter-spacing:-0.04em;">Master Services Agreement</div>
+          <div style="margin-top:4px;font-size:13px;color:#d1d5db;">Effective {{effective_date}}</div>
+        </div>
+
+        <div style="margin-top:14px;padding:20px 22px;border-radius:14px;border:1px solid #e5e7eb;background:#fff;font-size:14px;line-height:1.9;color:#1f2937;">
+          <p style="margin:0 0 12px;">This Master Services Agreement ("Agreement") is entered into by and between <strong>{{provider_name}}</strong> ("Provider") and <strong>{{client_name}}</strong> ("Client").</p>
+          <p style="margin:0 0 12px;"><strong>1. Services.</strong> {{services_summary}}</p>
+          <p style="margin:0 0 12px;"><strong>2. Commercial Terms.</strong> Payment terms: {{payment_terms}}.</p>
+          <p style="margin:0 0 12px;"><strong>3. Liability.</strong> Aggregate liability is limited to {{liability_cap}}, except for fraud, willful misconduct, or obligations that cannot be limited by law.</p>
+          <p style="margin:0 0 12px;"><strong>4. Termination.</strong> Either party may terminate with {{notice_period}}.</p>
+          <p style="margin:0;"><strong>5. Governing Law.</strong> This Agreement is governed by the laws of {{governing_law}}.</p>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "sow_simple",
+    name: "Statement of Work (Simple)",
+    description: "Compact SOW covering deliverables, milestones, and acceptance criteria.",
+    category: "Project",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "project_name", label: "Project Name", type: "text", required: true, placeholder: "Document Automation Rollout" },
+      { key: "client_name", label: "Client Name", type: "text", required: true, placeholder: "Acme Corp" },
+      { key: "provider_name", label: "Provider Name", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "start_date", label: "Start Date", type: "date", required: true },
+      { key: "end_date", label: "Target End Date", type: "date", required: true },
+      { key: "deliverables", label: "Deliverables", type: "textarea", required: true, placeholder: "Template library setup\nApproval workflow configuration\nHandover documentation" },
+      { key: "milestones", label: "Milestones", type: "textarea", required: true, placeholder: "Week 1: Discovery\nWeek 2-3: Build\nWeek 4: QA and launch" },
+      { key: "acceptance_criteria", label: "Acceptance Criteria", type: "textarea", required: true, placeholder: "All templates render correctly in PDF/HTML\nStakeholder UAT sign-off completed" },
+      { key: "project_fee", label: "Project Fee", type: "text", required: true, placeholder: "EUR 8,000 fixed" }
+    ],
+    content: `
+      <section>
+        <div style="padding:24px 28px;border-radius:18px;background:linear-gradient(135deg,#0c4a6e 0%,#155e75 100%);color:#ecfeff;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a5f3fc;">Project Scope</div>
+          <div style="margin-top:8px;font-size:30px;font-weight:800;letter-spacing:-0.04em;">{{project_name}}</div>
+          <div style="margin-top:4px;font-size:13px;color:#cffafe;">{{provider_name}} ↔ {{client_name}}</div>
+        </div>
+
+        <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="padding:14px;border-radius:12px;background:#fff;border:1px solid #dbeafe;"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Start</div><div style="font-size:14px;font-weight:700;color:#0f172a;">{{start_date}}</div></div>
+          <div style="padding:14px;border-radius:12px;background:#fff;border:1px solid #dbeafe;"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Target End</div><div style="font-size:14px;font-weight:700;color:#0f172a;">{{end_date}}</div></div>
+        </div>
+
+        <div style="margin-top:12px;padding:16px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.12em;margin-bottom:8px;">Deliverables</div>
+          <div style="font-size:14px;line-height:1.95;color:#1f2937;white-space:pre-line;">{{deliverables}}</div>
+        </div>
+
+        <div style="margin-top:12px;padding:16px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.12em;margin-bottom:8px;">Milestones</div>
+          <div style="font-size:14px;line-height:1.95;color:#1f2937;white-space:pre-line;">{{milestones}}</div>
+        </div>
+
+        <div style="margin-top:12px;padding:16px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.12em;margin-bottom:8px;">Acceptance Criteria</div>
+          <div style="font-size:14px;line-height:1.95;color:#1f2937;white-space:pre-line;">{{acceptance_criteria}}</div>
+          <div style="margin-top:10px;font-size:15px;font-weight:800;color:#0f172a;">Project Fee: {{project_fee}}</div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "purchase_order_simple",
+    name: "Purchase Order (Simple)",
+    description: "Simple PO format for procurement and vendor orders.",
+    category: "Operations",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "po_number", label: "PO Number", type: "text", required: true, placeholder: "PO-2026-032" },
+      { key: "po_date", label: "PO Date", type: "date", required: true },
+      { key: "buyer_name", label: "Buyer Name", type: "text", required: true, placeholder: "Acme Corp" },
+      { key: "vendor_name", label: "Vendor Name", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "ship_to", label: "Ship To", type: "textarea", required: true, placeholder: "Acme Corp\nPO Desk\nLondon" },
+      { key: "items", label: "Items", type: "textarea", required: true, placeholder: "Template setup package\nTraining session (2 hrs)\nPriority support" },
+      { key: "total_amount", label: "Total Amount", type: "text", required: true, placeholder: "EUR 2,500.00" },
+      { key: "payment_terms", label: "Payment Terms", type: "text", required: true, placeholder: "Net 30" }
+    ],
+    content: `
+      <section>
+        <div style="padding:20px 24px;border-radius:16px;background:#0f172a;color:#f8fafc;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#94a3b8;">Purchase Order</div>
+            <div style="margin-top:6px;font-size:28px;font-weight:800;letter-spacing:-0.04em;">{{po_number}}</div>
+          </div>
+          <div style="font-size:13px;color:#cbd5e1;">Date: {{po_date}}</div>
+        </div>
+
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Buyer</div><div style="margin-top:6px;font-size:14px;color:#1f2937;">{{buyer_name}}</div></div>
+          <div style="padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Vendor</div><div style="margin-top:6px;font-size:14px;color:#1f2937;">{{vendor_name}}</div></div>
+        </div>
+
+        <div style="margin-top:12px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;">
+          <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;">Ship To</div>
+          <div style="font-size:13px;color:#1f2937;line-height:1.8;white-space:pre-line;">{{ship_to}}</div>
+        </div>
+
+        <div style="margin-top:12px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;">
+          <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;">Items</div>
+          <div style="font-size:14px;color:#1f2937;line-height:1.95;white-space:pre-line;">{{items}}</div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+          <div style="font-size:13px;color:#475569;">Payment Terms: {{payment_terms}}</div>
+          <div style="font-size:18px;font-weight:800;color:#0f172a;">Total: {{total_amount}}</div>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "employment_contract_basic",
+    name: "Employment Contract (Basic)",
+    description: "Basic employment contract with role, compensation, and termination terms.",
+    category: "HR",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "effective_date", label: "Effective Date", type: "date", required: true },
+      { key: "company_name", label: "Company Name", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "employee_name", label: "Employee Name", type: "text", required: true, placeholder: "Rahul Nair" },
+      { key: "job_title", label: "Job Title", type: "text", required: true, placeholder: "Product Engineer" },
+      { key: "work_location", label: "Work Location", type: "text", required: true, placeholder: "Remote" },
+      { key: "salary", label: "Salary", type: "text", required: true, placeholder: "EUR 72,000 per year" },
+      { key: "probation_period", label: "Probation Period", type: "text", required: true, placeholder: "3 months" },
+      { key: "termination_notice", label: "Termination Notice", type: "text", required: true, placeholder: "30 days written notice" },
+      { key: "governing_law", label: "Governing Law", type: "text", required: true, placeholder: "Ireland" }
+    ],
+    content: `
+      <section>
+        <div style="padding:22px 26px;border-radius:16px;background:linear-gradient(135deg,#312e81 0%,#4338ca 100%);color:#eef2ff;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#c7d2fe;">Employment Agreement</div>
+          <div style="margin-top:8px;font-size:28px;font-weight:800;letter-spacing:-0.04em;">{{employee_name}} · {{job_title}}</div>
+          <div style="margin-top:4px;font-size:13px;color:#c7d2fe;">Effective {{effective_date}}</div>
+        </div>
+
+        <div style="margin-top:12px;padding:18px 20px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;font-size:14px;line-height:1.9;color:#1f2937;">
+          <p style="margin:0 0 10px;">This Employment Contract is made between <strong>{{company_name}}</strong> ("Employer") and <strong>{{employee_name}}</strong> ("Employee").</p>
+          <p style="margin:0 0 10px;"><strong>1. Role.</strong> Employee is hired as {{job_title}} and will work from {{work_location}}.</p>
+          <p style="margin:0 0 10px;"><strong>2. Compensation.</strong> Employee will receive {{salary}}.</p>
+          <p style="margin:0 0 10px;"><strong>3. Probation.</strong> Probation period is {{probation_period}}.</p>
+          <p style="margin:0 0 10px;"><strong>4. Termination.</strong> Either party may terminate employment with {{termination_notice}}.</p>
+          <p style="margin:0;"><strong>5. Governing Law.</strong> This agreement is governed by the laws of {{governing_law}}.</p>
+        </div>
+      </section>
+    `
+  },
+  {
+    id: "offer_counter_letter",
+    name: "Offer Counter Letter",
+    description: "Simple candidate counteroffer response for compensation or title adjustments.",
+    category: "HR",
+    supportedOutputs: ["html", "pdf"],
+    fields: [
+      { key: "date", label: "Date", type: "date", required: true },
+      { key: "candidate_name", label: "Candidate Name", type: "text", required: true, placeholder: "Rahul Nair" },
+      { key: "hiring_manager_name", label: "Hiring Manager Name", type: "text", required: true, placeholder: "Priya Kapoor" },
+      { key: "company_name", label: "Company Name", type: "text", required: true, placeholder: "Templify Labs" },
+      { key: "offered_role", label: "Offered Role", type: "text", required: true, placeholder: "Product Engineer" },
+      { key: "counter_terms", label: "Counter Terms", type: "textarea", required: true, placeholder: "Base salary: EUR 78,000\nSigning bonus: EUR 5,000\nStart date: 1 June 2026" },
+      { key: "reasoning", label: "Brief Reasoning", type: "textarea", required: true, placeholder: "Based on the role scope, current market benchmarks, and my experience, I believe these terms better reflect the expected impact." }
+    ],
+    content: `
+      <section>
+        <div style="padding:22px 26px;border-radius:16px;background:#111827;color:#f9fafb;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#9ca3af;">Candidate Response</div>
+          <div style="margin-top:8px;font-size:28px;font-weight:800;letter-spacing:-0.04em;">Offer Counter Letter</div>
+        </div>
+
+        <div style="margin-top:12px;padding:18px 20px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;font-size:14px;line-height:1.9;color:#1f2937;">
+          <p style="margin:0 0 12px;">{{date}}</p>
+          <p style="margin:0 0 12px;">Dear {{hiring_manager_name}},</p>
+          <p style="margin:0 0 12px;">Thank you for offering me the role of <strong>{{offered_role}}</strong> at <strong>{{company_name}}</strong>. I am excited about the opportunity and appreciate your confidence in me.</p>
+          <p style="margin:0 0 10px;">After reviewing the offer, I would like to propose the following terms:</p>
+          <div style="margin:0 0 12px;white-space:pre-line;color:#374151;">{{counter_terms}}</div>
+          <p style="margin:0 0 12px;">{{reasoning}}</p>
+          <p style="margin:0;">I remain very interested in joining {{company_name}} and hope we can align on terms that work for both sides.</p>
+          <p style="margin:12px 0 0;">Sincerely,<br /><strong>{{candidate_name}}</strong></p>
+        </div>
+      </section>
+    `
   }
 ];
 
