@@ -11,7 +11,7 @@ import {
   FolderOpen,
   Home,
   LayoutTemplate,
-  Lock,
+  Crown,
   MessageSquare,
   LogIn,
   Settings,
@@ -72,8 +72,8 @@ function NavLink({ href, icon: Icon, label, active, locked = false }: NavLinkPro
     >
       <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
       {locked ? (
-        <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-slate-900 bg-amber-200 text-slate-900 shadow-lg">
-          <Lock size={9} strokeWidth={2.4} />
+        <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-[#7a5530] bg-[#f3e4d0] text-[#7a5530] shadow-lg">
+          <Crown size={9} strokeWidth={2.2} />
         </span>
       ) : null}
       <Tooltip label={label} />
@@ -85,7 +85,6 @@ export function AppShell({ children, hasPaidAccess = false }: { children: ReactN
   const pathname = usePathname();
   const { user, loading } = useAuthUser();
   const mainNav = buildMainNav(hasPaidAccess);
-  const upgradeHref = user ? "/billing" : "/auth?next=%2Fbilling";
 
   const avatarUrl = [user?.user_metadata?.avatar_url, user?.user_metadata?.picture, user?.user_metadata?.picture_url]
     .find((v): v is string => typeof v === "string" && v.trim().length > 0);
@@ -120,13 +119,12 @@ export function AppShell({ children, hasPaidAccess = false }: { children: ReactN
           {mainNav.map((item) => (
             (() => {
               const locked = Boolean(item.requiresPaid) && !hasPaidAccess;
-              const href = locked ? upgradeHref : item.href;
               const label = locked ? `${item.label} (Pro)` : item.label;
 
               return (
             <NavLink
               key={item.href}
-              href={href}
+              href={item.href}
               icon={item.icon}
               label={label}
               active={isActive(item.href, item.exact)}
