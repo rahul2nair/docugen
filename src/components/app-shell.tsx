@@ -11,6 +11,7 @@ import {
   FolderOpen,
   Home,
   LayoutTemplate,
+  Lock,
   MessageSquare,
   LogIn,
   Settings,
@@ -20,17 +21,25 @@ import {
 } from "lucide-react";
 import { useAuthUser } from "@/lib/supabase/use-auth-user";
 
-function buildMainNav(hasPaidAccess: boolean) {
+interface NavItem {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  exact?: boolean;
+  requiresPaid?: boolean;
+}
+
+function buildMainNav(hasPaidAccess: boolean): NavItem[] {
   return [
     ...(hasPaidAccess ? [{ href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }] : [{ href: "/", icon: Home, label: "Home", exact: true }]),
     { href: "/workspace", icon: WandSparkles, label: "Create" },
     { href: "/workspace/activity", icon: Activity, label: "Activity" },
     { href: "/templates", icon: LayoutTemplate, label: "Templates" },
-    { href: "/my-files", icon: FolderOpen, label: "My Files" },
-    { href: "/workspace/batch", icon: TableProperties, label: "Bulk Generate" },
-    { href: "/api-docs", icon: Braces, label: "API Docs" },
+    { href: "/my-files", icon: FolderOpen, label: "My Files", requiresPaid: true },
+    { href: "/workspace/batch", icon: TableProperties, label: "Bulk Generate", requiresPaid: true },
+    { href: "/api-docs", icon: Braces, label: "API Docs", requiresPaid: true },
     { href: "/contact", icon: MessageSquare, label: "Contact" },
-    { href: "/settings", icon: Settings, label: "Settings" }
+    { href: "/settings", icon: Settings, label: "Settings", requiresPaid: true }
   ];
 }
 
@@ -47,9 +56,10 @@ interface NavLinkProps {
   icon: React.ElementType;
   label: string;
   active: boolean;
+  locked?: boolean;
 }
 
-function NavLink({ href, icon: Icon, label, active }: NavLinkProps) {
+function NavLink({ href, icon: Icon, label, active, locked = false }: NavLinkProps) {
   return (
     <Link
       href={href}
@@ -61,6 +71,11 @@ function NavLink({ href, icon: Icon, label, active }: NavLinkProps) {
       }`}
     >
       <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
+      {locked ? (
+        <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-slate-900 bg-amber-200 text-slate-900 shadow-lg">
+          <Lock size={9} strokeWidth={2.4} />
+        </span>
+      ) : null}
       <Tooltip label={label} />
     </Link>
   );
@@ -70,6 +85,7 @@ export function AppShell({ children, hasPaidAccess = false }: { children: ReactN
   const pathname = usePathname();
   const { user, loading } = useAuthUser();
   const mainNav = buildMainNav(hasPaidAccess);
+  const upgradeHref = user ? "/billing" : "/auth?next=%2Fbilling";
 
   const avatarUrl = [user?.user_metadata?.avatar_url, user?.user_metadata?.picture, user?.user_metadata?.picture_url]
     .find((v): v is string => typeof v === "string" && v.trim().length > 0);
@@ -102,13 +118,22 @@ export function AppShell({ children, hasPaidAccess = false }: { children: ReactN
         {/* Main nav */}
         <nav className="flex flex-1 flex-col items-center gap-1 px-3 pt-4">
           {mainNav.map((item) => (
+            (() => {
+              const locked = Boolean(item.requiresPaid) && !hasPaidAccess;
+              const href = locked ? upgradeHref : item.href;
+              const label = locked ? `${item.label} (Pro)` : item.label;
+
+              return (
             <NavLink
               key={item.href}
-              href={item.href}
+              href={href}
               icon={item.icon}
-              label={item.label}
+              label={label}
               active={isActive(item.href, item.exact)}
+              locked={locked}
             />
+              );
+            })()
           ))}
         </nav>
 
