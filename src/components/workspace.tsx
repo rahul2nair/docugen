@@ -1253,6 +1253,22 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
       }
     }
 
+    const nextTemplate = allTemplates.find((template) => template.id === nextTemplateId);
+    const defaults = templateDefaultsFromProfile(profile);
+    const resetData: Record<string, string> = {
+      [GLOBAL_HEADER_LABEL_KEY]: defaultGlobalHeaderLabel(nextTemplate),
+      [GLOBAL_HEADER_TITLE_KEY]: defaultGlobalHeaderTitle(nextTemplate, profile)
+    };
+
+    for (const field of nextTemplate?.fields || []) {
+      const fallback = defaults[field.key as keyof typeof defaults];
+      if (fallback) {
+        resetData[field.key] = fallback;
+      }
+    }
+
+    setData(resetData);
+
     setSelectedTemplateId(nextTemplateId);
     setPreviewHtml(previewMap.get(nextTemplateId) || "");
     setPreviewStatus("Template preview");
