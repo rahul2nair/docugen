@@ -13,6 +13,26 @@ function readApiKeyFromRequest(request: Request) {
   return request.headers.get("x-api-key")?.trim() || "";
 }
 
+function isApiKeyExpired(expiresAt: string | undefined): boolean {
+  if (!expiresAt) {
+    return false;
+  }
+
+  return new Date() > new Date(expiresAt);
+}
+
+export function apiKeyExpiredResponse() {
+  return NextResponse.json(
+    {
+      error: {
+        code: "API_KEY_EXPIRED",
+        message: "The supplied API key has expired"
+      }
+    },
+    { status: 401 }
+  );
+}
+
 export async function resolveAccountApiKeyAuth(request: Request) {
   const apiKey = readApiKeyFromRequest(request);
   if (!apiKey) {
@@ -22,6 +42,10 @@ export async function resolveAccountApiKeyAuth(request: Request) {
   const resolved = await resolveOwnerKeyForManagedApiKey(apiKey);
   if (!resolved) {
     return null;
+  }
+
+  if (isApiKeyExpired(resolved.expiresAt)) {
+    return { error: "expired" };
   }
 
   await markManagedApiKeyUsed(resolved.id, {

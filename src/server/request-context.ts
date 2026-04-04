@@ -1,9 +1,28 @@
-export function readRequestIp(request: Request) {
-  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  const connectingIp = request.headers.get("cf-connecting-ip")?.trim();
+function normalizeIp(value: string | null) {
+  if (!value) {
+    return null;
+  }
 
-  return forwardedFor || realIp || connectingIp || null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function firstForwardedIp(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const candidate = value.split(",")[0]?.trim();
+  return candidate || null;
+}
+
+export function readRequestIp(request: Request) {
+  // Prefer edge-provider derived IP headers before generic forwarded headers.
+  const connectingIp = normalizeIp(request.headers.get("cf-connecting-ip"));
+  const realIp = normalizeIp(request.headers.get("x-real-ip"));
+  const forwardedFor = firstForwardedIp(request.headers.get("x-forwarded-for"));
+
+  return connectingIp || realIp || forwardedFor || null;
 }
 
 export function readRequestUserAgent(request: Request) {

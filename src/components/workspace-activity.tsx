@@ -132,7 +132,11 @@ export function WorkspaceActivity({ initialSessionToken }: Props) {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/sessions/${encodeURIComponent(token)}/jobs?limit=50`);
+      const response = await fetch("/api/v1/session/jobs?limit=50", {
+        headers: {
+          "x-workspace-session": token
+        }
+      });
       const payload = await response.json();
 
       if (!response.ok) {

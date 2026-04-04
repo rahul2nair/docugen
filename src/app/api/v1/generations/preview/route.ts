@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
+import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth, apiKeyExpiredResponse } from "@/server/api-auth";
 import { config } from "@/server/config";
 import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limit";
 import { renderRequest } from "@/server/render";
 import { readRequestIp } from "@/server/request-context";
 import { getSessionByToken } from "@/server/session-store";
 import { generationRequestSchema } from "@/server/validation";
+import { readWorkspaceSessionTokenFromRequest } from "@/server/workspace-session-cookie";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -30,9 +31,11 @@ export async function POST(request: Request) {
   }
 
   const accountApiAuth = await resolveAccountApiKeyAuth(request);
-  const sessionToken = parsed.data.session?.token?.trim();
+  const sessionToken = parsed.data.session?.token?.trim() || readWorkspaceSessionTokenFromRequest(request);
   const clientIp = readRequestIp(request) || "unknown";
-
+  if (accountApiAuth && "error" in accountApiAuth && accountApiAuth.error === "expired") {
+    return apiKeyExpiredResponse();
+  }
   if (!sessionToken && !accountApiAuth) {
     return NextResponse.json(
       {

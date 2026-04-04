@@ -12,7 +12,7 @@ const showcaseDocuments = [
     corner: "bg-blue-600",
     body: "table",
     rotate: "lg:-rotate-6",
-    shift: "lg:-translate-x-8 lg:translate-y-8",
+    shift: "lg:-translate-x-8",
     layer: "z-10"
   },
   {
@@ -22,7 +22,7 @@ const showcaseDocuments = [
     corner: "bg-slate-900",
     body: "paragraph",
     rotate: "lg:-rotate-2",
-    shift: "lg:-translate-x-3 lg:translate-y-3",
+    shift: "lg:-translate-x-3",
     layer: "z-20"
   },
   {
@@ -161,7 +161,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="mt-14 pb-8 lg:pb-14">
+          <div className="mt-14 pb-16 lg:pb-24">
             <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:justify-center lg:overflow-visible lg:pb-0">
               {showcaseDocuments.map((document, index) => (
                 <div

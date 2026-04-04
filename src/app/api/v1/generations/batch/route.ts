@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { trackGenerationJobForOwnerKey } from "@/server/api-job-store";
-import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
+import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth, apiKeyExpiredResponse } from "@/server/api-auth";
 import { hasActivePaidAccessForOwnerKey } from "@/server/billing-store";
 import { config } from "@/server/config";
 import { logError, logInfo, logWarn } from "@/server/logger";
@@ -10,6 +10,7 @@ import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limi
 import { readRequestIp } from "@/server/request-context";
 import { getSessionByToken, trackGenerationJobForSession } from "@/server/session-store";
 import { batchGenerationRequestSchema } from "@/server/validation";
+import { readWorkspaceSessionTokenFromRequest } from "@/server/workspace-session-cookie";
 
 export async function POST(request: Request) {
   try {
@@ -33,10 +34,14 @@ export async function POST(request: Request) {
     }
 
     const accountApiAuth = await resolveAccountApiKeyAuth(request);
-    const sessionToken = parsed.data.sessionToken?.trim();
+    const sessionToken = parsed.data.sessionToken?.trim() || readWorkspaceSessionTokenFromRequest(request);
     const clientIp = readRequestIp(request) || "unknown";
     const batchCost = Math.max(parsed.data.requests.length, 1);
     let persistenceContext: Awaited<ReturnType<typeof resolvePersistenceContext>> | null = null;
+
+    if (accountApiAuth && "error" in accountApiAuth && accountApiAuth.error === "expired") {
+      return apiKeyExpiredResponse();
+    }
 
     if (!sessionToken && !accountApiAuth) {
       logWarn("batch_request_unauthorized", {

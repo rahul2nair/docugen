@@ -39,6 +39,11 @@ export default function TermsPage() {
             generate through the Service ("Customer Content"). You represent that you have the necessary rights
             and legal basis to use Customer Content and to instruct us to process it.
           </p>
+          <p>
+            You are also solely responsible for reviewing and approving generated outputs before use,
+            publication, execution, or delivery to third parties. Templify may assist with drafting,
+            structuring, and formatting, but final content decisions and legal/commercial suitability remain your responsibility.
+          </p>
 
           <h2>5. License and ownership</h2>
           <ul>
@@ -58,6 +63,11 @@ export default function TermsPage() {
             You must use Templify lawfully and in accordance with these Terms. Prohibited behavior includes abuse,
             fraud, unauthorized access, rights infringement, or attempts to disrupt the Service.
           </p>
+          <p>
+            Where you configure SMTP or outbound email features, you are solely responsible for lawful email
+            sending practices, including consent, recipient rights, unsubscribe and suppression handling,
+            and compliance with applicable anti-spam and marketing laws.
+          </p>
 
           <h2>7. Subscription, billing, and taxes</h2>
           <ul>
@@ -72,6 +82,11 @@ export default function TermsPage() {
             Access to features, quotas, throughput, and storage may vary by plan. We may enforce rate limits,
             concurrency limits, and fair-use controls to preserve system reliability and security. Excessive or
             abusive usage may result in throttling, suspension, or required plan changes.
+          </p>
+          <p>
+            This includes anti-abuse controls for email and delivery features. We may apply safeguards such as
+            temporary throttling, challenge requirements, or feature suspension where abuse, spam patterns,
+            or unusual risk signals are detected.
           </p>
 
           <h2>9. Availability and maintenance</h2>
@@ -100,12 +115,22 @@ export default function TermsPage() {
             without warranties of any kind, whether express or implied, including implied warranties of
             merchantability, fitness for a particular purpose, and non-infringement.
           </p>
+          <p>
+            Generated outputs, including AI-assisted or automated draft content, are provided for informational
+            and productivity purposes only and do not constitute legal, tax, accounting, compliance, or other professional advice.
+            You must obtain independent professional review where appropriate.
+          </p>
 
           <h2>13. Limitation of liability</h2>
           <p>
             To the maximum extent permitted by law, Templify will not be liable for indirect, incidental, special,
             consequential, exemplary, or punitive damages, or for loss of profits, revenue, data, goodwill, or
             business interruption, arising from or related to the Service.
+          </p>
+          <p>
+            Without limiting the above, Templify is not responsible for the legal validity, enforceability,
+            regulatory compliance, or business outcomes of documents generated through the Service, including
+            contracts, legal notices, offer letters, and policy documents.
           </p>
 
           <h2>14. Indemnification</h2>

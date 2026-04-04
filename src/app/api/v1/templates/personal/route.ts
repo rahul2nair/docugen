@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
+import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth, apiKeyExpiredResponse } from "@/server/api-auth";
 import {
   deleteTemplateByOwnerKey,
   listTemplatesByOwnerKeys,
@@ -46,6 +46,13 @@ function storageUnavailableResponse(error: unknown) {
 export async function GET(request: Request) {
   const accountApiAuth = await resolveAccountApiKeyAuth(request);
 
+  if (accountApiAuth && "error" in accountApiAuth) {
+    if (accountApiAuth.error === "expired") {
+      return apiKeyExpiredResponse();
+    }
+    return unauthorizedResponse();
+  }
+
   if (!accountApiAuth) {
     return unauthorizedResponse();
   }
@@ -69,6 +76,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const accountApiAuth = await resolveAccountApiKeyAuth(request);
+
+  if (accountApiAuth && "error" in accountApiAuth) {
+    if (accountApiAuth.error === "expired") {
+      return apiKeyExpiredResponse();
+    }
+    return unauthorizedResponse();
+  }
 
   if (!accountApiAuth) {
     return unauthorizedResponse();
@@ -119,6 +133,13 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const accountApiAuth = await resolveAccountApiKeyAuth(request);
+
+  if (accountApiAuth && "error" in accountApiAuth) {
+    if (accountApiAuth.error === "expired") {
+      return apiKeyExpiredResponse();
+    }
+    return unauthorizedResponse();
+  }
 
   if (!accountApiAuth) {
     return unauthorizedResponse();

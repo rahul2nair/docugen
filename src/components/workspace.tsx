@@ -613,8 +613,22 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
     }
   }
 
+  function sessionRequest(path: string, init?: RequestInit, tokenOverride?: string) {
+    const token = (tokenOverride || sessionToken || "").trim();
+    const headers = new Headers(init?.headers || {});
+
+    if (token) {
+      headers.set("x-workspace-session", token);
+    }
+
+    return fetch(`/api/v1/session${path}`, {
+      ...init,
+      headers
+    });
+  }
+
   async function loadSession(token: string, hydrateState = false) {
-    const res = await fetch(`/api/v1/sessions/${encodeURIComponent(token)}`);
+    const res = await sessionRequest("", undefined, token);
     const payload = await res.json();
 
     if (!res.ok) {
@@ -640,7 +654,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
 
     setLoadingSnapshots(true);
     try {
-      const res = await fetch(`/api/v1/sessions/${encodeURIComponent(token)}/snapshots?limit=30`);
+      const res = await sessionRequest("/snapshots?limit=30", undefined, token);
       const payload = await res.json();
 
       if (!res.ok) {
@@ -667,8 +681,8 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
 
     setRestoringSnapshotId(snapshotId);
     try {
-      const res = await fetch(
-        `/api/v1/sessions/${encodeURIComponent(sessionToken)}/snapshots/${encodeURIComponent(snapshotId)}/restore`,
+      const res = await sessionRequest(
+        `/snapshots/${encodeURIComponent(snapshotId)}/restore`,
         {
           method: "POST",
           headers: {
@@ -679,7 +693,8 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
             baseRevision: session.revision,
             note: "Restored from version history"
           })
-        }
+        },
+        sessionToken
       );
 
       const payload = await res.json();
@@ -753,7 +768,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
       return false;
     }
 
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/snapshots`, {
+    const response = await sessionRequest("/snapshots", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -765,7 +780,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
         note,
         state: buildWorkspaceState()
       })
-    });
+    }, sessionToken);
 
     const payload = await response.json();
 
@@ -830,7 +845,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
       return false;
     }
 
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}`, {
+    const response = await sessionRequest("", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json"
@@ -841,7 +856,7 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
         createSnapshot: false,
         state: buildWorkspaceState()
       })
-    });
+    }, sessionToken);
 
     const payload = await response.json();
 
@@ -871,9 +886,9 @@ export function Workspace({ templates, templatePreviews, initialSessionToken, ha
 
     setIsRotatingLink(true);
     try {
-      const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/rotate`, {
+      const response = await sessionRequest("/rotate", {
         method: "POST"
-      });
+      }, sessionToken);
       const payload = await response.json();
 
       if (!response.ok) {

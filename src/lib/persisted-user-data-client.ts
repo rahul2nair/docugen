@@ -80,6 +80,19 @@ function isBrowser() {
   return typeof window !== "undefined";
 }
 
+async function sessionFetch(sessionToken: string, path: string, init?: RequestInit) {
+  const headers = new Headers(init?.headers || {});
+
+  if (sessionToken.trim()) {
+    headers.set("x-workspace-session", sessionToken.trim());
+  }
+
+  return fetch(`/api/v1/session${path}`, {
+    ...init,
+    headers
+  });
+}
+
 export function readLocalSmtpSettings(defaultConfig: PersistedSmtpSettings) {
   if (!isBrowser()) {
     return defaultConfig;
@@ -195,7 +208,7 @@ export async function loadPersistedProfile(sessionToken: string, defaultProfile:
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/profile`);
+    const response = await sessionFetch(sessionToken, "/profile");
     if (response.status === STORAGE_UNAVAILABLE_STATUS) {
       return localProfile;
     }
@@ -225,7 +238,7 @@ export async function savePersistedProfile(sessionToken: string, profile: Persis
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/profile`, {
+    const response = await sessionFetch(sessionToken, "/profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -249,7 +262,7 @@ export async function loadPersistedTemplates(sessionToken: string) {
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/templates`);
+    const response = await sessionFetch(sessionToken, "/templates");
     if (response.status === STORAGE_UNAVAILABLE_STATUS) {
       return localTemplates;
     }
@@ -277,7 +290,7 @@ export async function savePersistedTemplate(sessionToken: string, template: Pers
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/templates`, {
+    const response = await sessionFetch(sessionToken, "/templates", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -308,7 +321,7 @@ export async function loadPersistedApiKeys(sessionToken: string) {
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/api-keys`);
+    const response = await sessionFetch(sessionToken, "/api-keys");
     if (response.status === STORAGE_UNAVAILABLE_STATUS) {
       return {
         apiKeys: [],
@@ -342,7 +355,7 @@ export async function createPersistedApiKey(sessionToken: string, scopes: string
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/api-keys`, {
+    const response = await sessionFetch(sessionToken, "/api-keys", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -375,12 +388,9 @@ export async function deletePersistedApiKey(sessionToken: string, id: string) {
   }
 
   try {
-    const response = await fetch(
-      `/api/v1/sessions/${encodeURIComponent(sessionToken)}/api-keys?id=${encodeURIComponent(id)}`,
-      {
-        method: "DELETE"
-      }
-    );
+    const response = await sessionFetch(sessionToken, `/api-keys?id=${encodeURIComponent(id)}`, {
+      method: "DELETE"
+    });
 
     if (response.status === STORAGE_UNAVAILABLE_STATUS) {
       return { synced: false };
@@ -404,7 +414,7 @@ export async function loadPersistedSmtpSettings(sessionToken: string, defaultCon
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/smtp`);
+    const response = await sessionFetch(sessionToken, "/smtp");
     if (response.status === STORAGE_UNAVAILABLE_STATUS) {
       return localConfig;
     }
@@ -434,7 +444,7 @@ export async function savePersistedSmtpSettings(sessionToken: string, config: Pe
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/smtp`, {
+    const response = await sessionFetch(sessionToken, "/smtp", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -464,7 +474,7 @@ export async function deletePersistedSmtpSettings(sessionToken: string, defaultC
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/smtp`, {
+    const response = await sessionFetch(sessionToken, "/smtp", {
       method: "DELETE"
     });
 
@@ -488,7 +498,7 @@ export async function sendPersistedSmtpTest(sessionToken: string, to: string) {
   }
 
   try {
-    const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionToken)}/smtp/test`, {
+    const response = await sessionFetch(sessionToken, "/smtp/test", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

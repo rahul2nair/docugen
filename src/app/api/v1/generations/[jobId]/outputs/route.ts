@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getGenerationJobOwnerKey } from "@/server/api-job-store";
-import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
+import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth, apiKeyExpiredResponse } from "@/server/api-auth";
 import { config } from "@/server/config";
 import { getAuthenticatedOwnerKey } from "@/server/persistence-context";
 import { generationQueue } from "@/server/queue";
@@ -9,15 +9,10 @@ import { readRequestIp } from "@/server/request-context";
 import { getSessionByToken } from "@/server/session-store";
 import { sessionOwnerKey } from "@/server/user-data-store";
 import { getGeneratedFileByJobId } from "@/server/user-data-store";
+import { readWorkspaceSessionTokenFromRequest } from "@/server/workspace-session-cookie";
 
 function readWorkspaceSessionToken(request: Request) {
-  const fromHeader = request.headers.get("x-workspace-session")?.trim();
-  if (fromHeader) {
-    return fromHeader;
-  }
-
-  const fromQuery = new URL(request.url).searchParams.get("sessionToken")?.trim();
-  return fromQuery || "";
+  return readWorkspaceSessionTokenFromRequest(request, { allowQueryParam: true });
 }
 
 async function hasSessionOwnerAccess(request: Request, requiredOwnerKey: string) {
@@ -59,6 +54,16 @@ export async function GET(
 
   if (requiredOwnerKey && !hasSignedInOwnerAccess && !hasSessionAccess) {
     const accountApiAuth = await resolveAccountApiKeyAuth(request);
+
+    if (accountApiAuth && "error" in accountApiAuth) {
+      if (accountApiAuth.error === "expired") {
+        return apiKeyExpiredResponse();
+      }
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Invalid API key" } },
+        { status: 401 }
+      );
+    }
 
     if (!accountApiAuth) {
       return NextResponse.json(

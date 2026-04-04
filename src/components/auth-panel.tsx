@@ -1,13 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, KeyRound, Mail } from "lucide-react";
 import { MetallicButton, SecondaryButton } from "@/components/buttons";
 import { createClient } from "@/lib/supabase/client";
 
 type Mode = "sign-in" | "sign-up";
+
+function resolveCaptchaToken(searchParams: URLSearchParams) {
+  const fromQuery = searchParams.get("captcha_token")?.trim();
+  if (fromQuery) {
+    return fromQuery;
+  }
+
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const fromGlobal = (window as Window & { __SUPABASE_CAPTCHA_TOKEN?: string }).__SUPABASE_CAPTCHA_TOKEN?.trim();
+  if (fromGlobal) {
+    return fromGlobal;
+  }
+
+  const fromInput = (document.getElementById("supabase-captcha-token") as HTMLInputElement | null)?.value?.trim();
+  return fromInput || "";
+}
+
+type TurnstileInstance = {
+  render: (
+    element: string | HTMLElement,
+    options: {
+      sitekey: string;
+      callback?: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+      theme?: "light" | "dark";
+      size?: "normal" | "compact";
+    }
+  ) => string;
+  reset?: (widgetId?: string) => void;
+  remove?: (widgetId?: string) => void;
+};
+
+function getTurnstileInstance() {
+  return (window as Window & { turnstile?: TurnstileInstance }).turnstile;
+}
 
 function buildSignupEmailMetadata(origin: string, nextPath: string, email: string) {
   const normalizedNextPath = nextPath.startsWith("/") ? nextPath : "/dashboard";
@@ -32,8 +72,59 @@ export function AuthPanel() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaLoaded, setCaptchaLoaded] = useState(false);
+  const captchaSiteKey = process.env.NEXT_PUBLIC_SUPABASE_CAPTCHA_SITE_KEY?.trim();
+  const widgetIdRef = useRef<string | null>(null);
 
   const nextPath = searchParams.get("next")?.trim() || "/dashboard";
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (captchaToken) {
+      (window as Window & { __SUPABASE_CAPTCHA_TOKEN?: string }).__SUPABASE_CAPTCHA_TOKEN = captchaToken;
+      return;
+    }
+
+    delete (window as Window & { __SUPABASE_CAPTCHA_TOKEN?: string }).__SUPABASE_CAPTCHA_TOKEN;
+  }, [captchaToken]);
+
+  useEffect(() => {
+    if (!captchaSiteKey || !captchaLoaded) {
+      return;
+    }
+
+    const turnstile = getTurnstileInstance();
+    if (!turnstile) {
+      return;
+    }
+
+    const mountNode = document.getElementById("supabase-captcha-widget");
+    if (!mountNode) {
+      return;
+    }
+
+    mountNode.innerHTML = "";
+    setCaptchaToken("");
+    widgetIdRef.current = turnstile.render("#supabase-captcha-widget", {
+      sitekey: captchaSiteKey,
+      theme: "light",
+      size: "normal",
+      callback: (token) => setCaptchaToken(token),
+      "expired-callback": () => setCaptchaToken(""),
+      "error-callback": () => setCaptchaToken("")
+    });
+
+    return () => {
+      if (widgetIdRef.current) {
+        turnstile.remove?.(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+    };
+  }, [captchaLoaded, captchaSiteKey, mode]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,12 +134,29 @@ export function AuthPanel() {
 
     try {
       const supabase = createClient();
+      const resolvedCaptchaToken = captchaToken || resolveCaptchaToken(searchParams);
+
+      if (captchaSiteKey && !resolvedCaptchaToken) {
+        throw new Error("CAPTCHA validation is required");
+      }
 
       if (mode === "sign-in") {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const signInPayload: {
+          email: string;
+          password: string;
+          options?: { captchaToken?: string };
+        } = {
           email: email.trim(),
           password
-        });
+        };
+
+        if (resolvedCaptchaToken) {
+          signInPayload.options = {
+            captchaToken: resolvedCaptchaToken
+          };
+        }
+
+        const { error: signInError } = await supabase.auth.signInWithPassword(signInPayload);
 
         if (signInError) {
           throw signInError;
@@ -71,7 +179,8 @@ export function AuthPanel() {
         password,
         options: {
           emailRedirectTo: redirectTo,
-          data: signupEmailMetadata
+          data: signupEmailMetadata,
+          ...(resolvedCaptchaToken ? { captchaToken: resolvedCaptchaToken } : {})
         }
       });
 
@@ -87,7 +196,19 @@ export function AuthPanel() {
 
       setStatus("Account created. Check your email to confirm your address, then come back and sign in.");
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unable to authenticate.");
+      const message = submitError instanceof Error ? submitError.message : "Unable to authenticate.";
+      const isCaptchaIssue = /captcha/i.test(message);
+
+      if (isCaptchaIssue && captchaSiteKey) {
+        setError("CAPTCHA validation failed. Complete the CAPTCHA challenge and try again.");
+        const turnstile = getTurnstileInstance();
+        if (turnstile && widgetIdRef.current) {
+          turnstile.reset?.(widgetIdRef.current);
+        }
+        setCaptchaToken("");
+      } else {
+        setError(message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -115,6 +236,13 @@ export function AuthPanel() {
         </div>
 
         <div className="glass-panel p-8 lg:p-10">
+          {captchaSiteKey ? (
+            <Script
+              src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+              strategy="afterInteractive"
+              onLoad={() => setCaptchaLoaded(true)}
+            />
+          ) : null}
           <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-100 p-1">
             <button
               onClick={() => setMode("sign-in")}
@@ -161,6 +289,14 @@ export function AuthPanel() {
                 className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </div>
+
+            {captchaSiteKey ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <div className="mb-2 text-xs font-medium text-slate-700">Security check</div>
+                <div id="supabase-captcha-widget" className="min-h-[66px]" />
+                <input id="supabase-captcha-token" type="hidden" value={captchaToken} readOnly />
+              </div>
+            ) : null}
 
             {status ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{status}</div> : null}
             {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}

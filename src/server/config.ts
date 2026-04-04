@@ -28,19 +28,23 @@ export const config = {
   rateLimit: {
     sessionCreateLimit: Number(process.env.RATE_LIMIT_SESSION_CREATE_LIMIT || 10),
     sessionCreateWindowSeconds: Number(process.env.RATE_LIMIT_SESSION_CREATE_WINDOW_SECONDS || 900),
-    anonymousWriteLimit: Number(process.env.RATE_LIMIT_ANONYMOUS_WRITE_LIMIT || 30),
+    anonymousWriteLimit: Number(process.env.RATE_LIMIT_ANONYMOUS_WRITE_LIMIT || 5),
     anonymousWriteWindowSeconds: Number(process.env.RATE_LIMIT_ANONYMOUS_WRITE_WINDOW_SECONDS || 900),
     freeDailyGenerationLimit: Number(process.env.RATE_LIMIT_FREE_DAILY_GENERATION_LIMIT || 10),
-    paidDailyGenerationLimit: Number(process.env.RATE_LIMIT_PAID_DAILY_GENERATION_LIMIT || 20),
+    paidDailyGenerationLimit: Number(process.env.RATE_LIMIT_PAID_DAILY_GENERATION_LIMIT || 40),
     dailyGenerationWindowSeconds: Number(process.env.RATE_LIMIT_DAILY_GENERATION_WINDOW_SECONDS || 86400),
-    anonymousReadLimit: Number(process.env.RATE_LIMIT_ANONYMOUS_READ_LIMIT || 240),
+    anonymousReadLimit: Number(process.env.RATE_LIMIT_ANONYMOUS_READ_LIMIT || 120),
     anonymousReadWindowSeconds: Number(process.env.RATE_LIMIT_ANONYMOUS_READ_WINDOW_SECONDS || 60),
-    apiWriteLimit: Number(process.env.RATE_LIMIT_API_WRITE_LIMIT || 120),
+    apiWriteLimit: Number(process.env.RATE_LIMIT_API_WRITE_LIMIT || 60),
     apiWriteWindowSeconds: Number(process.env.RATE_LIMIT_API_WRITE_WINDOW_SECONDS || 60),
     apiReadLimit: Number(process.env.RATE_LIMIT_API_READ_LIMIT || 600),
     apiReadWindowSeconds: Number(process.env.RATE_LIMIT_API_READ_WINDOW_SECONDS || 60),
-    ipSafetyLimit: Number(process.env.RATE_LIMIT_IP_SAFETY_LIMIT || 240),
-    ipSafetyWindowSeconds: Number(process.env.RATE_LIMIT_IP_SAFETY_WINDOW_SECONDS || 60)
+    ipSafetyLimit: Number(process.env.RATE_LIMIT_IP_SAFETY_LIMIT || 180),
+    ipSafetyWindowSeconds: Number(process.env.RATE_LIMIT_IP_SAFETY_WINDOW_SECONDS || 60),
+    smtpTestPerOwnerLimit: Number(process.env.RATE_LIMIT_SMTP_TEST_PER_OWNER_LIMIT || 5),
+    smtpTestPerOwnerWindowSeconds: Number(process.env.RATE_LIMIT_SMTP_TEST_PER_OWNER_WINDOW_SECONDS || 3600),
+    smtpTestIpSafetyLimit: Number(process.env.RATE_LIMIT_SMTP_TEST_IP_SAFETY_LIMIT || 20),
+    smtpTestIpSafetyWindowSeconds: Number(process.env.RATE_LIMIT_SMTP_TEST_IP_SAFETY_WINDOW_SECONDS || 3600)
   },
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
   supabaseServiceRoleKey:
@@ -57,6 +61,21 @@ export const config = {
     }
   },
   
+  // Request size limits & timeouts (DDoS hardening)
+  request: {
+    maxBodySizeBytes: Number(process.env.REQUEST_MAX_BODY_SIZE_BYTES || 5242880), // 5MB default
+    maxJsonSizeBytes: Number(process.env.REQUEST_MAX_JSON_SIZE_BYTES || 1048576), // 1MB for JSON
+    timeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 60000), // 60s default
+    apiTimeoutMs: Number(process.env.API_REQUEST_TIMEOUT_MS || 30000) // 30s for API endpoints
+  },
+  apiKey: {
+    // Optional: max days before API key expires (0 = no expiry)
+    maxAgeDays: Number(process.env.API_KEY_MAX_AGE_DAYS || 0),
+    // Optional: alert if key unused for N days (0 = disabled)
+    inactivityAlertDays: Number(process.env.API_KEY_INACTIVITY_ALERT_DAYS || 60),
+    // Optional: auto-revoke if unused for N days (0 = disabled)
+    autoRevokeInactivityDays: Number(process.env.API_KEY_AUTO_REVOKE_INACTIVITY_DAYS || 180)
+  },
   // Backblaze B2 Configuration (S3-compatible)
   b2: {
     endpoint: process.env.B2_ENDPOINT || "https://s3.eu-central-003.backblazeb2.com",
@@ -112,6 +131,26 @@ if (typeof window === "undefined") {
 
   if (config.pdfRenderer.endpoint && !config.pdfRenderer.authToken) {
     console.warn("⚠️  PDF_RENDERER_ENDPOINT is set without PDF_RENDERER_AUTH_TOKEN; secure token is strongly recommended.");
+  }
+
+  if (Number.isNaN(config.request.maxBodySizeBytes) || config.request.maxBodySizeBytes <= 0) {
+    console.warn("⚠️  REQUEST_MAX_BODY_SIZE_BYTES is invalid. Falling back to 5MB.");
+  }
+
+  if (Number.isNaN(config.request.timeoutMs) || config.request.timeoutMs <= 0) {
+    console.warn("⚠️  REQUEST_TIMEOUT_MS is invalid. Falling back to 60000ms.");
+  }
+
+  if (Number.isNaN(config.apiKey.maxAgeDays) || config.apiKey.maxAgeDays < 0) {
+    console.warn("⚠️  API_KEY_MAX_AGE_DAYS is invalid. Falling back to 0 (no expiry).");
+  }
+
+  if (Number.isNaN(config.apiKey.inactivityAlertDays) || config.apiKey.inactivityAlertDays < 0) {
+    console.warn("⚠️  API_KEY_INACTIVITY_ALERT_DAYS is invalid. Falling back to 60 days.");
+  }
+
+  if (Number.isNaN(config.apiKey.autoRevokeInactivityDays) || config.apiKey.autoRevokeInactivityDays < 0) {
+    console.warn("⚠️  API_KEY_AUTO_REVOKE_INACTIVITY_DAYS is invalid. Falling back to 180 days.");
   }
 
   if (!config.supabaseUrl || !config.supabaseServiceRoleKey) {

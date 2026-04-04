@@ -38,7 +38,11 @@ export async function ensureWorkspaceSession(options?: {
 
   if (candidateToken) {
     try {
-      const response = await fetch(`/api/v1/sessions/${encodeURIComponent(candidateToken)}`);
+      const response = await fetch("/api/v1/session", {
+        headers: {
+          "x-workspace-session": candidateToken
+        }
+      });
       const payload = await response.json();
 
       if (response.ok && payload.session) {
@@ -46,6 +50,19 @@ export async function ensureWorkspaceSession(options?: {
         return {
           token: candidateToken,
           session: payload.session as WorkspaceSession,
+          created: false
+        };
+      }
+
+      // Backward-compatible fallback for older deployments.
+      const legacyResponse = await fetch(`/api/v1/sessions/${encodeURIComponent(candidateToken)}`);
+      const legacyPayload = await legacyResponse.json();
+
+      if (legacyResponse.ok && legacyPayload.session) {
+        setStoredWorkspaceSessionToken(candidateToken);
+        return {
+          token: candidateToken,
+          session: legacyPayload.session as WorkspaceSession,
           created: false
         };
       }

@@ -48,6 +48,7 @@ export interface StoredApiKey {
   lastUsedAt?: string;
   lastUsedIp?: string;
   lastUsedUserAgent?: string;
+  expiresAt?: string;
   revokedAt?: string;
 }
 
@@ -201,6 +202,7 @@ async function upsertRawApiKeyRecord(
     lastUsedAt?: Date | null;
     lastUsedIp?: string | null;
     lastUsedUserAgent?: string | null;
+    expiresAt?: Date | null;
     revokedAt?: Date | null;
   }
 ) {
@@ -225,6 +227,7 @@ async function upsertRawApiKeyRecord(
       lastUsedAt: metadata?.lastUsedAt ?? null,
       lastUsedIp: metadata?.lastUsedIp ?? null,
       lastUsedUserAgent: metadata?.lastUsedUserAgent ?? null,
+      expiresAt: metadata?.expiresAt ?? null,
       revokedAt: metadata?.revokedAt ?? null
     },
     update: {
@@ -238,6 +241,7 @@ async function upsertRawApiKeyRecord(
       lastUsedAt: metadata?.lastUsedAt === undefined ? undefined : metadata.lastUsedAt,
       lastUsedIp: metadata?.lastUsedIp === undefined ? undefined : metadata.lastUsedIp,
       lastUsedUserAgent: metadata?.lastUsedUserAgent === undefined ? undefined : metadata.lastUsedUserAgent,
+      expiresAt: metadata?.expiresAt === undefined ? undefined : metadata.expiresAt,
       revokedAt: metadata?.revokedAt === undefined ? undefined : metadata.revokedAt
     }
   });
@@ -966,6 +970,7 @@ export async function listApiKeysByOwnerKeys(ownerKeys: string[], options?: { in
     lastUsedAt: record.lastUsedAt?.toISOString() || undefined,
     lastUsedIp: record.lastUsedIp || undefined,
     lastUsedUserAgent: record.lastUsedUserAgent || undefined,
+    expiresAt: record.expiresAt?.toISOString() || undefined,
     revokedAt: record.revokedAt?.toISOString() || undefined
   }));
 }
@@ -992,7 +997,7 @@ export async function saveApiKeyByOwnerKey(ownerKey: string, provider: string, a
 export async function createManagedApiKeyByOwnerKey(
   ownerKey: string,
   scopes?: ApiKeyScope[],
-  metadata?: { label?: string; createdBy?: string }
+  metadata?: { label?: string; createdBy?: string; expiresAt?: Date }
 ) {
   let id = generateManagedApiKeyId();
 
@@ -1015,7 +1020,8 @@ export async function createManagedApiKeyByOwnerKey(
     createdBy: metadata?.createdBy ?? ownerKey,
     scopes: normalizedScopes,
     ownershipHistory,
-    createdAt
+    createdAt,
+    expiresAt: metadata?.expiresAt ?? null
   });
 
   return {
@@ -1023,7 +1029,8 @@ export async function createManagedApiKeyByOwnerKey(
     label: metadata?.label,
     apiKey,
     keyHint: `***${apiKey.slice(-4)}`,
-    scopes: normalizedScopes
+    scopes: normalizedScopes,
+    expiresAt: metadata?.expiresAt?.toISOString()
   };
 }
 
@@ -1062,7 +1069,8 @@ export async function resolveOwnerKeyForManagedApiKey(apiKey: string) {
     id: record.provider,
     scopes: Array.isArray(record.scopes) && record.scopes.length
       ? (record.scopes as ApiKeyScope[])
-      : managedRecord.scopes
+      : managedRecord.scopes,
+    expiresAt: record.expiresAt?.toISOString()
   };
 }
 
@@ -1185,6 +1193,7 @@ export async function claimApiKeys(ownerKey: string, sourceOwnerKeys: string[]) 
       }),
       createdAt: item.createdAt,
       lastUsedAt: item.lastUsedAt,
+      expiresAt: item.expiresAt,
       revokedAt: item.revokedAt
     });
   }

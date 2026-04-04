@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { trackGenerationJobForOwnerKey } from "@/server/api-job-store";
-import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth } from "@/server/api-auth";
+import { hasAccountApiKeyScope, requirePaidPlanForOwnerKey, resolveAccountApiKeyAuth, apiKeyExpiredResponse } from "@/server/api-auth";
 import { config } from "@/server/config";
 import { generationQueue } from "@/server/queue";
 import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limit";
@@ -12,6 +12,16 @@ export async function POST(request: Request) {
   const body = await request.json();
   const accountApiAuth = await resolveAccountApiKeyAuth(request);
   const clientIp = readRequestIp(request) || "unknown";
+
+  if (accountApiAuth && "error" in accountApiAuth) {
+    if (accountApiAuth.error === "expired") {
+      return apiKeyExpiredResponse();
+    }
+    return NextResponse.json(
+      { error: { code: "UNAUTHORIZED", message: "Invalid API key" } },
+      { status: 401 }
+    );
+  }
 
   if (!accountApiAuth) {
     return NextResponse.json(
@@ -103,6 +113,46 @@ export async function POST(request: Request) {
       },
       { status: 404 }
     );
+  }
+
+  const submittedData = parsed.data.data || {};
+  const templateFields = savedTemplate.fields || [];
+
+  if (templateFields.length) {
+    const allowedKeys = new Set(templateFields.map((field) => field.key));
+    const missingRequiredKeys = templateFields
+      .filter((field) => field.required)
+      .map((field) => field.key)
+      .filter((key) => {
+        const value = submittedData[key];
+        if (value === null || value === undefined) {
+          return true;
+        }
+
+        if (typeof value === "string" && !value.trim()) {
+          return true;
+        }
+
+        return false;
+      });
+
+    const unknownKeys = Object.keys(submittedData).filter((key) => !allowedKeys.has(key));
+
+    if (missingRequiredKeys.length || unknownKeys.length) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Template placeholder validation failed",
+            details: {
+              missingRequiredFields: missingRequiredKeys,
+              unknownFields: unknownKeys
+            }
+          }
+        },
+        { status: 400 }
+      );
+    }
   }
 
   const shouldSaveToMyFiles = parsed.data.saveToMyFiles !== false;

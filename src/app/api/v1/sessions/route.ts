@@ -4,6 +4,7 @@ import { rateLimitExceededResponse, enforceRateLimits } from "@/server/rate-limi
 import { readRequestIp } from "@/server/request-context";
 import { createWorkspaceSession } from "@/server/session-store";
 import { createSessionSchema } from "@/server/validation";
+import { applyWorkspaceSessionCookie } from "@/server/workspace-session-cookie";
 
 export async function POST(request: Request) {
   const clientIp = readRequestIp(request) || "unknown";
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
 
   const created = await createWorkspaceSession(parsed.data.initialState);
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       token: created.token,
       shareUrl: created.shareUrl,
@@ -56,4 +57,7 @@ export async function POST(request: Request) {
     },
     { status: 201 }
   );
+
+  applyWorkspaceSessionCookie(response, created.token);
+  return response;
 }

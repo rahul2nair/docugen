@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionByToken, saveSessionState, touchSession } from "@/server/session-store";
 import { saveSessionStateSchema } from "@/server/validation";
+import { applyWorkspaceSessionCookie } from "@/server/workspace-session-cookie";
 
 export async function GET(
   _request: Request,
@@ -16,7 +17,9 @@ export async function GET(
     );
   }
 
-  return NextResponse.json({ session });
+  const response = NextResponse.json({ session });
+  applyWorkspaceSessionCookie(response, token);
+  return response;
 }
 
 export async function PATCH(

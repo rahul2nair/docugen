@@ -46,6 +46,67 @@ Recommended production worker setting:
 WORKER_CONCURRENCY=1
 ```
 
+## Security env checklist (recommended)
+
+Set these explicitly in production (instead of relying on defaults):
+
+```bash
+# Auth CAPTCHA (Supabase + Turnstile)
+NEXT_PUBLIC_SUPABASE_CAPTCHA_SITE_KEY=your-turnstile-site-key
+
+# Session creation throttling
+RATE_LIMIT_SESSION_CREATE_LIMIT=5
+RATE_LIMIT_SESSION_CREATE_WINDOW_SECONDS=900
+
+# Session/UI write throttling (free/anonymous)
+RATE_LIMIT_ANONYMOUS_WRITE_LIMIT=5
+RATE_LIMIT_ANONYMOUS_WRITE_WINDOW_SECONDS=900
+
+# Daily generation caps
+RATE_LIMIT_FREE_DAILY_GENERATION_LIMIT=10
+RATE_LIMIT_PAID_DAILY_GENERATION_LIMIT=40
+RATE_LIMIT_DAILY_GENERATION_WINDOW_SECONDS=86400
+
+# Read throttling
+RATE_LIMIT_ANONYMOUS_READ_LIMIT=120
+RATE_LIMIT_ANONYMOUS_READ_WINDOW_SECONDS=60
+RATE_LIMIT_API_READ_LIMIT=600
+RATE_LIMIT_API_READ_WINDOW_SECONDS=60
+
+# API write throttling
+RATE_LIMIT_API_WRITE_LIMIT=60
+RATE_LIMIT_API_WRITE_WINDOW_SECONDS=60
+
+# Global IP safety guard
+RATE_LIMIT_IP_SAFETY_LIMIT=180
+RATE_LIMIT_IP_SAFETY_WINDOW_SECONDS=60
+
+# SMTP anti-abuse limits
+RATE_LIMIT_SMTP_TEST_PER_OWNER_LIMIT=5
+RATE_LIMIT_SMTP_TEST_PER_OWNER_WINDOW_SECONDS=3600
+RATE_LIMIT_SMTP_TEST_IP_SAFETY_LIMIT=20
+RATE_LIMIT_SMTP_TEST_IP_SAFETY_WINDOW_SECONDS=3600
+
+# Request size limits & timeouts (DDoS hardening)
+REQUEST_MAX_BODY_SIZE_BYTES=5242880
+REQUEST_MAX_JSON_SIZE_BYTES=1048576
+REQUEST_TIMEOUT_MS=60000
+API_REQUEST_TIMEOUT_MS=30000
+
+# API key expiry & inactivity tracking
+API_KEY_MAX_AGE_DAYS=0
+API_KEY_INACTIVITY_ALERT_DAYS=60
+API_KEY_AUTO_REVOKE_INACTIVITY_DAYS=180
+```
+
+Notes:
+- Keep API key + owner + IP layered limits active for paid API traffic.
+- Keep anonymous/session limits tighter than paid API limits.
+- Review these values after observing real traffic and error rates in production.
+- Request timeouts protect against resource exhaustion; adjust based on your PDF renderer performance.
+- API key expiry config: `API_KEY_MAX_AGE_DAYS=0` disables expiry; set >0 to require rotation.
+- Inactivity tracking helps remove stale keys: `API_KEY_INACTIVITY_ALERT_DAYS` triggers warnings, `AUTO_REVOKE_*` auto-revokes if >N days unused.
+
 The worker also runs recurring My Files cleanup in the background. By default it removes expired saved-file records and their Backblaze objects every 360 minutes. You can change that cadence with `MY_FILES_CLEANUP_INTERVAL_MINUTES`.
 
 ## PDF renderer offload (recommended for bulk stability)
