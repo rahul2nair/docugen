@@ -62,13 +62,13 @@ function DocumentMockup({
 }) {
   return (
     <div className={`relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br ${accent} p-3 shadow-[0_18px_45px_rgba(15,23,42,0.08)]`}>
-      <div className="relative h-[300px] overflow-hidden rounded-[22px] border border-slate-200 bg-white px-5 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.07)] sm:h-[330px]">
+      <div className="relative h-[244px] overflow-hidden rounded-[22px] border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.07)] sm:h-[272px]">
         <div className={`absolute right-0 top-0 h-12 w-12 rounded-bl-[24px] ${corner} opacity-95`} />
         <div className="text-center text-[9px] font-semibold uppercase tracking-[0.38em] text-slate-300">{eyebrow}</div>
-        <div className="mt-4 text-center text-[28px] font-semibold uppercase tracking-[-0.04em] text-slate-950">{title}</div>
+        <div className="mt-3 text-center text-[24px] font-semibold uppercase tracking-[-0.04em] text-slate-950">{title}</div>
 
         {body === "table" && (
-          <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-3">
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-2.5">
             <div className="grid grid-cols-4 gap-2 border-b border-slate-200 pb-2 text-[10px] font-semibold text-slate-500">
               <span>Name</span>
               <span>Hours</span>
@@ -88,7 +88,7 @@ function DocumentMockup({
         )}
 
         {body === "paragraph" && (
-          <div className="mt-7 space-y-3 px-2">
+          <div className="mt-5 space-y-2.5 px-1.5">
             <div className="h-2.5 w-1/3 rounded bg-slate-300" />
             <div className="h-2 w-1/5 rounded bg-blue-200" />
             {Array.from({ length: 6 }).map((_, index) => (
@@ -98,7 +98,7 @@ function DocumentMockup({
         )}
 
         {body === "certificate" && (
-          <div className="mt-6 space-y-3 px-1">
+          <div className="mt-4 space-y-2.5 px-1">
             <div className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-blue-600">Verified</div>
             <div className="h-2.5 w-2/3 rounded bg-slate-300" />
             {Array.from({ length: 4 }).map((_, index) => (
@@ -111,7 +111,7 @@ function DocumentMockup({
         )}
 
         {body === "letter" && (
-          <div className="mt-5 space-y-3 px-1">
+          <div className="mt-4 space-y-2.5 px-1">
             <div className="h-10 rounded-b-[20px] rounded-tl-[20px] bg-blue-600" />
             <div className="h-2.5 w-1/2 rounded bg-slate-300" />
             {Array.from({ length: 4 }).map((_, index) => (
@@ -161,12 +161,12 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="mt-14 pb-32 lg:pb-48">
-            <div className="flex min-h-[360px] snap-x snap-mandatory gap-4 overflow-x-auto pb-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:min-h-[420px] lg:justify-center lg:overflow-hidden lg:pb-16 lg:pt-4">
+          <div className="mt-12 pb-24 lg:pb-32">
+            <div className="flex min-h-[290px] snap-x snap-mandatory gap-3 overflow-x-auto pb-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:min-h-[320px] lg:justify-center lg:overflow-hidden lg:pb-10 lg:pt-3">
               {showcaseDocuments.map((document, index) => (
                 <div
                   key={document.title}
-                  className={`snap-center shrink-0 basis-[86%] sm:basis-[320px] lg:basis-[300px] ${index === 0 ? "" : "lg:-ml-24"} ${document.layer} ${document.rotate} ${document.shift} transition-transform duration-300 hover:-translate-y-1`}
+                  className={`snap-center shrink-0 basis-[78%] sm:basis-[270px] lg:basis-[248px] ${index === 0 ? "" : "lg:-ml-16"} ${document.layer} ${document.rotate} ${document.shift} transition-transform duration-300 hover:-translate-y-1`}
                 >
                 <DocumentMockup
                   title={document.title}
