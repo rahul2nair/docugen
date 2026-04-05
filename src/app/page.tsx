@@ -32,7 +32,7 @@ const showcaseDocuments = [
     corner: "bg-blue-600",
     body: "certificate",
     rotate: "lg:rotate-2",
-    shift: "lg:translate-x-3 lg:-translate-y-1",
+    shift: "lg:translate-x-3",
     layer: "z-30"
   },
   {
@@ -42,7 +42,7 @@ const showcaseDocuments = [
     corner: "bg-blue-600",
     body: "letter",
     rotate: "lg:rotate-6",
-    shift: "lg:translate-x-8 lg:-translate-y-5",
+    shift: "lg:translate-x-8",
     layer: "z-40"
   }
 ] as const;
@@ -162,7 +162,7 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-14 pb-32 lg:pb-48">
-            <div className="flex min-h-[360px] snap-x snap-mandatory gap-4 overflow-x-auto pb-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:min-h-[420px] lg:justify-center lg:overflow-visible lg:pb-16">
+            <div className="flex min-h-[360px] snap-x snap-mandatory gap-4 overflow-x-auto pb-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:min-h-[420px] lg:justify-center lg:overflow-hidden lg:pb-16 lg:pt-4">
               {showcaseDocuments.map((document, index) => (
                 <div
                   key={document.title}

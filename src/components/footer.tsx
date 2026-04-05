@@ -48,7 +48,7 @@ export function Footer({ hasPaidAccess = false }: { hasPaidAccess?: boolean }) {
   };
 
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-[linear-gradient(180deg,rgba(249,251,255,0.72)_0%,rgba(241,245,252,0.94)_100%)]">
+    <footer className="relative z-20 mt-16 border-t border-slate-200 bg-[linear-gradient(180deg,rgba(249,251,255,0.72)_0%,rgba(241,245,252,0.94)_100%)]">
       <div className="page-shell py-12">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.8fr_0.85fr_1fr]">
           <div>
