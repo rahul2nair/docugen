@@ -161,8 +161,8 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="mt-14 pb-24 lg:pb-32">
-            <div className="flex min-h-[360px] snap-x snap-mandatory gap-4 overflow-x-auto pb-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:min-h-[420px] lg:justify-center lg:overflow-visible lg:pb-10">
+          <div className="mt-14 pb-32 lg:pb-48">
+            <div className="flex min-h-[360px] snap-x snap-mandatory gap-4 overflow-x-auto pb-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:min-h-[420px] lg:justify-center lg:overflow-visible lg:pb-16">
               {showcaseDocuments.map((document, index) => (
                 <div
                   key={document.title}
